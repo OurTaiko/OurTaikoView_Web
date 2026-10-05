@@ -1,0 +1,246 @@
+{
+  "source": "TeamMajdata/MajdataPlay/Assets/Plugins/Un4seen.Bass",
+  "revision": "dc19722d602f099131d93b37091624ad30150ad1",
+  "files": [
+    {
+      "path": "Android/arm64-v8a/libbass.so",
+      "sha256": "9a761481e30d44a2a96df1f0986f2aab629be469a6b2fcfdf043923a1f18e365"
+    },
+    {
+      "path": "Android/arm64-v8a/libbassmix.so",
+      "sha256": "359c51bef4a90357f921198a50999fb54ad9b4271ae3260c8caff2296441094d"
+    },
+    {
+      "path": "Android/armeabi-v7a/libbass.so",
+      "sha256": "26a8f174fc763f8171b97a052e0994cbf6284f0c276cb853017cc66220167a3f"
+    },
+    {
+      "path": "Android/armeabi-v7a/libbassmix.so",
+      "sha256": "7ba9396bd4ed4e092339369915961a1ecc305edf2d14f9a6157f66908ae9530b"
+    },
+    {
+      "path": "Android/x86/libbass.so",
+      "sha256": "769e4acdbbc003511f1a510ad3759de14b58441a280fc5c1f9b3c4eccf9e14c2"
+    },
+    {
+      "path": "Android/x86/libbassmix.so",
+      "sha256": "bfb932c684ba7e2d0fc278e80edf151773d643b051bbf8c2b060c62595016cf9"
+    },
+    {
+      "path": "Android/x86_64/libbass.so",
+      "sha256": "e4533e1276366b74002616bb146ff473aa8b52006d384454236f133d79379496"
+    },
+    {
+      "path": "Android/x86_64/libbassmix.so",
+      "sha256": "e861f9e2af042955d0852fab30d4d3cfdfa3d4d6547ab52a1359ecc45e88f007"
+    },
+    {
+      "path": "Linux/x64/libbass.so",
+      "sha256": "bd0841d0c14f25065a16192be07c20b045e384199a86a00892cc3864474dbc51"
+    },
+    {
+      "path": "Linux/x64/libbassmix.so",
+      "sha256": "a5a3082ce6873ad992168cd77454934d7955ff24696f9e32f005258164f9eae5"
+    },
+    {
+      "path": "Windows/bass.dll",
+      "sha256": "4c92a8c9ef753e79840aa8d625c1426095dd0eb1f611750ddc62463b9bd1df42"
+    },
+    {
+      "path": "Windows/bassasio.dll",
+      "sha256": "cc0445655687ed5a7ec2b466bad4e4b2436497a12fe5d41f386cc76feac39696"
+    },
+    {
+      "path": "Windows/bassmix.dll",
+      "sha256": "f782cae8090700a456c9e7aeaa7770c3b90cb60a1e765c4b3cbae739d3b4d58d"
+    },
+    {
+      "path": "Windows/basswasapi.dll",
+      "sha256": "6f0869c11431e01f759fbe1cd6080299c833c519eb8ab1feae12106907b1fbd1"
+    },
+    {
+      "path": "iOS/bass.xcframework/Info.plist",
+      "sha256": "283fc6531b1e4f136152dd6ee126c03d55dc6df9430d825158e6ab3887d11265"
+    },
+    {
+      "path": "iOS/bass.xcframework/ios-arm64_armv7_armv7s/bass.framework/Info.plist",
+      "sha256": "da6cff5ddb08dd05f52ddae9ab9b34d026fe9c8272543cf20d4b4917808fa670"
+    },
+    {
+      "path": "iOS/bass.xcframework/ios-arm64_armv7_armv7s/bass.framework/bass",
+      "sha256": "ac11cec85f80f656b04c7f99833acc4a2c664b6b0b1e04a574713fc28938e3f2"
+    },
+    {
+      "path": "iOS/bass.xcframework/ios-arm64_i386_x86_64-simulator/bass.framework/Info.plist",
+      "sha256": "c932b038ca697fde72083d13bdd1b0f0aebea0d7267b71a78feef6321e4f69a7"
+    },
+    {
+      "path": "iOS/bass.xcframework/ios-arm64_i386_x86_64-simulator/bass.framework/_CodeSignature/CodeResources",
+      "sha256": "11ba2cd348e7c0686af53482b3da51a71f06c7bc259c8fecab63d01080038ada"
+    },
+    {
+      "path": "iOS/bass.xcframework/ios-arm64_i386_x86_64-simulator/bass.framework/bass",
+      "sha256": "41d3b26ad87e36b307461e59ef149a60b97df7d0aa8c8b4d5fc67b896bd97608"
+    },
+    {
+      "path": "iOS/bassmix.xcframework/Info.plist",
+      "sha256": "d262a9c4fa8eebe0daacc7cd9bd04e0775c752ef58fdc41b5de875ea9b85cbd9"
+    },
+    {
+      "path": "iOS/bassmix.xcframework/ios-arm64_armv7_armv7s/bassmix.framework/Info.plist",
+      "sha256": "5c8d9a57b23be38214dbce6eed70a161a1b344333865a14baf571972b5692bbc"
+    },
+    {
+      "path": "iOS/bassmix.xcframework/ios-arm64_armv7_armv7s/bassmix.framework/bassmix",
+      "sha256": "b747faef158ece829a5f35dd648732788c5f6c2537e5218c1188e96f7811ad0f"
+    },
+    {
+      "path": "iOS/bassmix.xcframework/ios-arm64_i386_x86_64-simulator/bassmix.framework/Info.plist",
+      "sha256": "432e95b7e7e3ab8666285d85c40042fdc221d05378281e0692630d086b0cfe1d"
+    },
+    {
+      "path": "iOS/bassmix.xcframework/ios-arm64_i386_x86_64-simulator/bassmix.framework/_CodeSignature/CodeResources",
+      "sha256": "883b8aa19f8a25b716de3d096d22e35d2aa96c33b7d2ea29956bdf6fd9f66398"
+    },
+    {
+      "path": "iOS/bassmix.xcframework/ios-arm64_i386_x86_64-simulator/bassmix.framework/bassmix",
+      "sha256": "4728d4a90171402a56edd9c6510fa97f74ec78f8fc1df573e5e764e07e34323e"
+    },
+    {
+      "path": "macOS/libbass.dylib",
+      "sha256": "e81fb7b4d0009ba6343fbfcd840620704dcb840686d405b9734cd37150d31974"
+    },
+    {
+      "path": "macOS/libbassmix.dylib",
+      "sha256": "969f91a46bcb48a7c09f3625d0611296b7d02bc83cb2e8b6c602917d21e93f53"
+    },
+    {
+      "path": "macOS/libbassopus.dylib",
+      "sha256": "c1a217b08c2bfddd5f3b8ff1fdeb6432d55db236eadcc69dac281cfdd89ee9ba"
+    },
+    {
+      "path": "macOS/libbass_fx.dylib",
+      "sha256": "82aa99a433d9e86de7ecbbd65599b2ffe9befebcd420d6368ef3bd1d33e418fe"
+    },
+    {
+      "path": "Windows/bass_fx.dll",
+      "sha256": "a6e1847eef52d882b4137af514d834c2e220daceb417c821d1e502fb7a34c84a"
+    },
+    {
+      "path": "Windows/x64/bass_aac.dll",
+      "sha256": "dad348f88782447860edc00c992028e8ebcbe30e6b898e7740541d8666ac9163"
+    },
+    {
+      "path": "Windows/x64/bassopus.dll",
+      "sha256": "242476111eab0232da48d8e26adf1cb64d4561095752794fc13e75a1ab0885c4"
+    },
+    {
+      "path": "Android/armeabi-v7a/libbass_aac.so",
+      "sha256": "cf2847f82d091715e57cec021c4fb201be26a3f0a71fb571fd796fa0623145ee"
+    },
+    {
+      "path": "Android/armeabi-v7a/libbassopus.so",
+      "sha256": "958a86d86c2c75b728da95a49f0370aee37fbb96ef724db47b71d13bf092c81b"
+    },
+    {
+      "path": "Android/armeabi-v7a/libbass_fx.so",
+      "sha256": "8b0eac805262d18846631432e1d8b7fc16585d17b340717e52e095ae487bb6a7"
+    },
+    {
+      "path": "Android/x86/libbass_aac.so",
+      "sha256": "fce352e277c50e054a520228c2a36b447e88d21ff4e45546317decc50bfd0934"
+    },
+    {
+      "path": "Android/x86/libbassopus.so",
+      "sha256": "27d2c38a1bb83eb6494e43eb49a5a421217feb90f83931cd0fa7875b0e4e8a60"
+    },
+    {
+      "path": "Android/x86/libbass_fx.so",
+      "sha256": "12a523bea283d0a8118d4be387edeba5d4698163cdccaf139224cca0c1c54213"
+    },
+    {
+      "path": "Android/arm64-v8a/libbass_aac.so",
+      "sha256": "fbba0545482f2ae1eb53e52ec0734c86c630671c04c0ba95e7e70020ac9766b4"
+    },
+    {
+      "path": "Android/arm64-v8a/libbassopus.so",
+      "sha256": "42f4d7358da10e150a0de09b41035915430fae73986dd7c5f59d71e92a981671"
+    },
+    {
+      "path": "Android/arm64-v8a/libbass_fx.so",
+      "sha256": "dff251673965a8aa412aa6625fe640dd35fe1020d335d0884f4886cf8eaf8c3e"
+    },
+    {
+      "path": "Android/x86_64/libbass_aac.so",
+      "sha256": "0a0251a304792c138199fc1800cad1bf43a0e6d1ddff563fbe76e1c3c5a945cb"
+    },
+    {
+      "path": "Android/x86_64/libbassopus.so",
+      "sha256": "d15d911b0520e3413b3a7ae8a6becc7d1ac4d12c7b78726ab3475e6372370c80"
+    },
+    {
+      "path": "Android/x86_64/libbass_fx.so",
+      "sha256": "199f2844b31f99ad13bf5cd8b6d70eb764bd20a039bb2765f5922a08d2e4301b"
+    },
+    {
+      "path": "Linux/x64/libbass_aac.so",
+      "sha256": "58b4d8336e7bdb54263d9adf574af98b214f0ef5d49c6e6eb669b3edd2b474ba"
+    },
+    {
+      "path": "Linux/x64/libbassopus.so",
+      "sha256": "5cc51254bb6a8a6a3bc839d13473fb95096f3a3dcf7c3c4012c7d621ac832c91"
+    },
+    {
+      "path": "Linux/x64/libbass_fx.so",
+      "sha256": "63a41ba9627d4577874fd8f241789834ad058f4ef3bac930bf9bbce54b4cedba"
+    },
+    {
+      "path": "iOS/bassopus.xcframework/Info.plist",
+      "sha256": "82757f1a051162325d9127c6a2fb50f5509fc4631bb7c3cb8b2ab49f287deb05"
+    },
+    {
+      "path": "iOS/bass_fx.xcframework/Info.plist",
+      "sha256": "3a9bd9daebdb5ab78cc4b07a0607ff5872d172c55bacea9fe061c6d992639da5"
+    },
+    {
+      "path": "iOS/bass_fx.xcframework/ios-arm64_armv7_armv7s/bass_fx.framework/bass_fx",
+      "sha256": "f1d032c1b057d790e9dbc440370edf4cf54d995ec33600df28417a2078c90c90"
+    },
+    {
+      "path": "iOS/bass_fx.xcframework/ios-arm64_armv7_armv7s/bass_fx.framework/Info.plist",
+      "sha256": "ebf59450e3d3ee54ebe646b2a975493f974abde6d4b2df93ee48806de9a60196"
+    },
+    {
+      "path": "iOS/bass_fx.xcframework/ios-arm64_i386_x86_64-simulator/bass_fx.framework/bass_fx",
+      "sha256": "50584acebbed088ab0b0a73caaa563151676a81a185824f7b49e78fce3f97e66"
+    },
+    {
+      "path": "iOS/bass_fx.xcframework/ios-arm64_i386_x86_64-simulator/bass_fx.framework/Info.plist",
+      "sha256": "950374d320b9a121b95fbabb7a2fde65e05c8ad5989536cefb9f4940b01dba88"
+    },
+    {
+      "path": "iOS/bass_fx.xcframework/ios-arm64_i386_x86_64-simulator/bass_fx.framework/_CodeSignature/CodeResources",
+      "sha256": "427a522d6e2f1e74234b3dcd3a5554dd82a1a4640a82cde9b4dafb32f6ddb577"
+    },
+    {
+      "path": "iOS/bassopus.xcframework/ios-arm64_armv7_armv7s/bassopus.framework/bassopus",
+      "sha256": "29497870b7b51c8c662227381e1dfe0b77f0885fa04b666afca41be13e342419"
+    },
+    {
+      "path": "iOS/bassopus.xcframework/ios-arm64_armv7_armv7s/bassopus.framework/Info.plist",
+      "sha256": "8b47fa1267bfd83d688781d47d2b7d7a0ae86efa976f0fb6f588ab93e6dafa26"
+    },
+    {
+      "path": "iOS/bassopus.xcframework/ios-arm64_i386_x86_64-simulator/bassopus.framework/bassopus",
+      "sha256": "5f2f7a56c4ae4085c88301b6d14d1379f99b16b8dd74ac83dc039d0ee7af7bcf"
+    },
+    {
+      "path": "iOS/bassopus.xcframework/ios-arm64_i386_x86_64-simulator/bassopus.framework/Info.plist",
+      "sha256": "16ec68e9d4ec828126aae16e8cfce979bb54e696e305ec2062f51e9d2072264c"
+    },
+    {
+      "path": "iOS/bassopus.xcframework/ios-arm64_i386_x86_64-simulator/bassopus.framework/_CodeSignature/CodeResources",
+      "sha256": "ebc630d2139a3ece49a7f479d68ea01519850996db3cbcd5e518609c9cba486c"
+    }
+  ]
+}

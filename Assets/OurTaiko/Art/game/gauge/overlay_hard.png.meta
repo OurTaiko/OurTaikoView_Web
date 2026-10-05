@@ -1,0 +1,1469 @@
+fileFormatVersion: 2
+guid: 8be82f003a3ce4f9badcfc2da8c627c9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5780959814900109675
+    second: overlay_hard_0
+  - first:
+      213: -586062623624777535
+    second: overlay_hard_1
+  - first:
+      213: 8408064385219785378
+    second: overlay_hard_2
+  - first:
+      213: -2127333422375178636
+    second: overlay_hard_3
+  - first:
+      213: 7838761190203928704
+    second: overlay_hard_4
+  - first:
+      213: 746641694885265591
+    second: overlay_hard_5
+  - first:
+      213: 5156287271032126376
+    second: overlay_hard_6
+  - first:
+      213: -8118853864630788496
+    second: overlay_hard_7
+  - first:
+      213: -913858866401883627
+    second: overlay_hard_8
+  - first:
+      213: 405748418530062825
+    second: overlay_hard_9
+  - first:
+      213: -3973812160623021943
+    second: overlay_hard_10
+  - first:
+      213: 189197730107113288
+    second: overlay_hard_11
+  - first:
+      213: -3142347263910604801
+    second: overlay_hard_12
+  - first:
+      213: 2092840376094847558
+    second: overlay_hard_13
+  - first:
+      213: -1413816736821921562
+    second: overlay_hard_14
+  - first:
+      213: 4292512104443247837
+    second: overlay_hard_15
+  - first:
+      213: -339344203036017152
+    second: overlay_hard_16
+  - first:
+      213: -2846947979502388333
+    second: overlay_hard_17
+  - first:
+      213: -4889723735804853900
+    second: overlay_hard_18
+  - first:
+      213: 6172400845958749419
+    second: overlay_hard_19
+  - first:
+      213: -3215940034159167628
+    second: overlay_hard_20
+  - first:
+      213: 488543425720929667
+    second: overlay_hard_21
+  - first:
+      213: 6474762753057325457
+    second: overlay_hard_22
+  - first:
+      213: -1797165722280694759
+    second: overlay_hard_23
+  - first:
+      213: -625194348815195745
+    second: overlay_hard_24
+  - first:
+      213: -5853950531662311961
+    second: overlay_hard_25
+  - first:
+      213: -8697589328371231237
+    second: overlay_hard_26
+  - first:
+      213: -4797411292736990713
+    second: overlay_hard_27
+  - first:
+      213: 1259618198052717535
+    second: overlay_hard_28
+  - first:
+      213: 7016700592357787012
+    second: overlay_hard_29
+  - first:
+      213: -6912078744698706362
+    second: overlay_hard_30
+  - first:
+      213: 1281694876974419135
+    second: overlay_hard_31
+  - first:
+      213: -135817541412572073
+    second: overlay_hard_32
+  - first:
+      213: -3833396492292380774
+    second: overlay_hard_33
+  - first:
+      213: -5762482337108080373
+    second: overlay_hard_34
+  - first:
+      213: 2400338584464136770
+    second: overlay_hard_35
+  - first:
+      213: -8550205747625241522
+    second: overlay_hard_36
+  - first:
+      213: 4286718488450753115
+    second: overlay_hard_37
+  - first:
+      213: -7579157884851021856
+    second: overlay_hard_38
+  - first:
+      213: -9148102672531424138
+    second: overlay_hard_39
+  - first:
+      213: 3618859518849471442
+    second: overlay_hard_40
+  - first:
+      213: -4930007613807886381
+    second: overlay_hard_41
+  - first:
+      213: -3401427652804918031
+    second: overlay_hard_42
+  - first:
+      213: -802690431066822414
+    second: overlay_hard_43
+  - first:
+      213: 7555240720683112306
+    second: overlay_hard_44
+  - first:
+      213: -233809366725840412
+    second: overlay_hard_45
+  - first:
+      213: -7101687715237998433
+    second: overlay_hard_46
+  - first:
+      213: -108113250183712555
+    second: overlay_hard_47
+  - first:
+      213: 4086855394016616623
+    second: overlay_hard_48
+  - first:
+      213: -1914596920744275993
+    second: overlay_hard_49
+  - first:
+      213: 5967543676571217864
+    second: overlay_hard_50
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: overlay_hard_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59e221c5da7e5cfa0800000000000000
+      internalID: -5780959814900109675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_1
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c036be1623edd7f0800000000000000
+      internalID: -586062623624777535
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_2
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a273a1b2027fa470800000000000000
+      internalID: 8408064385219785378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_3
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47ee28006813a72e0800000000000000
+      internalID: -2127333422375178636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_4
+      rect:
+        serializedVersion: 2
+        x: 58
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 080393d55cfd8cc60800000000000000
+      internalID: 7838761190203928704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_5
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b0c1266aaa9c5a00800000000000000
+      internalID: 746641694885265591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_6
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8abfcbd24ffce8740800000000000000
+      internalID: 5156287271032126376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_7
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07edf57fc69045f80800000000000000
+      internalID: -8118853864630788496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_8
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51a464de3325153f0800000000000000
+      internalID: -913858866401883627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_9
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e139a2790281a500800000000000000
+      internalID: 405748418530062825
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_10
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 980ffe1e4ee2ad8c0800000000000000
+      internalID: -3973812160623021943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_11
+      rect:
+        serializedVersion: 2
+        x: 156
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84f3857455a20a200800000000000000
+      internalID: 189197730107113288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_12
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fff00b5ffc32464d0800000000000000
+      internalID: -3142347263910604801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_13
+      rect:
+        serializedVersion: 2
+        x: 184
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6427ab4db334b0d10800000000000000
+      internalID: 2092840376094847558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_14
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e83a382b2d116ce0800000000000000
+      internalID: -1413816736821921562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_15
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddc776b2401129b30800000000000000
+      internalID: 4292512104443247837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_16
+      rect:
+        serializedVersion: 2
+        x: 226
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00e3379ce386a4bf0800000000000000
+      internalID: -339344203036017152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_17
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39b7ebb75eb9d78d0800000000000000
+      internalID: -2846947979502388333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_18
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4714e8d4b26342cb0800000000000000
+      internalID: -4889723735804853900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_19
+      rect:
+        serializedVersion: 2
+        x: 268
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bec11baddd5c8a550800000000000000
+      internalID: 6172400845958749419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_20
+      rect:
+        serializedVersion: 2
+        x: 282
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4773cf4e39fae53d0800000000000000
+      internalID: -3215940034159167628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_21
+      rect:
+        serializedVersion: 2
+        x: 296
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38dc27348a7a7c600800000000000000
+      internalID: 488543425720929667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_22
+      rect:
+        serializedVersion: 2
+        x: 310
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19189ec4b6afad950800000000000000
+      internalID: 6474762753057325457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_23
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91c63f02c4f2f07e0800000000000000
+      internalID: -1797165722280694759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_24
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f91e94b5d0dd257f0800000000000000
+      internalID: -625194348815195745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_25
+      rect:
+        serializedVersion: 2
+        x: 352
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ed0f8bc10792cea0800000000000000
+      internalID: -5853950531662311961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_26
+      rect:
+        serializedVersion: 2
+        x: 367
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf554307694fb4780800000000000000
+      internalID: -8697589328371231237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_27
+      rect:
+        serializedVersion: 2
+        x: 381
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 702d6f6d8db2c6db0800000000000000
+      internalID: -4797411292736990713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_28
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd3cc8fc3101b7110800000000000000
+      internalID: 1259618198052717535
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_29
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48542ce3304506160800000000000000
+      internalID: 7016700592357787012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_30
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 646a4b2e00d5310a0800000000000000
+      internalID: -6912078744698706362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_31
+      rect:
+        serializedVersion: 2
+        x: 437
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbc8f7c23be79c110800000000000000
+      internalID: 1281694876974419135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_32
+      rect:
+        serializedVersion: 2
+        x: 451
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75436d96aaa7d1ef0800000000000000
+      internalID: -135817541412572073
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_33
+      rect:
+        serializedVersion: 2
+        x: 465
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a972fa1533a0dcac0800000000000000
+      internalID: -3833396492292380774
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_34
+      rect:
+        serializedVersion: 2
+        x: 479
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b09c53868dc8700b0800000000000000
+      internalID: -5762482337108080373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_35
+      rect:
+        serializedVersion: 2
+        x: 493
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24a16ab9937bf4120800000000000000
+      internalID: 2400338584464136770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_36
+      rect:
+        serializedVersion: 2
+        x: 507
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e445b486c21975980800000000000000
+      internalID: -8550205747625241522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_37
+      rect:
+        serializedVersion: 2
+        x: 521
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b52e434d0cb7d7b30800000000000000
+      internalID: 4286718488450753115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_38
+      rect:
+        serializedVersion: 2
+        x: 535
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e79ad05f0c61d690800000000000000
+      internalID: -7579157884851021856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_39
+      rect:
+        serializedVersion: 2
+        x: 549
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67c76fa86196b0180800000000000000
+      internalID: -9148102672531424138
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_40
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d350111f85c83230800000000000000
+      internalID: 3618859518849471442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_41
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3df720f0238159bb0800000000000000
+      internalID: -4930007613807886381
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_42
+      rect:
+        serializedVersion: 2
+        x: 591
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f44f514293bbc0d0800000000000000
+      internalID: -3401427652804918031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_43
+      rect:
+        serializedVersion: 2
+        x: 605
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f828a74e454cd4f0800000000000000
+      internalID: -802690431066822414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_44
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27712e4f76b99d860800000000000000
+      internalID: 7555240720683112306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_45
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e1b527ae9751ccf0800000000000000
+      internalID: -233809366725840412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_46
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f90db7b36acb17d90800000000000000
+      internalID: -7101687715237998433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_47
+      rect:
+        serializedVersion: 2
+        x: 661
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d0794f5297ef7ef0800000000000000
+      internalID: -108113250183712555
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_48
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa0efb8e35d67b830800000000000000
+      internalID: 4086855394016616623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_49
+      rect:
+        serializedVersion: 2
+        x: 689
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ef0bfa9e3cfd65e0800000000000000
+      internalID: -1914596920744275993
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_hard_50
+      rect:
+        serializedVersion: 2
+        x: 703
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8cfe7af3b59f0d250800000000000000
+      internalID: 5967543676571217864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      overlay_hard_0: -5780959814900109675
+      overlay_hard_1: -586062623624777535
+      overlay_hard_10: -3973812160623021943
+      overlay_hard_11: 189197730107113288
+      overlay_hard_12: -3142347263910604801
+      overlay_hard_13: 2092840376094847558
+      overlay_hard_14: -1413816736821921562
+      overlay_hard_15: 4292512104443247837
+      overlay_hard_16: -339344203036017152
+      overlay_hard_17: -2846947979502388333
+      overlay_hard_18: -4889723735804853900
+      overlay_hard_19: 6172400845958749419
+      overlay_hard_2: 8408064385219785378
+      overlay_hard_20: -3215940034159167628
+      overlay_hard_21: 488543425720929667
+      overlay_hard_22: 6474762753057325457
+      overlay_hard_23: -1797165722280694759
+      overlay_hard_24: -625194348815195745
+      overlay_hard_25: -5853950531662311961
+      overlay_hard_26: -8697589328371231237
+      overlay_hard_27: -4797411292736990713
+      overlay_hard_28: 1259618198052717535
+      overlay_hard_29: 7016700592357787012
+      overlay_hard_3: -2127333422375178636
+      overlay_hard_30: -6912078744698706362
+      overlay_hard_31: 1281694876974419135
+      overlay_hard_32: -135817541412572073
+      overlay_hard_33: -3833396492292380774
+      overlay_hard_34: -5762482337108080373
+      overlay_hard_35: 2400338584464136770
+      overlay_hard_36: -8550205747625241522
+      overlay_hard_37: 4286718488450753115
+      overlay_hard_38: -7579157884851021856
+      overlay_hard_39: -9148102672531424138
+      overlay_hard_4: 7838761190203928704
+      overlay_hard_40: 3618859518849471442
+      overlay_hard_41: -4930007613807886381
+      overlay_hard_42: -3401427652804918031
+      overlay_hard_43: -802690431066822414
+      overlay_hard_44: 7555240720683112306
+      overlay_hard_45: -233809366725840412
+      overlay_hard_46: -7101687715237998433
+      overlay_hard_47: -108113250183712555
+      overlay_hard_48: 4086855394016616623
+      overlay_hard_49: -1914596920744275993
+      overlay_hard_5: 746641694885265591
+      overlay_hard_50: 5967543676571217864
+      overlay_hard_6: 5156287271032126376
+      overlay_hard_7: -8118853864630788496
+      overlay_hard_8: -913858866401883627
+      overlay_hard_9: 405748418530062825
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

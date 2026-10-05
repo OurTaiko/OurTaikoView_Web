@@ -1,0 +1,20 @@
+{
+    "name": "ManagedBass.BassWasapi",
+    "rootNamespace": "ManagedBass.BassWasapi",
+    "references": [
+        "GUID:cc2da3b9d8ecf0b459095e52cd9b18b4"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "WindowsStandalone32",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

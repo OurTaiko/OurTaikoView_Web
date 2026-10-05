@@ -1,0 +1,13 @@
+# OurTaikoView_Web
+
+独立 Unity 6000.3.25f1 Web 播放器。仅 PracticeScene 为构建场景；场景、美术与共享玩法代码复制自相邻 OurTaikoPlay。禁止修改来源项目来修复本项目。
+
+- Unity 场景/资源修改通过 Editor API；不要手改 YAML 或 GUID。
+- `OurTaiko.Editor.WebViewBuild.Build` 构建 Web，`scripts/install-player.sh` 将产物复制到 Fanmade 前端。
+- `WebPlayerBridge` 是 postMessage 到 Unity 的协议入口；版本 1，模式 bool：practice / autoPlay / replay。
+- 首版支持玩家练习与自动观看；回放明确拒绝，不伪装成自动演奏。
+- 两种模式结束均回第一小节并暂停。保留每帧仅最早一次输入以及帧统一判定时刻。
+- 玩家信息和设置使用不落盘的配置；不启动 OnlineManager，不保存或上传成绩。
+- 浏览器音频用 Unity。无扩展名音频 URL 必须传 audioType。
+- 资源许可证和来源归属必须保留。ManagedBass 是复制依赖，Web 不加载原生音频库。
+- 改动协议后同步检查 Fanmade/frontend 的 embedded-player-protocol.ts 和实际 iframe e2e 测试。

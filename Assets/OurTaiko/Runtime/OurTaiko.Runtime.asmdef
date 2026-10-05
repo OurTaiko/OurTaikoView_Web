@@ -1,0 +1,17 @@
+{
+  "name": "OurTaiko.Runtime",
+  "rootNamespace": "OurTaiko",
+  "references": [
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Unity.InputSystem",
+    "ManagedBass",
+    "ManagedBass.BassMix",
+    "ManagedBass.BassWasapi",
+    "ManagedBass.BassAsio",
+    "ManagedBass.BassAac",
+    "ManagedBass.BassOpus",
+    "ManagedBass.BassFx",
+    "Gilzoide.SqliteNet"
+  ]
+}

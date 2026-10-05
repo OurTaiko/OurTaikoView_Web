@@ -1,0 +1,1469 @@
+fileFormatVersion: 2
+guid: c899b91a1651e462f9979ad1e68c0dd7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8044047086820716376
+    second: overlay_easy_0
+  - first:
+      213: -3703324558201335970
+    second: overlay_easy_1
+  - first:
+      213: 5562323108447659858
+    second: overlay_easy_2
+  - first:
+      213: 8344477514544428068
+    second: overlay_easy_3
+  - first:
+      213: -4208557055396881092
+    second: overlay_easy_4
+  - first:
+      213: 8887172531745047235
+    second: overlay_easy_5
+  - first:
+      213: 3745075850126525719
+    second: overlay_easy_6
+  - first:
+      213: -7312792062204969507
+    second: overlay_easy_7
+  - first:
+      213: -8648674162532938684
+    second: overlay_easy_8
+  - first:
+      213: -5397842492720326153
+    second: overlay_easy_9
+  - first:
+      213: -1032316864811717390
+    second: overlay_easy_10
+  - first:
+      213: -4034829697922274873
+    second: overlay_easy_11
+  - first:
+      213: -3291557288091874395
+    second: overlay_easy_12
+  - first:
+      213: 4800720709355551044
+    second: overlay_easy_13
+  - first:
+      213: -5749677889158672978
+    second: overlay_easy_14
+  - first:
+      213: -7598476397866318835
+    second: overlay_easy_15
+  - first:
+      213: 1296666148846606388
+    second: overlay_easy_16
+  - first:
+      213: 7141699442403511512
+    second: overlay_easy_17
+  - first:
+      213: 1985589058400262370
+    second: overlay_easy_18
+  - first:
+      213: -952125969353054574
+    second: overlay_easy_19
+  - first:
+      213: 3214956956385820312
+    second: overlay_easy_20
+  - first:
+      213: 7131688783493113357
+    second: overlay_easy_21
+  - first:
+      213: -229524061224608427
+    second: overlay_easy_22
+  - first:
+      213: -988816332247134145
+    second: overlay_easy_23
+  - first:
+      213: -1370763538889144110
+    second: overlay_easy_24
+  - first:
+      213: 6677625747002874156
+    second: overlay_easy_25
+  - first:
+      213: 3861126797378820448
+    second: overlay_easy_26
+  - first:
+      213: 8082947725579728887
+    second: overlay_easy_27
+  - first:
+      213: -337945232871406164
+    second: overlay_easy_28
+  - first:
+      213: 3408861645774520775
+    second: overlay_easy_29
+  - first:
+      213: 8189081881097280068
+    second: overlay_easy_30
+  - first:
+      213: -7185780235392444607
+    second: overlay_easy_31
+  - first:
+      213: 6505395107719218212
+    second: overlay_easy_32
+  - first:
+      213: -1666191685866636411
+    second: overlay_easy_33
+  - first:
+      213: 1126968421321601051
+    second: overlay_easy_34
+  - first:
+      213: -5495136269134723833
+    second: overlay_easy_35
+  - first:
+      213: -8525753275653271533
+    second: overlay_easy_36
+  - first:
+      213: -7966319034165436675
+    second: overlay_easy_37
+  - first:
+      213: -3900826700699613517
+    second: overlay_easy_38
+  - first:
+      213: -9203543638334107258
+    second: overlay_easy_39
+  - first:
+      213: 2718504163886079155
+    second: overlay_easy_40
+  - first:
+      213: 3824251042285709798
+    second: overlay_easy_41
+  - first:
+      213: -654311969475455633
+    second: overlay_easy_42
+  - first:
+      213: -6883659565964859461
+    second: overlay_easy_43
+  - first:
+      213: -6794888523663061256
+    second: overlay_easy_44
+  - first:
+      213: 5993588937756101344
+    second: overlay_easy_45
+  - first:
+      213: -2751405105417974883
+    second: overlay_easy_46
+  - first:
+      213: -6832432446360309057
+    second: overlay_easy_47
+  - first:
+      213: -1797633582737638809
+    second: overlay_easy_48
+  - first:
+      213: -930289658840769103
+    second: overlay_easy_49
+  - first:
+      213: -7201772505896753773
+    second: overlay_easy_50
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: overlay_easy_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a019813bcdcd5090800000000000000
+      internalID: -8044047086820716376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_1
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5fcd647fe52b9cc0800000000000000
+      internalID: -3703324558201335970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_2
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25728fc8567513d40800000000000000
+      internalID: 5562323108447659858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_3
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 424b7aaa61a8dc370800000000000000
+      internalID: 8344477514544428068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_4
+      rect:
+        serializedVersion: 2
+        x: 58
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3dda10f7a33895c0800000000000000
+      internalID: -4208557055396881092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_5
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c2c544d454955b70800000000000000
+      internalID: 8887172531745047235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_6
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7158fa7b4ae29f330800000000000000
+      internalID: 3745075850126525719
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_7
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dddf9ff3d5eb38a90800000000000000
+      internalID: -7312792062204969507
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_8
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44c002cfbacb9f780800000000000000
+      internalID: -8648674162532938684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_9
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f955e31ad20715b0800000000000000
+      internalID: -5397842492720326153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_10
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fca049e7497ca1f0800000000000000
+      internalID: -1032316864811717390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_11
+      rect:
+        serializedVersion: 2
+        x: 156
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c9652664c76108c0800000000000000
+      internalID: -4034829697922274873
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_12
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ab8f6df51a0252d0800000000000000
+      internalID: -3291557288091874395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_13
+      rect:
+        serializedVersion: 2
+        x: 184
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 449bff2cc069f9240800000000000000
+      internalID: 4800720709355551044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_14
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ead87c34c6a0530b0800000000000000
+      internalID: -5749677889158672978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_15
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d040dfe79f9cc8690800000000000000
+      internalID: -7598476397866318835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_16
+      rect:
+        serializedVersion: 2
+        x: 226
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 438964a0efeaef110800000000000000
+      internalID: 1296666148846606388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_17
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8dc0115fdc96c1360800000000000000
+      internalID: 7141699442403511512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_18
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e899df7aba3e8b10800000000000000
+      internalID: 1985589058400262370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_19
+      rect:
+        serializedVersion: 2
+        x: 268
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2966947b97e59c2f0800000000000000
+      internalID: -952125969353054574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_20
+      rect:
+        serializedVersion: 2
+        x: 282
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89e3c897152dd9c20800000000000000
+      internalID: 3214956956385820312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_21
+      rect:
+        serializedVersion: 2
+        x: 296
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d06aebcc929d8f260800000000000000
+      internalID: 7131688783493113357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_22
+      rect:
+        serializedVersion: 2
+        x: 310
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55d5d47151190dcf0800000000000000
+      internalID: -229524061224608427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_23
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f301e48e8c40742f0800000000000000
+      internalID: -988816332247134145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_24
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d88471f2d11afce0800000000000000
+      internalID: -1370763538889144110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_25
+      rect:
+        serializedVersion: 2
+        x: 352
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c29db11cc31bbac50800000000000000
+      internalID: 6677625747002874156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_26
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 3
+        width: 7
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06991867d5a759530800000000000000
+      internalID: 3861126797378820448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_27
+      rect:
+        serializedVersion: 2
+        x: 381
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f73b3191266c2070800000000000000
+      internalID: 8082947725579728887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_28
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca5c929e9906f4bf0800000000000000
+      internalID: -337945232871406164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_29
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 3
+        width: 6
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c108dc1b95be4f20800000000000000
+      internalID: 3408861645774520775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_30
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44a146f459675a170800000000000000
+      internalID: 8189081881097280068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_31
+      rect:
+        serializedVersion: 2
+        x: 437
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1471963a2faf64c90800000000000000
+      internalID: -7185780235392444607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_32
+      rect:
+        serializedVersion: 2
+        x: 451
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4240b27226ec74a50800000000000000
+      internalID: 6505395107719218212
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_33
+      rect:
+        serializedVersion: 2
+        x: 465
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58bb5345d7f70e8e0800000000000000
+      internalID: -1666191685866636411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_34
+      rect:
+        serializedVersion: 2
+        x: 479
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b10f4f9eecbc3af00800000000000000
+      internalID: 1126968421321601051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_35
+      rect:
+        serializedVersion: 2
+        x: 493
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7050cdd7daa5db3b0800000000000000
+      internalID: -5495136269134723833
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_36
+      rect:
+        serializedVersion: 2
+        x: 507
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 310501231907ea980800000000000000
+      internalID: -8525753275653271533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_37
+      rect:
+        serializedVersion: 2
+        x: 521
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfed229bb03f17190800000000000000
+      internalID: -7966319034165436675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_38
+      rect:
+        serializedVersion: 2
+        x: 535
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b6c07e78ca7dd9c0800000000000000
+      internalID: -3900826700699613517
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_39
+      rect:
+        serializedVersion: 2
+        x: 549
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6811a4ac2d1764080800000000000000
+      internalID: -9203543638334107258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_40
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bc99d042211ab520800000000000000
+      internalID: 2718504163886079155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_41
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e96b5baf08721530800000000000000
+      internalID: 3824251042285709798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_42
+      rect:
+        serializedVersion: 2
+        x: 591
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f65112ffaba6be6f0800000000000000
+      internalID: -654311969475455633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_43
+      rect:
+        serializedVersion: 2
+        x: 605
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb7e1ff88145870a0800000000000000
+      internalID: -6883659565964859461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_44
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fe4faa73e4b3b1a0800000000000000
+      internalID: -6794888523663061256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_45
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0eac9ac22618d2350800000000000000
+      internalID: 5993588937756101344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_46
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9b8d5a52ab01d9d0800000000000000
+      internalID: -2751405105417974883
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_47
+      rect:
+        serializedVersion: 2
+        x: 661
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb237dac3e25e21a0800000000000000
+      internalID: -6832432446360309057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_48
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76a3c90e7c58d07e0800000000000000
+      internalID: -1797633582737638809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_49
+      rect:
+        serializedVersion: 2
+        x: 689
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bd9392fb72f613f0800000000000000
+      internalID: -930289658840769103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlay_easy_50
+      rect:
+        serializedVersion: 2
+        x: 703
+        y: 3
+        width: 6
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39569d0001a2e0c90800000000000000
+      internalID: -7201772505896753773
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      overlay_easy_0: -8044047086820716376
+      overlay_easy_1: -3703324558201335970
+      overlay_easy_10: -1032316864811717390
+      overlay_easy_11: -4034829697922274873
+      overlay_easy_12: -3291557288091874395
+      overlay_easy_13: 4800720709355551044
+      overlay_easy_14: -5749677889158672978
+      overlay_easy_15: -7598476397866318835
+      overlay_easy_16: 1296666148846606388
+      overlay_easy_17: 7141699442403511512
+      overlay_easy_18: 1985589058400262370
+      overlay_easy_19: -952125969353054574
+      overlay_easy_2: 5562323108447659858
+      overlay_easy_20: 3214956956385820312
+      overlay_easy_21: 7131688783493113357
+      overlay_easy_22: -229524061224608427
+      overlay_easy_23: -988816332247134145
+      overlay_easy_24: -1370763538889144110
+      overlay_easy_25: 6677625747002874156
+      overlay_easy_26: 3861126797378820448
+      overlay_easy_27: 8082947725579728887
+      overlay_easy_28: -337945232871406164
+      overlay_easy_29: 3408861645774520775
+      overlay_easy_3: 8344477514544428068
+      overlay_easy_30: 8189081881097280068
+      overlay_easy_31: -7185780235392444607
+      overlay_easy_32: 6505395107719218212
+      overlay_easy_33: -1666191685866636411
+      overlay_easy_34: 1126968421321601051
+      overlay_easy_35: -5495136269134723833
+      overlay_easy_36: -8525753275653271533
+      overlay_easy_37: -7966319034165436675
+      overlay_easy_38: -3900826700699613517
+      overlay_easy_39: -9203543638334107258
+      overlay_easy_4: -4208557055396881092
+      overlay_easy_40: 2718504163886079155
+      overlay_easy_41: 3824251042285709798
+      overlay_easy_42: -654311969475455633
+      overlay_easy_43: -6883659565964859461
+      overlay_easy_44: -6794888523663061256
+      overlay_easy_45: 5993588937756101344
+      overlay_easy_46: -2751405105417974883
+      overlay_easy_47: -6832432446360309057
+      overlay_easy_48: -1797633582737638809
+      overlay_easy_49: -930289658840769103
+      overlay_easy_5: 8887172531745047235
+      overlay_easy_50: -7201772505896753773
+      overlay_easy_6: 3745075850126525719
+      overlay_easy_7: -7312792062204969507
+      overlay_easy_8: -8648674162532938684
+      overlay_easy_9: -5397842492720326153
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

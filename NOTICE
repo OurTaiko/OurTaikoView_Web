@@ -1,0 +1,36 @@
+OurTaiko
+Author and maintainer of this modified version: OurTaiko
+
+Based on YataiDON, originally authored by Yono (Yonokid) and contributors.
+Original project: <https://github.com/Yonokid/YataiDON>
+Modified project: <https://github.com/OurTaiko/OurTaikoPlayer>
+
+This modified version is distributed under the GNU General Public License,
+version 3. The original license text is preserved in LICENSE. Original authors
+retain their copyright in their contributions; the OurTaiko attribution applies
+to this modified version and does not replace Yono's original authorship.
+
+This program is distributed without any warranty; see LICENSE for details.
+Third-party libraries, skins, and other assets retain their respective author
+attributions and license notices.
+
+Modified on 2026-09-15: renamed the application and build products to OurTaiko,
+identified OurTaiko as the author and maintainer of this modified version, and
+included the original GNU license and author attribution in build packages.
+
+Audio implementation adapted on 2026-10-03 from TeamMajdata/MajdataPlay
+(revision dc19722d602f099131d93b37091624ad30150ad1), including AudioManager,
+BassHelper, BassSimpleAudioSample and BassAudioSample. Copyright remains with
+TeamMajdata and its contributors; these adaptations are distributed under GPLv3.
+https://github.com/TeamMajdata/MajdataPlay
+
+ManagedBass is included as the unmodified TeamMajdata/ManagedBass Git submodule
+at 5944aad3842484d78f588d63d5bdc8a85569495b, under its included MIT license.
+System.Runtime.CompilerServices.Unsafe 6.1.2 is Microsoft's MIT-licensed binary
+dependency; its license and package provenance are included beside the DLL.
+BASS and its native add-ons retain their individual licenses and notices in
+Assets/Plugins/Un4seen.Bass, separate from the ManagedBass license.
+
+The pause_circle icon is from Google's Material Symbols Outlined, licensed
+under Apache License 2.0. The original SVG, license, source URL and local
+rasterization details are in Documentation/ThirdParty/MaterialSymbols.
