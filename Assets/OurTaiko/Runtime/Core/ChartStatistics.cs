@@ -26,7 +26,8 @@ namespace OurTaiko
             {
                 foreach (var note in chart.Notes)
                 {
-                    if (note.BranchId != branchId || (branchId >= 0 && note.Route != BranchRoute.Master)) continue;
+                    // A branch without #M counts the route drawn in its place.
+                    if (note.BranchId != branchId || (branchId >= 0 && note.Route != chart.Branches[branchId].ResolveRoute(BranchRoute.Master))) continue;
                     if (note.Kind >= NoteKind.Don && note.Kind <= NoteKind.BigKa) judgeableNotes++;
                     else if (note.IsBalloon) balloonHitBudget += Math.Min(100, note.BalloonHits);
                     else if (note.Kind == NoteKind.Roll || note.Kind == NoteKind.BigRoll)

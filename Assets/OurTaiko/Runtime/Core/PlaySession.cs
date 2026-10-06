@@ -10,6 +10,7 @@ namespace OurTaiko
         public const double GoodWindow = 0.0250250015258789, OkWindow = 0.0750750045776367, BadWindow = 0.108441665649414;
         public readonly TaikoChart Chart;
         public double JudgeOffset { get; }
+        public BranchRoute? ForcedBranch { get; }
         // Results are written only here, so every change also moves Version.
         public IReadOnlyList<bool> Resolved => resolved;
         // Normal notes judged 不可 because the window passed without a hit.
@@ -62,8 +63,20 @@ namespace OurTaiko
             public int Priority => Branch != null ? 1 : Section.BranchId < 0 ? 0 : 2;
         }
 
-        public PlaySession(TaikoChart chart, double judgeOffset = 0)
+        // A fixed route (practice) plays every branch on ResolveRoute(route) and evaluates no
+        // condition. Without one, branches are judged as in the reference player, which defines
+        // neither s (score) conditions nor omitted routes, so such charts are refused, not guessed.
+        public PlaySession(TaikoChart chart, double judgeOffset = 0, BranchRoute? forcedBranch = null)
         {
+            if (!forcedBranch.HasValue)
+                foreach (var branch in chart.Branches)
+                {
+                    if (branch.Condition == BranchCondition.Score)
+                        throw new NotSupportedException("s (score) branches can only be played on a fixed route, as in practice.");
+                    if (!branch.HasAllRoutes)
+                        throw new NotSupportedException("A branch without #E or #M can only be played on a fixed route, as in practice.");
+                }
+            ForcedBranch = forcedBranch;
             JudgeOffset = judgeOffset;
             Chart = chart; resolved = new bool[chart.Notes.Count]; missed = new bool[chart.Notes.Count]; longHits = new int[chart.Notes.Count];
             var statistics = new ChartStatistics(chart);
@@ -87,14 +100,14 @@ namespace OurTaiko
 
         // Start a fresh practice attempt without replaying judgments, sounds or missed-note penalties.
         // Preserve already chosen branches before the cursor, and recalculate future checkpoints.
-        public static PlaySession PracticeAt(TaikoChart chart, double time, PlaySession previous = null)
+        public static PlaySession PracticeAt(TaikoChart chart, double time, PlaySession previous = null, BranchRoute? forcedBranch = null)
         {
-            var session = new PlaySession(chart, previous?.JudgeOffset ?? 0) { practiceStart = time };
+            var session = new PlaySession(chart, previous?.JudgeOffset ?? 0, forcedBranch) { practiceStart = time };
             while (session.nextEvent < session.timeline.Count && session.timeline[session.nextEvent].Time <= time)
             {
                 var item = session.timeline[session.nextEvent++];
                 if (item.Branch == null) continue;
-                var route = chart.ForcedBranch.HasValue ? item.Branch.ResolveRoute(chart.ForcedBranch.Value)
+                var route = forcedBranch.HasValue ? item.Branch.ResolveRoute(forcedBranch.Value)
                     : previous?.SelectedRoute(item.Branch.Id) ?? BranchRoute.Normal;
                 session.selectedRoutes[item.Branch.Id] = (int)route;
                 session.CurrentBranch = route;
@@ -112,7 +125,7 @@ namespace OurTaiko
         }
 
         public bool IsPracticePreviewActive(ChartNote note) => note.BranchId < 0
-            || note.Route == (Chart.ForcedBranch.HasValue ? Chart.Branches[note.BranchId].ResolveRoute(Chart.ForcedBranch.Value)
+            || note.Route == (ForcedBranch.HasValue ? Chart.Branches[note.BranchId].ResolveRoute(ForcedBranch.Value)
                 : SelectedRoute(note.BranchId) ?? BranchRoute.Normal);
         bool IsActive(int branchId, BranchRoute route) => branchId < 0 || selectedRoutes[branchId] == (int)route;
         public BranchRoute? SelectedRoute(int branchId) => selectedRoutes[branchId] < 0 ? (BranchRoute?)null : (BranchRoute)selectedRoutes[branchId];
@@ -136,7 +149,7 @@ namespace OurTaiko
         void SelectBranch(ChartBranch branch)
         {
             double value;
-            if (Chart.ForcedBranch.HasValue) value = 0;
+            if (ForcedBranch.HasValue) value = 0;
             else if (branch.Condition == BranchCondition.Accuracy)
                 value = branchNotes == 0 ? 0 : Math.Max(0, Math.Min(100, (int)(branchPoints / branchNotes * 100)));
             else
@@ -152,7 +165,7 @@ namespace OurTaiko
             }
             var chosen = value >= branch.ExpertThreshold && value < branch.MasterThreshold && branch.ExpertThreshold >= 0
                 ? BranchRoute.Expert : value >= branch.MasterThreshold ? BranchRoute.Master : BranchRoute.Normal;
-            chosen = branch.ResolveRoute(Chart.ForcedBranch ?? chosen);
+            chosen = branch.ResolveRoute(ForcedBranch ?? chosen);
             selectedRoutes[branch.Id] = (int)chosen;
             CurrentBranch = chosen; LastBranchValue = value; branchHistory.Add(chosen); Version++;
             ResetBranchStats();

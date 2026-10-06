@@ -17,10 +17,11 @@ namespace OurTaiko
             return int.TryParse(value, out int n) && n >= 0 && n < names.Length ? names[n] : value;
         }
 
-        public static TaikoChart Parse(string text, string requestedCourse = "Oni", BranchRoute? forcedBranch = null)
+        // One parse for every mode: how branches are played is PlaySession's choice.
+        public static TaikoChart Parse(string text, string requestedCourse = "Oni")
         {
             if (string.IsNullOrWhiteSpace(text)) throw new FormatException("The TJA chart is empty.");
-            var chart = new TaikoChart { ForcedBranch = forcedBranch };
+            var chart = new TaikoChart();
             var tokens = new List<string>();
             var balloons = new List<int>();
             string course = "Oni";
@@ -150,14 +151,10 @@ namespace OurTaiko
             void EndBranch()
             {
                 CheckLongNote();
-                if (!routesSeen.All(x => x))
-                {
-                    if (!chart.ForcedBranch.HasValue || !routesSeen[0])
-                        throw new FormatException("A branch must define #N, #E and #M exactly once.");
-                    // Match Fanmade's image renderer: omitted E uses N; omitted M uses E.
-                    if (!routesSeen[1]) branch.Routes[1] = BranchRoute.Normal;
-                    if (!routesSeen[2]) branch.Routes[2] = branch.Routes[1];
-                }
+                if (!routesSeen[0]) throw new FormatException("A branch must define #N exactly once.");
+                // Match Fanmade's image renderer: omitted E uses N; omitted M uses E.
+                if (!routesSeen[1]) branch.Routes[1] = BranchRoute.Normal;
+                if (!routesSeen[2]) branch.Routes[2] = branch.Routes[1];
                 branch.EndTime = state.Time;
                 // As in OurTaikoPlayer, common notes continue from the final authored route.
                 branch = null; hasRoute = false; branchBar = false;
@@ -170,8 +167,9 @@ namespace OurTaiko
                 string[] parts = arg.Split(',');
                 if (parts.Length != 3) throw new FormatException("#BRANCHSTART requires condition, expert threshold, master threshold.");
                 string condition = parts[0].Trim().ToLowerInvariant();
-                if (condition != "p" && condition != "r" && !(condition == "s" && chart.ForcedBranch.HasValue))
-                    throw new NotSupportedException("Only p (accuracy) and r (drumroll) branches are implemented by the reference player.");
+                // s (score) is recorded but never evaluated; only a fixed route can play it.
+                if (condition != "p" && condition != "r" && condition != "s")
+                    throw new NotSupportedException("Only p (accuracy), r (drumroll) and s (score) branch conditions are recognised.");
                 double expert = Number(parts[1]), master = Number(parts[2]);
                 if (double.IsNaN(expert) || double.IsInfinity(expert) || double.IsNaN(master) || double.IsInfinity(master))
                     throw new FormatException("Branch thresholds must be finite.");

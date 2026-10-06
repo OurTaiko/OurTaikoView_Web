@@ -42,8 +42,11 @@ namespace OurTaiko
         public double Time, EndTime, ArmTime, DecisionTime, ExpertThreshold, MasterThreshold;
         public BranchCondition Condition;
         public readonly ChartNote[] FirstEntries = new ChartNote[3];
+        // The route drawn for each requested one. An omitted #E uses #N and an omitted #M uses
+        // #E, matching Fanmade's image renderer; a complete branch maps every route to itself.
         public readonly BranchRoute[] Routes = { BranchRoute.Normal, BranchRoute.Expert, BranchRoute.Master };
         public BranchRoute ResolveRoute(BranchRoute requested) => Routes[(int)requested];
+        public bool HasAllRoutes => Routes[1] == BranchRoute.Expert && Routes[2] == BranchRoute.Master;
     }
 
     public sealed class ChartSection
@@ -55,7 +58,6 @@ namespace OurTaiko
 
     public sealed class TaikoChart
     {
-        public BranchRoute? ForcedBranch;
         public string Title = "Untitled", Subtitle = "", Course = "Oni";
         public int Level;
         public double Bpm = 120, Offset, Duration;

@@ -13,7 +13,8 @@ namespace OurTaiko
         public void SetPreparedAudio(NativeAudioSample audio) { preparedAudio?.Dispose(); preparedAudio = audio; }
         public NativeAudioSample TakePreparedAudio() { var audio = preparedAudio; preparedAudio = null; return audio?.IsDisposed == true ? null : audio; }
         void OnDisable() { preparedAudio?.Dispose(); preparedAudio = null; }
-        [System.NonSerialized] public BranchRoute? forcedBranch;
+        // Route the practice menu starts on (the Web host's choice); parsing never depends on it.
+        [System.NonSerialized] public BranchRoute? practiceBranch;
         public string course = "Oni";
         [Tooltip("Positive values delay judgments relative to the music, in milliseconds.")]
         public float audioOffsetMs;
@@ -26,8 +27,8 @@ namespace OurTaiko
             var difficulty = SongInfo.DifficultyOf(requested);
             return onlineChart != null && difficulty.HasValue ? onlineChart.Difficulties[(int)difficulty.Value]?.Course ?? requested : requested;
         }
-        public TaikoChart Parse() => TjaParser.Parse(chart.text, ResolveCourse(course), forcedBranch);
-        public TaikoChart Parse(string requestedCourse) => TjaParser.Parse(chart.text, ResolveCourse(string.IsNullOrEmpty(requestedCourse) ? course : requestedCourse), forcedBranch);
+        public TaikoChart Parse() => TjaParser.Parse(chart.text, ResolveCourse(course));
+        public TaikoChart Parse(string requestedCourse) => TjaParser.Parse(chart.text, ResolveCourse(string.IsNullOrEmpty(requestedCourse) ? course : requestedCourse));
         public SongInfo ReadInfo() => SongInfo.Read(chart.text);
         // Display metadata is separate from the parsed chart and score identity.
         public SongInfo ReadDisplayInfo()

@@ -102,7 +102,8 @@ namespace OurTaiko
             { Fail("INVALID_BRANCH"); yield break; }
             try
             {
-                TjaParser.Parse(chart, value.course, selectedBranch);
+                // Validate exactly as the practice session will play it: fixed on the selected route.
+                _ = new PlaySession(TjaParser.Parse(chart, value.course), 0, selectedBranch);
             }
             catch (Exception error) { Debug.LogException(error); Fail("INVALID_CHART", error.Message); yield break; }
             Emit("loading", new { stage = "audio" });
@@ -142,7 +143,7 @@ namespace OurTaiko
             var old = Song;
             Song = ScriptableObject.CreateInstance<SongDefinition>();
             Song.name = "Embedded chart";
-            Song.chart = new TextAsset(chart); Song.music = clip; Song.course = value.course; Song.forcedBranch = selectedBranch;
+            Song.chart = new TextAsset(chart); Song.music = clip; Song.course = value.course; Song.practiceBranch = selectedBranch;
             var switcher = SceneSwitcher.EnsureInstance();
             while (switcher.IsSwitching) yield return null;
             switcher.ConfigureEmbedded(Song, value.course, value.autoPlay);

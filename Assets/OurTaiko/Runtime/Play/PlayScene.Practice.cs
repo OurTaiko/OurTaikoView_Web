@@ -12,7 +12,8 @@ namespace OurTaiko
         public PracticeStage PracticeStage { get; private set; }
         public bool ChoosingPracticeSpeed => PracticeStage == PracticeStage.Speed;
         // Practice never evaluates branches: every branch takes the route chosen in the menu.
-        public BranchRoute PracticeBranch => Session.Chart.ForcedBranch ?? BranchRoute.Normal;
+        public BranchRoute PracticeBranch => practiceBranch;
+        BranchRoute practiceBranch;
         PracticeStage FirstPracticeStage => Session.Chart.Branches.Count > 0 ? PracticeStage.Branch : PracticeStage.Measure;
         double AudioOffset => audioOffset;
         double VisualOffset => visualOffset;
@@ -20,7 +21,6 @@ namespace OurTaiko
         void InitializePractice()
         {
             Practice = new PracticeProgress();
-            Session.Chart.ForcedBranch ??= BranchRoute.Normal;
             practiceView.previous.onClick.AddListener(() => MovePractice(-1));
             practiceView.next.onClick.AddListener(() => MovePractice(1));
             practiceView.confirm.onClick.AddListener(ConfirmPractice);
@@ -48,7 +48,7 @@ namespace OurTaiko
             if (first)
             {
                 Session.Judged -= OnJudged; Session.BranchSelected -= OnBranchSelected;
-                Session = new PlaySession(Session.Chart, judgeOffset);
+                Session = new PlaySession(Session.Chart, judgeOffset, practiceBranch);
             }
             RefreshPracticeBars();
             // The cursor is visual chart time, so a bar aligns exactly even with configured offsets.
@@ -64,7 +64,7 @@ namespace OurTaiko
         {
             var previous = Session;
             previous.Judged -= OnJudged; previous.BranchSelected -= OnBranchSelected;
-            Session = PlaySession.PracticeAt(previous.Chart, position + VisualOffset, previous);
+            Session = PlaySession.PracticeAt(previous.Chart, position + VisualOffset, previous, practiceBranch);
             Session.Judged += OnJudged; Session.BranchSelected += OnBranchSelected;
             Record.Inputs.Clear();
             lastCombo = 0;
@@ -137,7 +137,7 @@ namespace OurTaiko
         {
             var route = (BranchRoute)Math.Max((int)BranchRoute.Normal, Math.Min((int)BranchRoute.Master, (int)PracticeBranch + direction));
             if (route == PracticeBranch) return;
-            Session.Chart.ForcedBranch = route;
+            practiceBranch = route;
             ResetPracticeAttempt(Practice.Target);
             RefreshPracticeBars();
             Practice.PauseAt(Practice.Target, GameTimeline.FrameTime);

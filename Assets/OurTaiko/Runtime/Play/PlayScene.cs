@@ -142,7 +142,9 @@ namespace OurTaiko
                 string course = switcher.SelectedSong != null ? switcher.SelectedCourse : null;
                 var options = PlayOptions.Shared;
                 var chart = switcher.TakePreparedChart(song, course) ?? PrepareChart(song, course);
-                Session = new PlaySession(chart, judgeOffset);
+                // Practice plays a fixed route from the start; a normal play evaluates branches.
+                practiceBranch = song.practiceBranch ?? BranchRoute.Normal;
+                Session = new PlaySession(chart, judgeOffset, IsPractice ? practiceBranch : (BranchRoute?)null);
                 if (modifierBadges != null) modifierBadges.Show(options, autoPlay);
                 // 音色: hit_sounds/<neiro>/don.ogg and ka.ogg; 無音 leaves both empty.
                 if (hitSounds != null) hitSounds.TryGet(options.neiro, out don, out ka);
