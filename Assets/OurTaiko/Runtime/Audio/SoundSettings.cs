@@ -52,7 +52,7 @@ namespace OurTaiko
         {
             var backends = platform == SoundPlatform.Windows
                 ? new[] { AudioBackend.Automatic, AudioBackend.Bass, AudioBackend.Wasapi, AudioBackend.Asio, AudioBackend.Unity }
-                : platform == SoundPlatform.Web ? new[] { AudioBackend.Unity }
+                : platform == SoundPlatform.Web ? new[] { AudioBackend.WebAudio }
                 : new[] { AudioBackend.Automatic, AudioBackend.Bass, AudioBackend.Unity };
             return new[]
             {
@@ -63,7 +63,7 @@ namespace OurTaiko
                 Volume("Effects Volume", "Menu feedback, balloon pops and result effects.", v => v.effects, (v, n) => v.effects = n),
                 Volume("Voice Volume", "Entry, song selection, combo and result voices.", v => v.voice, (v, n) => v.voice = n),
                 new SettingItem("Output Backend", "Automatic uses WASAPI on Windows and BASS on other native platforms. ASIO requires an installed driver." + " Applies when leaving settings. Advanced audio settings are available in settings.json.",
-                Array.ConvertAll(backends, b => b == AudioBackend.Bass ? "BASS" : b == AudioBackend.Wasapi ? "WASAPI" : b == AudioBackend.Asio ? "ASIO" : b.ToString()),
+                Array.ConvertAll(backends, b => b == AudioBackend.Bass ? "BASS" : b == AudioBackend.Wasapi ? "WASAPI" : b == AudioBackend.Asio ? "ASIO" : b == AudioBackend.WebAudio ? "Web Audio" : b.ToString()),
                 s => Math.Max(0, Array.IndexOf(backends, s.audio.backend)), (s,i) => s.audio.backend = backends[i]),
             };
         }

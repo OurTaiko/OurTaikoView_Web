@@ -79,6 +79,9 @@ namespace OurTaiko
             ReleaseMain(); song = value; source.clip = value.music; SetGroup(AudioGroup.Track);
             if (!engine.Native) return;
             main = value.TakePreparedAudio();
+#if UNITY_WEBGL && !UNITY_EDITOR
+            if (main == null && value.webAudioBuffer != 0) main = NativeAudioSample.FromWebBuffer(value.webAudioBuffer, engine, true, gameplay);
+#endif
             if (main == null)
             {
                 byte[] bytes = !string.IsNullOrEmpty(value.audioPath) ? File.ReadAllBytes(value.audioPath)
@@ -86,23 +89,31 @@ namespace OurTaiko
                 if (bytes != null) main = new NativeAudioSample(bytes, engine, true, gameplay);
             }
         }
+        NativeAudioSample Load(AudioClip clip)
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return NativeAudioSample.FromWebBuffer(WebAudio.Clip(clip), engine, false);
+#else
+            return new NativeAudioSample(AudioAssetCatalog.Read(clip), engine, false);
+#endif
+        }
         public void PrepareMain()
         {
             if (!engine.Native || song != null || source.clip == null || mainClip == source.clip) return;
             ReleaseMain(); mainClip = source.clip;
-            if (!tracks.TryGetValue(mainClip, out main)) main = new NativeAudioSample(AudioAssetCatalog.Read(mainClip), engine, false);
+            if (!tracks.TryGetValue(mainClip, out main)) main = Load(mainClip);
         }
         public void PrepareTracks(params AudioClip[] clips)
         {
             if (!engine.Native || clips == null) return;
             foreach (var clip in clips)
-                if (clip != null && !tracks.ContainsKey(clip)) tracks.Add(clip, new NativeAudioSample(AudioAssetCatalog.Read(clip), engine, false));
+                if (clip != null && !tracks.ContainsKey(clip)) tracks.Add(clip, Load(clip));
         }
         public void PrepareEffects(params AudioClip[] clips)
         {
             if (!engine.Native || clips == null) return;
             foreach (var clip in clips)
-                if (clip != null && !effects.ContainsKey(clip)) effects.Add(clip, new NativeAudioSample(AudioAssetCatalog.Read(clip), engine, false));
+                if (clip != null && !effects.ContainsKey(clip)) effects.Add(clip, Load(clip));
         }
         public void Play(double? at = null)
         {
@@ -116,6 +127,13 @@ namespace OurTaiko
             }
             PrepareMain();
             if (main == null) return;
+            if (engine.Backend == AudioBackend.WebAudio)
+            {
+                // The browser starts the voice on its own clock instead of at the next frame.
+                pending = false;
+                main.Play(Volume(Group), source.loop, seek, source.pitch, at.HasValue ? at.Value - GameTimeline.AudioNow : null);
+                return;
+            }
             scheduledAt = at ?? GameTimeline.AudioNow; pending = true;
             Update();
         }

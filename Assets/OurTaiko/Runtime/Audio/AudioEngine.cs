@@ -114,6 +114,17 @@ namespace OurTaiko
                     if (!allowFallback) throw;
                 }
             }
+#elif UNITY_WEBGL
+            if (options.backend != AudioBackend.Unity)
+            {
+                if (WebAudio.Init()) { Backend = AudioBackend.WebAudio; Diagnostics = WebAudio.Describe(); }
+                else
+                {
+                    // Unity audio is disabled in the Web build, so there is no fallback output.
+                    failure = "Web Audio is unavailable in this browser";
+                    if (!allowFallback) throw new PlatformNotSupportedException(failure);
+                }
+            }
 #else
             if (options.backend != AudioBackend.Unity)
             {

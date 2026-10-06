@@ -8,6 +8,8 @@ namespace OurTaiko
         public TextAsset chart;
         public AudioClip music;
         [System.NonSerialized] public string audioPath;
+        // Browser-decoded Web Audio buffer for the embedded song; released with the song.
+        [System.NonSerialized] public int webAudioBuffer;
         NativeAudioSample preparedAudio;
         public bool HasPreparedAudio => preparedAudio != null && !preparedAudio.IsDisposed;
         public void SetPreparedAudio(NativeAudioSample audio) { preparedAudio?.Dispose(); preparedAudio = audio; }

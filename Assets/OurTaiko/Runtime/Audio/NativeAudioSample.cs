@@ -25,7 +25,9 @@ namespace OurTaiko
         static int liveStreams;
         public static int LiveStreams => System.Threading.Volatile.Read(ref liveStreams);
         public int EncodedBytes { get; private set; }
+#if !UNITY_WEBGL || UNITY_EDITOR
         public double Length { get; private set; }
+#endif
         public float Gain { get; private set; } = 1;
         public string Format { get; private set; }
 #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
@@ -117,7 +119,7 @@ namespace OurTaiko
         {
             if (!disposed) Check(Bass.ChannelSetAttribute(stream, ChannelAttribute.Volume, Math.Max(0, volume) * Gain), "Set volume");
         }
-        public void Play(float volume, bool loop, double position = 0, float speed = 1)
+        public void Play(float volume, bool loop, double position = 0, float speed = 1, double? delay = null)
         {
             if (disposed) throw new ObjectDisposedException(nameof(NativeAudioSample));
             SetVolume(volume);
@@ -160,13 +162,69 @@ namespace OurTaiko
                 if (data.IsAllocated) data.Free();
             }
         }
+#elif UNITY_WEBGL && !UNITY_EDITOR
+        // Web Audio voice over a shared, browser-decoded buffer. Speed changes playbackRate, so pitch follows it.
+        int voice;
+        public bool Playing => !IsDisposed && WebAudio.OurTaikoVoiceInfo(voice, 0) != 0;
+        public double Position => IsDisposed ? 0 : WebAudio.OurTaikoVoiceInfo(voice, 1);
+        public float OutputVolume => IsDisposed ? 0 : (float)WebAudio.OurTaikoVoiceInfo(voice, 3);
+        public NativeAudioSample(byte[] encoded, AudioEngine engine, bool normalize = true, bool speedChange = false, int? generation = null)
+        {
+            Check(engine, generation);
+            if (encoded == null || encoded.Length == 0) throw new ArgumentException("Empty audio file");
+            int buffer = WebAudio.Decode(encoded);
+            // The voice holds its own reference to the buffer.
+            try { Attach(buffer, normalize, speedChange); }
+            finally { WebAudio.Release(buffer); }
+            EncodedBytes = encoded.Length;
+        }
+        NativeAudioSample(int buffer, bool normalize, bool speedChange) => Attach(buffer, normalize, speedChange);
+        // Shares a buffer decoded elsewhere (the embedded song or a cached bundled clip); the caller keeps its reference.
+        public static NativeAudioSample FromWebBuffer(int buffer, AudioEngine engine, bool normalize = true, bool speedChange = false, int? generation = null)
+        {
+            Check(engine, generation);
+            return new NativeAudioSample(buffer, normalize, speedChange);
+        }
+        static void Check(AudioEngine engine, int? generation)
+        {
+            if ((generation.HasValue && generation != engine.Generation) || !engine.Native)
+                throw new OperationCanceledException("Audio output changed during preparation");
+        }
+        void Attach(int buffer, bool normalize, bool speedChange)
+        {
+            voice = WebAudio.OurTaikoVoiceCreate(buffer, normalize, speedChange);
+            if (voice == 0) throw new InvalidOperationException("Web Audio buffer is unavailable");
+            Format = "WebAudio";
+            lock (AudioEngine.DeviceLock) samples.Add(this);
+        }
+        // Decoding is asynchronous; a bundled clip reports zero until the browser has decoded it.
+        public double Length => IsDisposed ? 0 : WebAudio.OurTaikoVoiceInfo(voice, 2);
+        public void SetVolume(float volume) { if (!IsDisposed) WebAudio.OurTaikoVoiceSetVolume(voice, Math.Max(0, volume)); }
+        // A delay schedules on the AudioContext clock, ahead by the output latency; otherwise playback starts now.
+        public void Play(float volume, bool loop, double position = 0, float speed = 1, double? delay = null)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(nameof(NativeAudioSample));
+            WebAudio.OurTaikoVoicePlay(voice, Math.Max(0, volume), loop, position, speed, delay ?? 0, delay.HasValue);
+        }
+        public void Stop() { if (!IsDisposed) WebAudio.OurTaikoVoiceStop(voice); }
+        public void Dispose()
+        {
+            lock (AudioEngine.DeviceLock)
+            {
+                if (IsDisposed) return;
+                IsDisposed = true;
+                samples.Remove(this);
+                if (voice != 0) WebAudio.OurTaikoVoiceFree(voice);
+                voice = 0;
+            }
+        }
 #else
         public float OutputVolume => 0;
         public void SetVolume(float volume) { }
         public bool Playing => false;
         public double Position => 0;
         public NativeAudioSample(byte[] encoded, AudioEngine engine, bool normalize = true, bool speedChange = false, int? generation = null) => throw new PlatformNotSupportedException();
-        public void Play(float volume, bool loop, double position = 0, float speed = 1) { }
+        public void Play(float volume, bool loop, double position = 0, float speed = 1, double? delay = null) { }
         public void Stop() { }
         public void Dispose() { }
 #endif

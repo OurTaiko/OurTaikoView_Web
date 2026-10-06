@@ -2,7 +2,7 @@ using System;
 
 namespace OurTaiko
 {
-    public enum AudioBackend { Automatic, Bass, Wasapi, Asio, Unity }
+    public enum AudioBackend { Automatic, Bass, Wasapi, Asio, Unity, WebAudio }
 
     [Serializable]
     public sealed class AudioOptions

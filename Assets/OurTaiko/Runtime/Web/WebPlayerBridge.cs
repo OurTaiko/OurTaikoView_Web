@@ -16,6 +16,7 @@ namespace OurTaiko
         Coroutine loading;
         UnityWebRequest request;
         AudioClip decodingClip;
+        int decodingBuffer;
         string requestId = "";
         int generation;
         bool ready;
@@ -111,13 +112,16 @@ namespace OurTaiko
             yield return request.SendWebRequest();
             if (request.result != UnityWebRequest.Result.Success) { Fail("AUDIO_DOWNLOAD_OR_DECODE_FAILED"); yield break; }
             var bytes = request.downloadHandler.data;
-            BrowserAudioDecoder.OurTaikoDecodeBegin(bytes, bytes.Length, AudioSettings.outputSampleRate);
-            request.Dispose(); request = null; bytes = null;
+            request.Dispose(); request = null;
+            // Unity audio is disabled in the Web build: the decoded AudioBuffer stays in the browser
+            // and Web Audio plays it directly.
+            if (AudioEngine.EnsureInstance().Backend != AudioBackend.WebAudio) { Fail("AUDIO_UNAVAILABLE"); yield break; }
+            AudioClip clip = null;
+            int buffer = decodingBuffer = WebAudio.Decode(bytes);
+            bytes = null;
             double decodeDeadline = Time.realtimeSinceStartupAsDouble + 30;
-            while (BrowserAudioDecoder.OurTaikoDecodeInfo(0) == 0 && Time.realtimeSinceStartupAsDouble < decodeDeadline)
-                yield return null;
-            AudioClip clip = decodingClip = BrowserAudioDecoder.OurTaikoDecodeInfo(0) == 1 ? BrowserAudioDecoder.TakeClip() : null;
-            if (clip == null) { Fail("AUDIO_DECODE_FAILED"); yield break; }
+            while (WebAudio.State(buffer) == 0 && Time.realtimeSinceStartupAsDouble < decodeDeadline) yield return null;
+            if (WebAudio.State(buffer) != 1) { Fail("AUDIO_DECODE_FAILED"); yield break; }
 #else
             request = UnityWebRequestMultimedia.GetAudioClip(value.audioUrl, type);
             request.timeout = 120;
@@ -125,6 +129,7 @@ namespace OurTaiko
             yield return request.SendWebRequest();
             if (request.result != UnityWebRequest.Result.Success) { Fail("AUDIO_DOWNLOAD_OR_DECODE_FAILED"); yield break; }
             AudioClip clip = decodingClip = DownloadHandlerAudioClip.GetContent(request);
+            int buffer = 0;
             // Web's decodeAudioData completes after the HTTP operation and Unity's loadState
             // can still report Loaded before its AudioBuffer has a sample count.
             double decodeDeadline = Time.realtimeSinceStartupAsDouble + 30;
@@ -134,12 +139,12 @@ namespace OurTaiko
             request.Dispose(); request = null;
             if (clip == null || clip.length <= 0) { Fail("AUDIO_DECODE_FAILED"); yield break; }
 #endif
-            decodingClip = null;
-            if (ticket != generation) { Destroy(clip); yield break; }
+            decodingClip = null; decodingBuffer = 0;
+            if (ticket != generation) { if (clip != null) Destroy(clip); WebAudio.Release(buffer); yield break; }
             var old = Song;
             Song = ScriptableObject.CreateInstance<SongDefinition>();
             Song.name = "Embedded chart";
-            Song.chart = new TextAsset(chart); Song.music = clip; Song.course = value.course;
+            Song.chart = new TextAsset(chart); Song.music = clip; Song.webAudioBuffer = buffer; Song.course = value.course;
             var switcher = SceneSwitcher.EnsureInstance();
             while (switcher.IsSwitching) yield return null;
             switcher.ConfigureEmbedded(Song, value.course, value.autoPlay);
@@ -152,7 +157,7 @@ namespace OurTaiko
         public void Attach(PlayScene value)
         {
             player = value; ready = true;
-            Emit("loaded", new { duration = Song.music.length });
+            Emit("loaded", new { duration = value.music.AudioLength() });
         }
         public void Finished(PlayResult result) => Emit("finished", result);
         public void Exit()
@@ -164,23 +169,24 @@ namespace OurTaiko
         }
         void Fail(string code, string detail = null)
         {
-            BrowserAudioDecoder.OurTaikoDecodeClear();
             request?.Dispose(); request = null; loading = null;
             if (decodingClip != null) Destroy(decodingClip); decodingClip = null;
+            WebAudio.Release(decodingBuffer); decodingBuffer = 0;
             Emit("error", new { code, detail });
         }
         void CancelLoading()
         {
-            BrowserAudioDecoder.OurTaikoDecodeClear();
             generation++;
             if (loading != null) StopCoroutine(loading);
             loading = null; request?.Abort(); request?.Dispose(); request = null;
             if (decodingClip != null) Destroy(decodingClip); decodingClip = null;
+            WebAudio.Release(decodingBuffer); decodingBuffer = 0;
         }
         static void Release(SongDefinition song)
         {
             if (song == null) return;
             if (song.music != null) Destroy(song.music);
+            WebAudio.Release(song.webAudioBuffer); song.webAudioBuffer = 0;
             if (song.chart != null) Destroy(song.chart);
             Destroy(song);
         }

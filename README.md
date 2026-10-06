@@ -8,7 +8,7 @@
 - `practice: true, autoPlay: true, replay: false`：自动击打观看，保留跳小节和变速。
 - 两种模式结束后均回到第一小节暂停。F/J 咚，D/K 咔，空格暂停。
 - `replay: true` 当前明确返回 `REPLAY_NOT_SUPPORTED`；尚未实现 inputs 回放。
-- 不登录、不保存或上传成绩。浏览器通过 Web Audio 解码原始音频，再生成完整 PCM AudioClip，播放后端为 Unity；变速会改变音高。
+- 不登录、不保存或上传成绩。音频直接走浏览器 Web Audio（`latencyHint: interactive`）：歌曲与内置音效由 decodeAudioData 解码后留在 JS 侧，按 AudioContext 时钟精确排程，歌曲按测得的输出延迟提前起播以与游戏时钟对齐。Web 构建禁用 Unity 音频（不创建 Unity 的 AudioContext），浏览器不支持 Web Audio 时 load 返回 `AUDIO_UNAVAILABLE`。变速使用 playbackRate，音高随速度改变。
 
 ## 构建与前端安装
 

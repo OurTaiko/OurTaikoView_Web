@@ -8,7 +8,7 @@
 - 首版支持玩家练习与自动观看；回放明确拒绝，不伪装成自动演奏。
 - 两种模式结束均回第一小节并暂停。保留每帧仅最早一次输入以及帧统一判定时刻。
 - 玩家信息和设置使用不落盘的配置；不启动 OnlineManager，不保存或上传成绩。
-- 浏览器音频用 Unity。无扩展名音频 URL 必须传 audioType。
+- 浏览器音频走 Web Audio 后端（`AudioBackend.WebAudio`，`Web/WebAudio.cs` + jslib），沿用 AudioBus/NativeAudioSample 抽象。`WebViewBuild` 构建期间关闭 Unity 音频（`m_DisableAudio`，构建后恢复），Web 端只有自己的一个 AudioContext、无 Unity 回退；Unity 音频只用于 Editor 播放。内置音效靠构建时生成的 NativeAudioCatalog 提供原始编码字节。无扩展名音频 URL 必须传 audioType。
 - 资源许可证和来源归属必须保留。ManagedBass 是复制依赖，Web 不加载原生音频库。
 - 改动协议后同步检查 Fanmade/frontend 的 embedded-player-protocol.ts 和实际 iframe e2e 测试。
 - 2026-10-05 从 OurTaikoPlay `3f93225`、`c3a30c4` 同步音符可见区间（`Core/LaneWindow.cs`）、判定游标与只读判定状态，保留 ForcedBranch 与 Bridge 差异；设计与验证见 OurTaikoPlay AGENTS.md「音符可见区间与判定游标」。本项目无测试程序集，同步时用临时测试对照本项目原 PlaySession（含三种强制分支）23/23 通过后删除。

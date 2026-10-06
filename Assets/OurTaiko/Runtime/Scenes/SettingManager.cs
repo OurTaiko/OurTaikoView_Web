@@ -42,7 +42,12 @@ namespace OurTaiko
             Instance = this;
             DontDestroyOnLoad(gameObject);
             var settings = new GameSettings();
+            // The browser player outputs through Web Audio; the Editor keeps Unity audio (no native libraries).
+#if UNITY_WEBGL && !UNITY_EDITOR
+            settings.audio.backend = AudioBackend.WebAudio;
+#else
             settings.audio.backend = AudioBackend.Unity;
+#endif
             UseUnsaved(settings);
         }
 
