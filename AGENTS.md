@@ -11,3 +11,4 @@
 - 浏览器音频用 Unity。无扩展名音频 URL 必须传 audioType。
 - 资源许可证和来源归属必须保留。ManagedBass 是复制依赖，Web 不加载原生音频库。
 - 改动协议后同步检查 Fanmade/frontend 的 embedded-player-protocol.ts 和实际 iframe e2e 测试。
+- 2026-10-05 从 OurTaikoPlay `3f93225`、`c3a30c4` 同步音符可见区间（`Core/LaneWindow.cs`）、判定游标与只读判定状态，保留 ForcedBranch 与 Bridge 差异；设计与验证见 OurTaikoPlay AGENTS.md「音符可见区间与判定游标」。本项目无测试程序集，同步时用临时测试对照本项目原 PlaySession（含三种强制分支）23/23 通过后删除。

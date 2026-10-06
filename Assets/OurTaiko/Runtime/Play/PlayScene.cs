@@ -72,6 +72,16 @@ namespace OurTaiko
         readonly Stack<NoteView>[] notePool = { new Stack<NoteView>(), new Stack<NoteView>(), new Stack<NoteView>() };
         readonly Stack<MojiView>[] mojiPool = { new Stack<MojiView>(), new Stack<MojiView>() };
         readonly Stack<RectTransform> barPool = new Stack<RectTransform>();
+        // Candidates for drawing: notes (with their text) and bar lines whose precomputed lane
+        // interval holds the render time. Built for the current lane width.
+        LaneWindow noteWindow, barWindow;
+        float windowWidth = float.NaN;
+        readonly List<int> leftLane = new List<int>(), stackOrder = new List<int>();
+        // What the last RenderNotes drew from; an identical frame (a still pause) is skipped.
+        PlaySession renderedSession;
+        int renderedVersion, renderedBalloon;
+        bool renderedPreview, rendered;
+        double dancerTime = double.NaN;
         readonly List<DrumPad> pausedPads = new List<DrumPad>();
         bool closingPauseMenu;
         bool resuming, resumeLostFocus;
@@ -209,7 +219,7 @@ namespace OurTaiko
             RenderNotes(time - visualOffset);
             soulGauge.ShowTime(time);
             if (noteArcs != null) noteArcs.ShowTime(time);
-            foreach (var dancer in dancers) dancer.SampleLoop(time);
+            SampleDancers(time);
             combo.ShowTime(time);
             comboAnnounce.ShowTime(time);
             judgmentFade ??= judgment.GetComponent<ClipSampler>();
@@ -573,10 +583,36 @@ namespace OurTaiko
         // draw_notes walks draw_note_buffer in reverse, so earlier notes paint over
         // later ones; uGUI draws later siblings on top. Pooled views are re-stacked
         // whenever a note enters, since a reused view keeps its old sibling slot.
-        static void Restack<T>(T[] shown, Func<T, Transform> root) where T : class
+        // Only candidates hold views, so walking them in descending index order is enough.
+        static void Restack<T>(T[] shown, List<int> order, Func<T, Transform> root) where T : class
         {
-            for (int i = shown.Length - 1; i >= 0; i--)
-                if (shown[i] != null) root(shown[i]).SetAsLastSibling();
+            for (int k = order.Count - 1; k >= 0; k--)
+                if (shown[order[k]] != null) root(shown[order[k]]).SetAsLastSibling();
+        }
+        void SortCandidates(LaneWindow window)
+        {
+            stackOrder.Clear();
+            for (int k = 0; k < window.Count; k++) stackOrder.Add(window[k]);
+            stackOrder.Sort();
+        }
+        void ReleaseBar(int index)
+        {
+            var root = shownBars[index];
+            root.gameObject.SetActive(false); barPool.Push(root); shownBars[index] = null;
+        }
+
+        // Lane intervals depend on the chart and the lane width (the travel distance), so a
+        // width change rebuilds them and starts again from an empty lane.
+        bool EnsureLaneWindows()
+        {
+            float width = noteLayer.rect.width;
+            if (noteWindow != null && width == windowWidth) return false;
+            for (int i = 0; i < shownNotes.Length; i++) { if (shownNotes[i] != null) ReleaseNote(i); if (shownMoji[i] != null) ReleaseMoji(i); }
+            for (int i = 0; i < shownBars.Length; i++) if (shownBars[i] != null) ReleaseBar(i);
+            windowWidth = width;
+            noteWindow = LaneCull.ForNotes(Session.Chart.Notes, width, JudgeLocalX, Math.Max(NoteSize, MojiWidth));
+            barWindow = LaneCull.ForBars(Session.Chart.Bars, width, JudgeLocalX, NoteSize);
+            return true;
         }
 
         // Nijiiro: lane x=498/y=276, judge x=618, note top=14 with 192-pixel sprites.
@@ -595,11 +631,26 @@ namespace OurTaiko
         }
         void RenderNotes(double time)
         {
+            bool preview = IsPractice && IsPaused;
+            bool rebuilt = EnsureLaneWindows();
+            if (!rebuilt && rendered && time == RenderedTime && Session == renderedSession && Session.Version == renderedVersion
+                && balloonCounter.NoteIndex == renderedBalloon && preview == renderedPreview) return;
+            rendered = true; renderedSession = Session; renderedVersion = Session.Version;
+            renderedBalloon = balloonCounter.NoteIndex; renderedPreview = preview;
             RenderedTime = time;
             bool gogo = false, notesEntered = false, mojiEntered = false;
             var chartNotes = Session.Chart.Notes;
-            for (int i = 0; i < chartNotes.Count; i++)
+            // Outside its interval a note is off the lane, exactly as the full cull would find it.
+            leftLane.Clear();
+            noteWindow.Seek(time, leftLane);
+            foreach (int i in leftLane)
             {
+                if (shownNotes[i] != null) ReleaseNote(i);
+                if (shownMoji[i] != null) ReleaseMoji(i);
+            }
+            for (int k = 0; k < noteWindow.Count; k++)
+            {
+                int i = noteWindow[k];
                 var note = chartNotes[i]; var view = shownNotes[i]; var pos = Position(note, time);
                 if (note.IsBalloon && time >= note.Time) pos = new Vector2(JudgeLocalX, JudgeLocalY);
                 float length = note.IsLong && !note.IsBalloon ? (float)NoteScroll.RollLength(note, TravelDistance) : 0;
@@ -607,7 +658,7 @@ namespace OurTaiko
                 // only a hit removes a note: a 5/6 roll resolved at its tail and a note
                 // missed by timeout keep scrolling until they leave the lane.
                 bool rolling = note.IsLong && !note.IsBalloon;
-                bool alive = note.Display && (IsPractice && IsPaused ? Session.IsPracticePreviewActive(note) : Session.IsActive(note)) && (rolling || Session.Missed[i] || !Session.Resolved[i]);
+                bool alive = note.Display && (preview ? Session.IsPracticePreviewActive(note) : Session.IsActive(note)) && (rolling || Session.Missed[i] || !Session.Resolved[i]);
                 bool visible = alive && InLane(pos.x, Reach(note, view, length));
                 if (mojiLayer != null) mojiEntered |= RenderMoji(i, note, pos, length, alive);
                 if (!visible)
@@ -633,18 +684,23 @@ namespace OurTaiko
                 }
                 if (note.Gogo && note.Time - time < 1) gogo = true;
             }
-            if (notesEntered) Restack(shownNotes, v => v.Root);
-            if (mojiEntered) Restack(shownMoji, v => v.Root);
-            for (int i = 0; i < shownBars.Length; i++)
+            if (notesEntered || mojiEntered) SortCandidates(noteWindow);
+            if (notesEntered) Restack(shownNotes, stackOrder, v => v.Root);
+            if (mojiEntered) Restack(shownMoji, stackOrder, v => v.Root);
+            leftLane.Clear();
+            barWindow.Seek(time, leftLane);
+            foreach (int i in leftLane) if (shownBars[i] != null) ReleaseBar(i);
+            for (int k = 0; k < barWindow.Count; k++)
             {
+                int i = barWindow[k];
                 var bar = Session.Chart.Bars[i];
                 var pos = Position(bar, time); pos.y -= 4;
                 float half = (bar.IsBranchStart ? 6 : 3) / 2f;
-                bool visible = bar.Display && (IsPractice && IsPaused ? Session.IsPracticePreviewActive(bar) : Session.IsActive(bar)) && InLane(pos.x, new Vector2(-half, half));
+                bool visible = bar.Display && (preview ? Session.IsPracticePreviewActive(bar) : Session.IsActive(bar)) && InLane(pos.x, new Vector2(-half, half));
                 var root = shownBars[i];
                 if (!visible)
                 {
-                    if (root != null) { root.gameObject.SetActive(false); barPool.Push(root); shownBars[i] = null; }
+                    if (root != null) ReleaseBar(i);
                     continue;
                 }
                 if (root == null)
@@ -677,8 +733,8 @@ namespace OurTaiko
             // draw_drumroll places roll text at the lane height, ignoring the head's Y scroll.
             var at = new Vector2(pos.x, (roll ? JudgeLocalY : pos.y) - MojiDrop);
             float half = (view != null ? view.Root.rect.width : MojiWidth) / 2;
-            var reach = !roll ? new Vector2(-half, half)
-                : new Vector2(Math.Min(-half, length - half), Math.Max(half, length + half));
+            LaneCull.MojiReach(roll, 2 * half, length, out double min, out double max);
+            var reach = new Vector2((float)min, (float)max);
             if (!alive || !InLane(at.x, reach))
             {
                 if (view != null) ReleaseMoji(index);
@@ -699,23 +755,23 @@ namespace OurTaiko
 
         // The lane clip mask is the visible area, in Canvas units that follow the
         // window resolution, so cull against its live rect instead of fixed pixels.
-        bool InLane(float x, Vector2 reach) => x + reach.y >= 0 && x + reach.x <= noteLayer.rect.width;
+        // Dancer.anim at a time already sampled (a still pause) is left as it is.
+        void SampleDancers(double time)
+        {
+            if (time == dancerTime) return;
+            dancerTime = time;
+            foreach (var dancer in dancers) dancer.SampleLoop(time);
+        }
+        bool InLane(float x, Vector2 reach) => LaneCull.InLane(x, reach.x, reach.y, noteLayer.rect.width);
 
         // Horizontal extent of a note's sprites relative to its centre, from the current
         // size of its view, or the design size while it has none.
         Vector2 Reach(ChartNote note, NoteView view, float length)
         {
             Vector2 size = view != null ? view.Root.rect.size : new Vector2(NoteSize, NoteSize);
-            float width = size.x, half = width / 2;
-            if (note.Kind == NoteKind.Balloon)
-            {
-                // The face shifts left by 12/128 of the width; notes/10 follows it.
-                float face = width * BalloonFace;
-                return new Vector2(-half - face, half + width - face);
-            }
-            if (!note.IsLong || note.IsBalloon) return new Vector2(-half, half);
-            float tail = size.y * RollTailAspect(note);
-            return length >= 0 ? new Vector2(-half, Math.Max(half, length + tail)) : new Vector2(Math.Min(-half, length - tail), half);
+            float aspect = note.IsLong && !note.IsBalloon ? RollTailAspect(note) : 0;
+            LaneCull.NoteReach(note, size.x, size.y, length, aspect, BalloonFace, out double min, out double max);
+            return new Vector2((float)min, (float)max);
         }
     }
 }

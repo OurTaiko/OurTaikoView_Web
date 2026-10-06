@@ -83,7 +83,7 @@ namespace OurTaiko
         {
             Practice.Update(GameTimeline.FrameTime);
             RenderNotes(Practice.Position);
-            foreach (var dancer in dancers) dancer.SampleLoop(Practice.Position);
+            SampleDancers(Practice.Position);
             practiceView.Show(ChoosingPracticeSpeed, Practice);
         }
         void UpdatePracticePause()
