@@ -200,7 +200,7 @@ namespace OurTaiko
         // Decoding is asynchronous; a bundled clip reports zero until the browser has decoded it.
         public double Length => IsDisposed ? 0 : WebAudio.OurTaikoVoiceInfo(voice, 2);
         public void SetVolume(float volume) { if (!IsDisposed) WebAudio.OurTaikoVoiceSetVolume(voice, Math.Max(0, volume)); }
-        // A delay schedules on the AudioContext clock, ahead by the output latency; otherwise playback starts now.
+        // A delay schedules on the AudioContext clock; otherwise playback starts now.
         public void Play(float volume, bool loop, double position = 0, float speed = 1, double? delay = null)
         {
             if (IsDisposed) throw new ObjectDisposedException(nameof(NativeAudioSample));

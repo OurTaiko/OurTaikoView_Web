@@ -5,7 +5,7 @@ mergeInto(LibraryManager.library, {
   // Low-latency output: one AudioContext, shared decoded buffers and one restartable voice per sample.
   $OurTaikoAudio: { context: null, buffers: {}, voices: {}, next: 1 },
   $OurTaikoAudioLag__deps: ['$OurTaikoAudio'],
-  // Seconds from currentTime (the scheduling horizon) to the speaker, measured where supported.
+  // Seconds from currentTime (the scheduling horizon) to the speaker, measured where supported; diagnostics only.
   $OurTaikoAudioLag: function() {
     var ctx = OurTaikoAudio.context;
     var lag = (ctx.baseLatency || 0) + (ctx.outputLatency || 0);
@@ -129,18 +129,18 @@ mergeInto(LibraryManager.library, {
     OurTaikoAudioApplyGain(A.voices[id]);
     return id;
   },
-  OurTaikoVoicePlay__deps: ['$OurTaikoAudio', '$OurTaikoAudioLag', '$OurTaikoAudioApplyGain', '$OurTaikoAudioStart'],
+  OurTaikoVoicePlay__deps: ['$OurTaikoAudio', '$OurTaikoAudioApplyGain', '$OurTaikoAudioStart'],
   OurTaikoVoicePlay: function(id, volume, loop, position, speed, delay, scheduled) {
     var A = OurTaikoAudio, voice = A.voices[id];
     if (!voice) return;
     if (A.resume) A.resume();
     voice.volume = Math.max(0, volume);
     OurTaikoAudioApplyGain(voice);
-    // Scheduled music is moved earlier by the output latency so it is heard at the game clock time.
+    // No output-latency compensation: music and hit sounds share the device latency.
     var ctx = A.context;
     OurTaikoAudioStart(voice, { loop: !!loop, position: Math.max(0, position), scheduled: !!scheduled,
       rate: voice.speedChange && speed > 0 ? speed : 1,
-      when: ctx.currentTime + Math.max(0, delay) - (scheduled ? OurTaikoAudioLag() : 0) });
+      when: ctx.currentTime + Math.max(0, delay) });
   },
   OurTaikoVoiceStop__deps: ['$OurTaikoAudio', '$OurTaikoAudioHalt'],
   OurTaikoVoiceStop: function(id) { var voice = OurTaikoAudio.voices[id]; if (voice) OurTaikoAudioHalt(voice); },

@@ -26,7 +26,7 @@ namespace OurTaiko
 
         internal static bool Init() => OurTaikoAudioInit() != 0;
         internal static string Describe() => $"WebAudio; {OurTaikoAudioInfo(0):0} Hz; base latency {OurTaikoAudioInfo(1) * 1000:0.#} ms; "
-            + $"output latency {OurTaikoAudioInfo(2) * 1000:0.#} ms; scheduled music lead {OurTaikoAudioInfo(3) * 1000:0.#} ms"
+            + $"output latency {OurTaikoAudioInfo(2) * 1000:0.#} ms; measured output lag {OurTaikoAudioInfo(3) * 1000:0.#} ms"
             + (OurTaikoAudioInfo(4) == 0 ? "; waiting for a user gesture" : "");
         // Decoding is asynchronous: poll State until it leaves 0 (1 decoded, -1 failed).
         internal static int Decode(byte[] encoded) => OurTaikoAudioDecode(encoded, encoded.Length);

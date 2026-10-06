@@ -8,7 +8,7 @@
 - `practice: true, autoPlay: true, replay: false`：自动击打观看，保留跳小节和变速。
 - 两种模式结束后均回到第一小节暂停。F/J 咚，D/K 咔，空格暂停。
 - `replay: true` 当前明确返回 `REPLAY_NOT_SUPPORTED`；尚未实现 inputs 回放。
-- 不登录、不保存或上传成绩。音频直接走浏览器 Web Audio（`latencyHint: interactive`）：歌曲与内置音效由 decodeAudioData 解码后留在 JS 侧，按 AudioContext 时钟精确排程，歌曲按测得的输出延迟提前起播以与游戏时钟对齐。Web 构建禁用 Unity 音频（不创建 Unity 的 AudioContext），浏览器不支持 Web Audio 时 load 返回 `AUDIO_UNAVAILABLE`。变速使用 playbackRate，音高随速度改变。
+- 不登录、不保存或上传成绩。音频直接走浏览器 Web Audio（`latencyHint: interactive`）：歌曲与内置音效由 decodeAudioData 解码后留在 JS 侧，按 AudioContext 时钟精确排程；不做输出延迟补偿，音乐与打击音共享设备延迟。Web 构建禁用 Unity 音频（不创建 Unity 的 AudioContext），浏览器不支持 Web Audio 时 load 返回 `AUDIO_UNAVAILABLE`。变速使用 playbackRate，音高随速度改变。
 
 ## 构建与前端安装
 
@@ -35,7 +35,7 @@ iframe URL 的 `parentOrigin` 参数指定允许发送命令的宿主来源，�
 
 `chartText` 可替换为 UTF-8 `chartUrl`。显式 audioUrl 覆盖 TJA 的 WAVE 名称。Fanmade 使用自身已解码的 TJA 文本，兼容已有编码。
 
-等待 `ready` 后发送 `load`，`loaded` 后需点击播放器内的开始按钮解锁声音。命令有 `hello/load/start/resume/pause/restart/unload/getState`。事件有 `ready/loading/loaded/finished/error/exit`，`getState` 返回 `state`（暂停、模式、谱面时间、当前/首小节位置、速度、分支与计数），异步事件带 requestId；finished 后重置并暂停。错误中的 code 可供宿主展示或重试。
+等待 `ready` 后发送 `load`，`loaded` 后需点击播放器内的开始按钮解锁声音。命令有 `hello/load/start/resume/pause/restart/unload/getState/setDrumVolume`。`setDrumVolume` 的 payload 为 `{"volume":0-100}`（默认 100，越界返回 `INVALID_VOLUME`），设置打击音（Drum 组）音量，`ready` 后即可发送、无需已加载谱面，正在发声的打击音也立即变化；宿主应在每次 `ready` 后重发当前值。事件有 `ready/loading/loaded/finished/error/exit`，`getState` 返回 `state`（暂停、模式、谱面时间、当前/首小节位置、速度、分支、计数与 `drumVolume`），异步事件带 requestId；finished 后重置并暂停。错误中的 code 可供宿主展示或重试。
 
 ## 来源
 

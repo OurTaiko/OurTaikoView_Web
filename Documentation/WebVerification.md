@@ -2,7 +2,7 @@
 
 - 音频改走 Web Audio：单个 `latencyHint: interactive` 的 AudioContext（本机 Chrome：48 kHz，baseLatency 5.3 ms，outputLatency 24 ms）。构建时禁用 Unity 音频，页面只创建这一个 AudioContext（无 Unity 的 AudioContext，也无 OfflineAudioContext）；已删除 BrowserAudioDecoder 与 PCM AudioClip 回退。
 - 构建成功，0 errors，35,352,118 bytes（多出约 1.3 MB 为内置音效原始 OGG 字节）。
-- 插桩页实测：音效在调用时即以 `currentTime` 起播（不再等下一帧）；歌曲按 AudioContext 时钟排程，并按测得输出延迟提前；自动演奏 5 良；练习开始/暂停/继续/卸载后输出 RMS 分别为非零/0/非零/0。
+- 插桩页实测：音效在调用时即以 `currentTime` 起播（不再等下一帧）；歌曲按 AudioContext 时钟排程（当时含输出延迟补偿，已于同日按用户决定移除）；自动演奏 5 良；练习开始/暂停/继续/卸载后输出 RMS 分别为非零/0/非零/0。
 - Fanmade iframe e2e（同源代理指向本次构建，Chrome）通过：OGG/WAV 解码、自动演奏、结束重置、练习、键盘与鼓面输入、三条固定路线、卸载。
 - 尚未实测 Safari、Firefox 与移动设备。
 

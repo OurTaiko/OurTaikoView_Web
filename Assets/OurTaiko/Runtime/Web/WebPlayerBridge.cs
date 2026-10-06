@@ -30,6 +30,8 @@ namespace OurTaiko
         {
             public string chartText, chartUrl, audioUrl, audioType, course = "Oni";
             public bool practice = true, autoPlay, replay;
+            // setDrumVolume: 0-100, the hit-sound (Drum group) volume.
+            public float? volume;
         }
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")] static extern void OurTaikoViewEmit(string json);
@@ -55,6 +57,18 @@ namespace OurTaiko
             catch { Emit("error", new { code = "INVALID_MESSAGE" }); return; }
             if (command == null || command.channel != "ourtaiko-view" || command.version != 1) return;
             if (command.type == "hello") { Emit("ready"); return; }
+            // Accepted with or without a loaded chart; it also changes hit sounds that are still sounding.
+            if (command.type == "setDrumVolume")
+            {
+                float? volume = command.payload?.volume;
+                if (!volume.HasValue || float.IsNaN(volume.Value) || volume < 0 || volume > 100)
+                { Emit("error", new { code = "INVALID_VOLUME" }, command.requestId); return; }
+                var manager = SettingManager.EnsureInstance();
+                var settings = manager.Settings.Clone();
+                settings.audio.volume.drum = volume.Value / 100f;
+                manager.Set(settings);
+                return;
+            }
             if (command.type == "load")
             {
                 var value = command.payload;
