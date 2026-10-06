@@ -14,7 +14,7 @@ namespace OurTaiko
         {
             if (Session == null || !IsPaused || IsFinished || pausePanel.activeSelf) return;
             pauseOpenedFrame = -1;
-            ChoosingPracticeSpeed = true;
+            PracticeStage = PracticeStage.Speed;
             ConfirmPractice();
         }
         public void EmbeddedRestart()

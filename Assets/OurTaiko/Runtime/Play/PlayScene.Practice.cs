@@ -9,13 +9,18 @@ namespace OurTaiko
         public PracticeView practiceView;
         public bool IsPractice => practiceView != null;
         public PracticeProgress Practice { get; private set; }
-        public bool ChoosingPracticeSpeed { get; private set; }
+        public PracticeStage PracticeStage { get; private set; }
+        public bool ChoosingPracticeSpeed => PracticeStage == PracticeStage.Speed;
+        // Practice never evaluates branches: every branch takes the route chosen in the menu.
+        public BranchRoute PracticeBranch => Session.Chart.ForcedBranch ?? BranchRoute.Normal;
+        PracticeStage FirstPracticeStage => Session.Chart.Branches.Count > 0 ? PracticeStage.Branch : PracticeStage.Measure;
         double AudioOffset => audioOffset;
         double VisualOffset => visualOffset;
 
         void InitializePractice()
         {
             Practice = new PracticeProgress();
+            Session.Chart.ForcedBranch ??= BranchRoute.Normal;
             practiceView.previous.onClick.AddListener(() => MovePractice(-1));
             practiceView.next.onClick.AddListener(() => MovePractice(1));
             practiceView.confirm.onClick.AddListener(ConfirmPractice);
@@ -39,7 +44,7 @@ namespace OurTaiko
             if (Practice == null) return;
             songClock.Pause(); IsPaused = true;
             music.StopAudio(); hitAudio.StopAudio();
-            ChoosingPracticeSpeed = false;
+            PracticeStage = FirstPracticeStage;
             if (first)
             {
                 Session.Judged -= OnJudged; Session.BranchSelected -= OnBranchSelected;
@@ -84,7 +89,7 @@ namespace OurTaiko
             Practice.Update(GameTimeline.FrameTime);
             RenderNotes(Practice.Position);
             SampleDancers(Practice.Position);
-            practiceView.Show(ChoosingPracticeSpeed, Practice);
+            practiceView.Show(PracticeStage, Practice, PracticeBranch);
         }
         void UpdatePracticePause()
         {
@@ -102,7 +107,8 @@ namespace OurTaiko
         public void MovePractice(int direction)
         {
             if (!CanAdjustPractice) return;
-            if (ChoosingPracticeSpeed) Practice.ChangeSpeed(Math.Sign(direction));
+            if (PracticeStage == PracticeStage.Speed) Practice.ChangeSpeed(Math.Sign(direction));
+            else if (PracticeStage == PracticeStage.Branch) ChangePracticeBranch(Math.Sign(direction));
             else
             {
                 Practice.Move(Math.Sign(direction), GameTimeline.FrameTime);
@@ -115,7 +121,7 @@ namespace OurTaiko
         {
             if (!CanAdjustPractice) return;
             pauseOpenedFrame = Time.frameCount;
-            if (!ChoosingPracticeSpeed) { ChoosingPracticeSpeed = true; ShowPracticePause(); return; }
+            if (PracticeStage != PracticeStage.Speed) { PracticeStage++; ShowPracticePause(); return; }
             ResetPracticeAttempt(Practice.Target);
             music.pitch = (float)Practice.Speed;
             songClock.Seek(Practice.PlaybackStart(AudioOffset, VisualOffset, judgeOffset), Practice.Speed);
@@ -124,6 +130,17 @@ namespace OurTaiko
             practiceView.panel.SetActive(false);
             resumeFrame = Time.frameCount;
             ScheduleMusic();
+        }
+        // A new route changes the notes and bar lines ahead, so the attempt and the bar list are rebuilt
+        // at the same position.
+        void ChangePracticeBranch(int direction)
+        {
+            var route = (BranchRoute)Math.Max((int)BranchRoute.Normal, Math.Min((int)BranchRoute.Master, (int)PracticeBranch + direction));
+            if (route == PracticeBranch) return;
+            Session.Chart.ForcedBranch = route;
+            ResetPracticeAttempt(Practice.Target);
+            RefreshPracticeBars();
+            Practice.PauseAt(Practice.Target, GameTimeline.FrameTime);
         }
         void RestorePracticePads()
         {

@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace OurTaiko
 {
+    // Practice menu pages in order; Branch appears only for a chart with branches.
+    public enum PracticeStage { Branch, Measure, Speed }
+
     // Uses parsed measure times, including hidden barlines, BPM changes, delays and branches.
     public sealed class PracticeProgress
     {
