@@ -29,7 +29,6 @@ namespace OurTaiko
         {
             public string chartText, chartUrl, audioUrl, audioType, course = "Oni";
             public bool practice = true, autoPlay, replay;
-            public string branch = "normal";
         }
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")] static extern void OurTaikoViewEmit(string json);
@@ -97,13 +96,10 @@ namespace OurTaiko
                 chart = request.downloadHandler.text;
                 request.Dispose(); request = null;
             }
-            BranchRoute selectedBranch;
-            if (!Enum.TryParse(value.branch, true, out selectedBranch) || !Enum.IsDefined(typeof(BranchRoute), selectedBranch))
-            { Fail("INVALID_BRANCH"); yield break; }
             try
             {
-                // Validate exactly as the practice session will play it: fixed on the selected route.
-                _ = new PlaySession(TjaParser.Parse(chart, value.course), 0, selectedBranch);
+                // Validate exactly as practice plays it: on a fixed route, which is chosen in its menu.
+                _ = new PlaySession(TjaParser.Parse(chart, value.course), 0, BranchRoute.Normal);
             }
             catch (Exception error) { Debug.LogException(error); Fail("INVALID_CHART", error.Message); yield break; }
             Emit("loading", new { stage = "audio" });
@@ -143,7 +139,7 @@ namespace OurTaiko
             var old = Song;
             Song = ScriptableObject.CreateInstance<SongDefinition>();
             Song.name = "Embedded chart";
-            Song.chart = new TextAsset(chart); Song.music = clip; Song.course = value.course; Song.practiceBranch = selectedBranch;
+            Song.chart = new TextAsset(chart); Song.music = clip; Song.course = value.course;
             var switcher = SceneSwitcher.EnsureInstance();
             while (switcher.IsSwitching) yield return null;
             switcher.ConfigureEmbedded(Song, value.course, value.autoPlay);

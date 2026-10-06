@@ -13,8 +13,6 @@ namespace OurTaiko
         public void SetPreparedAudio(NativeAudioSample audio) { preparedAudio?.Dispose(); preparedAudio = audio; }
         public NativeAudioSample TakePreparedAudio() { var audio = preparedAudio; preparedAudio = null; return audio?.IsDisposed == true ? null : audio; }
         void OnDisable() { preparedAudio?.Dispose(); preparedAudio = null; }
-        // Route the practice menu starts on (the Web host's choice); parsing never depends on it.
-        [System.NonSerialized] public BranchRoute? practiceBranch;
         public string course = "Oni";
         [Tooltip("Positive values delay judgments relative to the music, in milliseconds.")]
         public float audioOffsetMs;

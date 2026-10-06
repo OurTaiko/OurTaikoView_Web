@@ -142,8 +142,8 @@ namespace OurTaiko
                 string course = switcher.SelectedSong != null ? switcher.SelectedCourse : null;
                 var options = PlayOptions.Shared;
                 var chart = switcher.TakePreparedChart(song, course) ?? PrepareChart(song, course);
-                // Practice plays a fixed route from the start; a normal play evaluates branches.
-                practiceBranch = song.practiceBranch ?? BranchRoute.Normal;
+                // Practice plays a fixed route, chosen only in its menu; a normal play evaluates branches.
+                practiceBranch = BranchRoute.Normal;
                 Session = new PlaySession(chart, judgeOffset, IsPractice ? practiceBranch : (BranchRoute?)null);
                 if (modifierBadges != null) modifierBadges.Show(options, autoPlay);
                 // 音色: hit_sounds/<neiro>/don.ogg and ka.ogg; 無音 leaves both empty.
