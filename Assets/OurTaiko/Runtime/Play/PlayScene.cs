@@ -640,7 +640,7 @@ namespace OurTaiko
             rendered = true; renderedSession = Session; renderedVersion = Session.Version;
             renderedBalloon = balloonCounter.NoteIndex; renderedPreview = preview;
             RenderedTime = time;
-            bool gogo = false, notesEntered = false, mojiEntered = false;
+            bool notesEntered = false, mojiEntered = false;
             var chartNotes = Session.Chart.Notes;
             // Outside its interval a note is off the lane, exactly as the full cull would find it.
             leftLane.Clear();
@@ -684,7 +684,6 @@ namespace OurTaiko
                     view.Tail.sizeDelta = new Vector2(view.Root.rect.height * view.TailAspect, 0);
                     view.Tail.localScale = view.Body.localScale;
                 }
-                if (note.Gogo && note.Time - time < 1) gogo = true;
             }
             if (notesEntered || mojiEntered) SortCandidates(noteWindow);
             if (notesEntered) Restack(shownNotes, stackOrder, v => v.Root);
@@ -716,7 +715,7 @@ namespace OurTaiko
             }
             // GogoPulse.anim: 0.18 ± 0.05, one period every 2π/12 s of song time.
             gogoPulse ??= gogoTint.GetComponent<ClipSampler>();
-            if (!gogo) gogoTint.alpha = 0;
+            if (!Session.IsGogo(time, preview)) gogoTint.alpha = 0;
             else
             {
                 double period = gogoPulse.clip.length;

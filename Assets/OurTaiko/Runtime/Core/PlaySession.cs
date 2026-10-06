@@ -124,9 +124,23 @@ namespace OurTaiko
             return session;
         }
 
-        public bool IsPracticePreviewActive(ChartNote note) => note.BranchId < 0
-            || note.Route == (ForcedBranch.HasValue ? Chart.Branches[note.BranchId].ResolveRoute(ForcedBranch.Value)
-                : SelectedRoute(note.BranchId) ?? BranchRoute.Normal);
+        public bool IsPracticePreviewActive(ChartNote note) => IsPracticePreviewActive(note.BranchId, note.Route);
+        bool IsPracticePreviewActive(int branchId, BranchRoute route) => branchId < 0
+            || route == (ForcedBranch.HasValue ? Chart.Branches[branchId].ResolveRoute(ForcedBranch.Value)
+                : SelectedRoute(branchId) ?? BranchRoute.Normal);
+
+        // Like handle_gogotime: the latest #GOGOSTART / #GOGOEND reached on the played route,
+        // independent of notes, so GOGO starts and ends exactly at its commands.
+        public bool IsGogo(double time, bool preview = false)
+        {
+            bool on = false;
+            foreach (var gogo in Chart.Gogos)
+            {
+                if (gogo.Time > time) break;
+                if (preview ? IsPracticePreviewActive(gogo.BranchId, gogo.Route) : IsActive(gogo.BranchId, gogo.Route)) on = gogo.On;
+            }
+            return on;
+        }
         bool IsActive(int branchId, BranchRoute route) => branchId < 0 || selectedRoutes[branchId] == (int)route;
         public BranchRoute? SelectedRoute(int branchId) => selectedRoutes[branchId] < 0 ? (BranchRoute?)null : (BranchRoute)selectedRoutes[branchId];
 

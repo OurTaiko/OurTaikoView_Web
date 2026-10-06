@@ -75,7 +75,7 @@ namespace OurTaiko
         sealed class TimingState
         {
             public double Time, Bpm, Measure = 1, ScrollX = 1, ScrollY;
-            public bool Gogo, Barline = true;
+            public bool Barline = true;
             public int BalloonIndex;
             public TimingState Copy() => (TimingState)MemberwiseClone();
         }
@@ -122,6 +122,8 @@ namespace OurTaiko
                 chart.Duration = Math.Max(chart.Duration, state.Time);
                 chart.Notes.Sort((a, b) => a.Time.CompareTo(b.Time));
                 chart.Bars.Sort((a, b) => a.Time.CompareTo(b.Time));
+                var gogos = chart.Gogos.OrderBy(g => g.Time).ToList(); // stable, unlike List.Sort
+                chart.Gogos.Clear(); chart.Gogos.AddRange(gogos);
                 double previousDecision = double.NegativeInfinity;
                 foreach (var checkpoint in chart.Branches)
                 {
@@ -196,8 +198,13 @@ namespace OurTaiko
             }
 
             ChartNote NewNote() => new ChartNote { Time = state.Time, EndTime = state.Time,
-                Bpm = state.Bpm, ScrollX = state.ScrollX, ScrollY = state.ScrollY, Gogo = state.Gogo,
+                Bpm = state.Bpm, ScrollX = state.ScrollX, ScrollY = state.ScrollY,
                 BranchId = branch == null ? -1 : branch.Id, Route = route };
+
+            void SetGogo(bool on)
+            {
+                chart.Gogos.Add(new ChartGogo { Time = state.Time, On = on, BranchId = branch == null ? -1 : branch.Id, Route = route });
+            }
 
             void AddBar()
             {
@@ -225,8 +232,8 @@ namespace OurTaiko
                         state.ScrollY = match.Success ? Number(match.Groups[2].Value) : 0;
                         break;
                     case "#DELAY": state.Time += Number(arg); break;
-                    case "#GOGOSTART": state.Gogo = true; break;
-                    case "#GOGOEND": state.Gogo = false; break;
+                    case "#GOGOSTART": SetGogo(true); break;
+                    case "#GOGOEND": SetGogo(false); break;
                     case "#BARLINEOFF": state.Barline = false; break;
                     case "#BARLINEON": state.Barline = true; break;
                     case "#BRANCHSTART": StartBranch(arg); break;

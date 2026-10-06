@@ -12,7 +12,6 @@ namespace OurTaiko
     {
         public NoteKind Kind;
         public double Time, EndTime, Bpm, ScrollX = 1, ScrollY, TailBpm;
-        public bool Gogo;
         public int BalloonHits;
         // Frame of notes/moji drawn under the note; assigned by NoteMoji.Assign.
         public int Moji;
@@ -56,6 +55,15 @@ namespace OurTaiko
         public BranchRoute Route;
     }
 
+    // A #GOGOSTART / #GOGOEND at its own time, whether or not a note falls there.
+    public sealed class ChartGogo
+    {
+        public double Time;
+        public bool On;
+        public int BranchId = -1;
+        public BranchRoute Route;
+    }
+
     public sealed class TaikoChart
     {
         public string Title = "Untitled", Subtitle = "", Course = "Oni";
@@ -65,6 +73,8 @@ namespace OurTaiko
         public readonly List<ChartNote> Bars = new List<ChartNote>();
         public readonly List<ChartBranch> Branches = new List<ChartBranch>();
         public readonly List<ChartSection> Sections = new List<ChartSection>();
+        // Sorted by time; events at the same time keep their source order.
+        public readonly List<ChartGogo> Gogos = new List<ChartGogo>();
         // OurTaikoPlayer's NoteLists: the common part, then one per route of each branch,
         // each with its bar lines and long-note tails in place.
         public readonly List<List<ChartEntry>> NoteLists = new List<List<ChartEntry>>();
