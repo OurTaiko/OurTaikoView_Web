@@ -1064,7 +1064,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 63005204, guid: afc21b14a938040be93225af4c3983cf, type: 3}
+  m_Sprite: {fileID: 1702319767, guid: afc21b14a938040be93225af4c3983cf, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10762,6 +10762,13 @@ MonoBehaviour:
   balloonPop: {fileID: 8300000, guid: 44b1297bb1bd74b4ab8ac5ed9f62c148, type: 3}
   hitSounds: {fileID: 11400000, guid: 5515db8dbe20b4e3796637e25e79846f, type: 2}
   modifierBadges: {fileID: 961300034}
+  laneDifficulty: {fileID: 114656370}
+  laneDifficultySprites:
+  - {fileID: -455977207, guid: afc21b14a938040be93225af4c3983cf, type: 3}
+  - {fileID: -1335733205, guid: afc21b14a938040be93225af4c3983cf, type: 3}
+  - {fileID: -834173487, guid: afc21b14a938040be93225af4c3983cf, type: 3}
+  - {fileID: 1702319767, guid: afc21b14a938040be93225af4c3983cf, type: 3}
+  - {fileID: 1511858840, guid: afc21b14a938040be93225af4c3983cf, type: 3}
   noteLayer: {fileID: 2060243652}
   barLayer: {fileID: 1809151790}
   mojiLayer: {fileID: 199355009}
@@ -12821,7 +12828,6 @@ MonoBehaviour:
   - {fileID: 1128954237}
   horizontalOffset: 0
   verticalOffset: 0
-  fanStep: 0
 --- !u!114 &1648563409
 MonoBehaviour:
   m_ObjectHideFlags: 0

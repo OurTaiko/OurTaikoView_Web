@@ -13,6 +13,9 @@ namespace OurTaiko
         public AudioClip don, ka, balloonPop;
         public HitSoundLibrary hitSounds;
         public ModifierBadgeView modifierBadges;
+        // Player::draw: lane/lane_difficulty frame = difficulty (Easy..Ura).
+        public UnityEngine.UI.Image laneDifficulty;
+        public Sprite[] laneDifficultySprites;
         public RectTransform noteLayer, barLayer, mojiLayer;
         public Sprite[] noteSprites;
         public Sprite[] rollBodySprites, rollTailSprites;
@@ -146,6 +149,7 @@ namespace OurTaiko
                 practiceBranch = BranchRoute.Normal;
                 Session = new PlaySession(chart, judgeOffset, IsPractice ? practiceBranch : (BranchRoute?)null);
                 if (modifierBadges != null) modifierBadges.Show(options, autoPlay);
+                ShowDifficulty(chart.Course);
                 // 音色: hit_sounds/<neiro>/don.ogg and ka.ogg; 無音 leaves both empty.
                 if (hitSounds != null) hitSounds.TryGet(options.neiro, out don, out ka);
                 balloonCounter.ResetDisplay();
@@ -176,6 +180,13 @@ namespace OurTaiko
             if (IsPractice) InitializePractice();
             else ScheduleMusic();
             WebPlayerBridge.Instance.Attach(this);
+        }
+
+        void ShowDifficulty(string course)
+        {
+            if (laneDifficulty == null || laneDifficultySprites == null || laneDifficultySprites.Length == 0) return;
+            int index = (int)(SongInfo.DifficultyOf(course) ?? Difficulty.Oni);
+            laneDifficulty.sprite = laneDifficultySprites[Math.Min(index, laneDifficultySprites.Length - 1)];
         }
 
         // Player::reset_chart: the play options change the chart before load times are taken.

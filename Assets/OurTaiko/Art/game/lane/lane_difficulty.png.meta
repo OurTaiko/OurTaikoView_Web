@@ -140,6 +140,19 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -275,6 +288,116 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: LaneDifficulty0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 576
+        width: 132
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4b5fc92ace3f3431f86484982fe426ca
+      internalID: -455977207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaneDifficulty1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 480
+        width: 132
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba09432efd51f4de9badc2f7e528a53b
+      internalID: -1335733205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaneDifficulty2
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 384
+        width: 132
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2c6bc35b60f15425abde4d1bf421015b
+      internalID: -834173487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaneDifficulty3
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 288
+        width: 132
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3b8ebb4fbdf546c696ff1dd0a224dea
+      internalID: 1702319767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaneDifficulty4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 192
+        width: 132
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 747a49b98ff8e43c787afe6f819f7726
+      internalID: 1511858840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -294,6 +417,11 @@ TextureImporter:
       BestScoreDifficulty2: -531916825
       BestScoreDifficulty3: -1795082308
       BestScoreDifficulty4: -609447608
+      LaneDifficulty0: -455977207
+      LaneDifficulty1: -1335733205
+      LaneDifficulty2: -834173487
+      LaneDifficulty3: 1702319767
+      LaneDifficulty4: 1511858840
       OniDifficulty: 63005204
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0

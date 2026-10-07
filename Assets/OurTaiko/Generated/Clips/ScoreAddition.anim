@@ -110,17 +110,8 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: -22.5
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 1
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.146
         value: -58.5
-        inSlope: Infinity
+        inSlope: 0
         outSlope: 0
         tangentMode: 1
         weightedMode: 0
@@ -145,9 +136,18 @@ AnimationClip:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 0.44674
+        time: 0.36674
         value: -61.5
         inSlope: 0
+        outSlope: -187.5
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.44674
+        value: -76.5
+        inSlope: -187.5
         outSlope: 0
         tangentMode: 1
         weightedMode: 0
@@ -157,45 +157,6 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: verticalOffset
-    path: 
-    classID: 114
-    script: {fileID: 11500000, guid: 321247c9b590048bbb05d5c18a56593c, type: 3}
-    flags: 16
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.146
-        value: 5
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.44674
-        value: 5
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: fanStep
     path: 
     classID: 114
     script: {fileID: 11500000, guid: 321247c9b590048bbb05d5c18a56593c, type: 3}
@@ -229,15 +190,6 @@ AnimationClip:
     - serializedVersion: 2
       path: 0
       attribute: 2708450377
-      script: {fileID: 11500000, guid: 321247c9b590048bbb05d5c18a56593c, type: 3}
-      typeID: 114
-      customType: 0
-      isPPtrCurve: 0
-      isIntCurve: 0
-      isSerializeReferenceCurve: 0
-    - serializedVersion: 2
-      path: 0
-      attribute: 1383021932
       script: {fileID: 11500000, guid: 321247c9b590048bbb05d5c18a56593c, type: 3}
       typeID: 114
       customType: 0
@@ -359,17 +311,8 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: -22.5
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 1
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.146
         value: -58.5
-        inSlope: Infinity
+        inSlope: 0
         outSlope: 0
         tangentMode: 1
         weightedMode: 0
@@ -394,9 +337,18 @@ AnimationClip:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 0.44674
+        time: 0.36674
         value: -61.5
         inSlope: 0
+        outSlope: -187.5
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.44674
+        value: -76.5
+        inSlope: -187.5
         outSlope: 0
         tangentMode: 1
         weightedMode: 0
@@ -406,45 +358,6 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: verticalOffset
-    path: 
-    classID: 114
-    script: {fileID: 11500000, guid: 321247c9b590048bbb05d5c18a56593c, type: 3}
-    flags: 16
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.146
-        value: 5
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.44674
-        value: 5
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: fanStep
     path: 
     classID: 114
     script: {fileID: 11500000, guid: 321247c9b590048bbb05d5c18a56593c, type: 3}

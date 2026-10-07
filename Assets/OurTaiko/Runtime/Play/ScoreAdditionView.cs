@@ -9,7 +9,7 @@ namespace OurTaiko
     {
         public UnityEngine.UI.Image[] digits;
         // Driven by ScoreAddition.anim, relative to the normal score digit baseline.
-        public float horizontalOffset, verticalOffset, fanStep;
+        public float horizontalOffset, verticalOffset;
         public string Text { get; private set; } = "";
         double startedAt;
 
@@ -42,7 +42,7 @@ namespace OurTaiko
             sampler.Sample(elapsed);
             for (int i = 0; i < Text.Length; i++)
                 digits[i].rectTransform.TopLeft(ScoreCounterLayout.DigitLeft(i, Text.Length) + horizontalOffset,
-                    ScoreCounterLayout.DigitTop + verticalOffset + (i + 1) * fanStep);
+                    ScoreCounterLayout.DigitTop + verticalOffset);
         }
     }
 }
