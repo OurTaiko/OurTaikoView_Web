@@ -25,7 +25,7 @@ namespace OurTaiko.Online
                 request.SetRequestHeader("Content-Type", "application/json");
             }
             request.redirectLimit = 0;
-            double deadline = GameTimeline.Realtime + (external || path.Contains("/versions/") ? 120 : 15);
+            double deadline = GameTimeline.Realtime + (external ? 120 : 15);
             var operation = request.SendWebRequest();
             while (!operation.isDone)
             {

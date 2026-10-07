@@ -6,8 +6,8 @@ using System.Linq;
 namespace OurTaiko.Online
 {
     // fanmade.cpp playable_tja/to_utf8: the downloaded original stays byte-for-byte intact for the hash
-    // check; the playable copy is UTF-8, keeps only the API's blocks (the unique Single block of a
-    // course, or its P1/P2 blocks when it is DOUBLE only) and takes its titles from the API.
+    // check; the playable copy is UTF-8, keeps exactly the API's courses (matched by COURSE and the
+    // #START player, so Oni_1p is the Oni block started with P1) and takes its titles from the API.
     public static class PlayableTja
     {
         public static string ToUtf8(byte[] bytes, string encoding)
@@ -34,13 +34,6 @@ namespace OurTaiko.Online
             string course = "Oni";
             var wanted = new SortedDictionary<int, FanmadeDifficulty>();
             var found = new HashSet<int>();
-            foreach (var d in chart.Difficulties)
-            {
-                if (d == null) continue;
-                if (chart.CourseKeyed) continue;
-                wanted[d.BlockIndex] = d;
-                if (!d.Cloud) foreach (var other in chart.Blocks) if (other.Course == d.Course) wanted[other.BlockIndex] = other;
-            }
             foreach (string raw in utf8.Split('\n'))
             {
                 int comment = raw.IndexOf("//", StringComparison.Ordinal);
@@ -50,16 +43,13 @@ namespace OurTaiko.Online
                 if (line.StartsWith("#START", StringComparison.Ordinal))
                 {
                     inBlock = true; block++; body.Clear();
-                    if (chart.CourseKeyed)
+                    string player = line.Substring(6).Trim().ToUpperInvariant();
+                    string name = course + (player == "P1" ? "_1p" : player == "P2" ? "_2p" : "");
+                    var d = chart.Blocks.Find(x => x.Course == name);
+                    if (d != null)
                     {
-                        string player = line.Substring(6).Trim().ToUpperInvariant();
-                        string name = course + (player == "P1" ? "_1p" : player == "P2" ? "_2p" : "");
-                        var d = chart.Blocks.Find(x => x.Course == name);
-                        if (d != null)
-                        {
-                            if (wanted.Values.Any(x => x.Course == name)) throw new FanmadeException("TJA_BLOCK_MISMATCH");
-                            wanted[block] = d;
-                        }
+                        if (wanted.Values.Any(x => x.Course == name)) throw new FanmadeException("TJA_BLOCK_MISMATCH");
+                        wanted[block] = d;
                     }
                     continue;
                 }
@@ -68,7 +58,7 @@ namespace OurTaiko.Online
                     if (inBlock && wanted.TryGetValue(block, out var d))
                     {
                         output.Append("COURSE:").Append(d.Course).Append("\nLEVEL:").Append(d.Level)
-                            .Append("\nSTYLE:").Append(d.Cloud ? "Single" : "Double").Append('\n');
+                            .Append("\nSTYLE:").Append(string.IsNullOrEmpty(d.Player) ? "Single" : "Double").Append('\n');
                         foreach (string h in globals) if (KeptHeader(h)) output.Append(h).Append('\n');
                         foreach (string h in headers) if (KeptHeader(h)) output.Append(h).Append('\n');
                         output.Append("#START").Append(string.IsNullOrEmpty(d.Player) ? "" : " " + d.Player).Append('\n')
@@ -88,7 +78,7 @@ namespace OurTaiko.Online
                 }
                 (seenCourse ? headers : globals).Add(line);
             }
-            if (found.Count != wanted.Count || (chart.CourseKeyed && found.Count != chart.Blocks.Count) || inBlock) throw new FanmadeException("TJA_BLOCK_MISMATCH");
+            if (found.Count != chart.Blocks.Count || inBlock) throw new FanmadeException("TJA_BLOCK_MISMATCH");
             return output.ToString();
         }
 

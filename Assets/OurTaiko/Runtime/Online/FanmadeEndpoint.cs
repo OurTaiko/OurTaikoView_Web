@@ -25,13 +25,6 @@ namespace OurTaiko.Online
         public readonly string Id;
         public bool IsConnected { get; internal set; }
         public bool IsAuthenticated => authenticated;
-        public bool SongIdOnly { get; internal set; }
-        public bool CourseKeyedDifficulties { get; internal set; }
-        public int ResourceDownloadVersion { get; internal set; }
-#if UNITY_INCLUDE_TESTS
-        public bool AllowLoopbackResourcesForTests { get; set; }
-#endif
-        public bool ScoreReplayV1 { get; internal set; }
         public int ChartCount { get; internal set; } = -1;
         public string Nickname { get; private set; } = "";
         // Serializes HTTP per endpoint, like the C++ http_mutex.
@@ -137,8 +130,8 @@ namespace OurTaiko.Online
             return await RequestWebBytesAsync(path, body, key, limit, cancel, progress);
 #else
             if (cancel.IsCancellationRequested) throw new FanmadeException("DOWNLOAD_CANCELLED");
-            bool file = path.Contains("/versions/") || path.EndsWith("/tja", StringComparison.Ordinal) || path.EndsWith("/audio", StringComparison.Ordinal);
-            using var timeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(file ? 120000 : 15000));
+            // Files come from signed resource links (ResourceBytesAsync); API calls are small.
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancel, timeout.Token);
             using var request = new HttpRequestMessage(string.IsNullOrEmpty(body) ? HttpMethod.Get : HttpMethod.Post, Config.baseUrl + path);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -203,12 +196,11 @@ namespace OurTaiko.Online
         // Account scores of the bootstrap, kept only for a logged-in account.
         internal readonly List<FanmadeScore> Scores = new List<FanmadeScore>();
         internal readonly Dictionary<string, FanmadeScore> Best = new Dictionary<string, FanmadeScore>();
-        internal string ScoreKey(string song, string version, string difficulty) =>
-            SongIdOnly ? song + "/" + difficulty : song + "/" + version + "/" + difficulty;
+        internal static string ScoreKey(string song, string difficulty) => song + "/" + difficulty;
 
         internal void IndexScore(FanmadeScore score)
         {
-            var key = ScoreKey(score.Song, score.Version, score.Difficulty);
+            var key = ScoreKey(score.Song, score.Difficulty);
             if (!Best.TryGetValue(key, out var best) || score.Score > best.Score) Best[key] = score;
         }
     }

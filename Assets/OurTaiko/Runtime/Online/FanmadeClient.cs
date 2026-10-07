@@ -14,8 +14,9 @@ namespace OurTaiko.Online
     // server. Difference: every category is fetched when a server connects (OurTaikoPlayer waits
     // for the server folder to open); song select shows each category as a folder.
     //
-    // Cache layout under the root, as in OurTaikoPlayer:
-    //   objects/<endpoint>/<chart>/<version>/  original.tja, audio.ogg|mp3, play.tja
+    // Cache layout under the root, keyed by content hash:
+    //   objects/<endpoint>/<chart>/tja|audio|preview/<sha256>/  verified downloads
+    //   objects/<endpoint>/<chart>/plays/<tja sha256>-<audio sha256>/  play.tja and its audio
     // Pending uploads live in the separate PendingScoreUploads SQLite table.
     public sealed partial class FanmadeClient : IDisposable
     {
@@ -43,8 +44,7 @@ namespace OurTaiko.Online
         public FanmadeClient(string cacheRoot, string databasePath = null)
         {
             CacheRoot = Path.GetFullPath(cacheRoot);
-            UploadQueue = new PendingScoreQueue(databasePath ?? Path.Combine(CacheRoot, "scores.sqlite3"),
-                Path.Combine(CacheRoot, "pending"));
+            UploadQueue = new PendingScoreQueue(databasePath ?? Path.Combine(CacheRoot, "scores.sqlite3"));
         }
 
         public IReadOnlyList<FanmadeEndpoint> Endpoints { get { lock (sync) return endpoints.ToArray(); } }
@@ -111,6 +111,7 @@ namespace OurTaiko.Online
 
         // Logs in (unless `guest`), then loads the bootstrap and every category. A rejected login
         // throws HTTP_401/403 without touching the catalog; the caller may then retry as a guest.
+        // Only servers declaring the current game protocol are accepted.
         public async Task ConnectAsync(FanmadeEndpoint e, bool guest, CancellationToken cancel = default)
         {
             if (!e.HasValidUrl()) throw new FanmadeException("SERVER_URL_INVALID");
@@ -122,13 +123,7 @@ namespace OurTaiko.Online
                 if (guest) e.BecomeGuest();
                 else await e.LoginAsync(cancel);
                 var snapshot = Json.Parse(await e.AuthorizedAsync("/api/v1/game/bootstrap", cancel: cancel));
-                e.SongIdOnly = snapshot["songIdOnly"]?.Type == JTokenType.Boolean && (bool)snapshot["songIdOnly"];
-                e.CourseKeyedDifficulties = snapshot["courseKeyedDifficulties"]?.Type == JTokenType.Boolean && (bool)snapshot["courseKeyedDifficulties"];
-                var resourceVersion = snapshot["resourceDownloadVersion"];
-                if (resourceVersion != null && (resourceVersion.Type != JTokenType.Integer || (long)resourceVersion < 0 || (long)resourceVersion > 1))
-                    throw new FanmadeException("RESOURCE_PROTOCOL_UNSUPPORTED");
-                e.ResourceDownloadVersion = (int?)resourceVersion ?? 0;
-                e.ScoreReplayV1 = snapshot["scoreReplayVersion"]?.Type == JTokenType.Integer && (int)snapshot["scoreReplayVersion"] == 1;
+                if (!SupportsProtocol(snapshot)) throw new FanmadeException("SERVER_PROTOCOL_UNSUPPORTED");
                 if (!(snapshot["categories"] is JArray categoryList) || !(snapshot["scores"] is JArray scoreList))
                     throw new FanmadeException("API_BOOTSTRAP_INVALID");
                 var categories = new List<(string Id, string Title, string Genre)>();
@@ -140,7 +135,7 @@ namespace OurTaiko.Online
                     categories.Add(category);
                 }
                 var scores = new List<FanmadeScore>();
-                if (e.IsAuthenticated) foreach (var v in scoreList) scores.Add(FanmadeScore.From(v, e.SongIdOnly));
+                if (e.IsAuthenticated) foreach (var v in scoreList) scores.Add(FanmadeScore.From(v));
 
                 var list = new List<FanmadeChart>();
                 var folders = new List<FanmadeCategory>();
@@ -155,7 +150,7 @@ namespace OurTaiko.Online
                     var folder = new FanmadeCategory { Server = e.Id, ServerName = e.Config.DisplayName, Id = category.Id, Title = category.Title, Genre = category.Genre };
                     foreach (var value in categoryCharts)
                     {
-                        var chart = FanmadeChart.From(value, e.Id, e.SongIdOnly, e.CourseKeyedDifficulties);
+                        var chart = FanmadeChart.From(value, e.Id);
                         if (!chart.IsPlayable || folder.ChartIds.Contains(chart.Id)) continue;
                         folder.ChartIds.Add(chart.Id);
                         if (!seen.Add(chart.Id)) continue;
@@ -186,113 +181,43 @@ namespace OurTaiko.Online
             Update();
         }
 
+        // Song ids only, course-keyed difficulties, signed resource links and replay uploads.
+        static bool SupportsProtocol(JObject snapshot) =>
+            snapshot["songIdOnly"]?.Type == JTokenType.Boolean && (bool)snapshot["songIdOnly"]
+            && snapshot["courseKeyedDifficulties"]?.Type == JTokenType.Boolean && (bool)snapshot["courseKeyedDifficulties"]
+            && snapshot["resourceDownloadVersion"]?.Type == JTokenType.Integer && (long)snapshot["resourceDownloadVersion"] == 1
+            && snapshot["scoreReplayVersion"]?.Type == JTokenType.Integer && (long)snapshot["scoreReplayVersion"] == 1;
+
         static bool ValidCategory(string id) => id.Length > 0 && id.Length <= 64 && id[0] >= 'a' && id[0] <= 'z'
             && id.All(c => (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-');
 
-        // The account's best on this chart version and course; null for a guest or a DOUBLE-only course.
+        // The account's best on this chart and course; null for a guest.
         public FanmadeScore Best(FanmadeChart chart, int difficulty)
         {
-            if (chart == null || difficulty < 0 || difficulty >= 5 || chart.Difficulties[difficulty] == null || !chart.Difficulties[difficulty].Cloud) return null;
+            if (chart == null || difficulty < 0 || difficulty >= 5 || chart.Difficulties[difficulty] == null) return null;
             lock (sync)
             {
                 var e = endpoints.Find(x => x.Id == chart.Server);
-                return e != null && e.Best.TryGetValue(e.ScoreKey(chart.Id, chart.Version, chart.Difficulties[difficulty].Course), out var best) ? best : null;
+                return e != null && e.Best.TryGetValue(FanmadeEndpoint.ScoreKey(chart.Id, chart.Difficulties[difficulty].Course), out var best) ? best : null;
             }
         }
 
-        // Refreshes the chart's details (the author may have published a new version), then makes
-        // sure the original TJA and audio are cached with matching SHA-256, and writes play.tja.
-        // `progress` runs on worker threads.
-        public async Task<(string Path, FanmadeChart Chart)> PrepareAsync(FanmadeChart selected, CancellationToken cancel = default,
-            Action<DownloadProgress> progress = null)
-        {
-            var e = Endpoint(selected.Server) ?? throw new FanmadeException("SERVER_NOT_CONNECTED");
-            if (e.ResourceDownloadVersion == 1) return await PrepareResourcesAsync(e, selected, cancel, progress);
-            var snapshot = new DownloadProgress();
-            void Publish() => progress?.Invoke(snapshot.Clone());
-            Publish();
-            await e.Transport.WaitAsync(cancel);
-            try
-            {
-                SetStatus(e.Config.DisplayName + ": checking file hashes");
-                var c = FanmadeChart.From(Json.Parse(await e.AuthorizedAsync("/api/v1/charts/" + selected.Id, cancel: cancel)), selected.Server, e.SongIdOnly, e.CourseKeyedDifficulties);
-                c.Category = selected.Category; c.Genre = selected.Genre;
-                // A course picked in song select that the new version no longer has stops the load.
-                if (!c.IsPlayable) throw new FanmadeException("CHART_NO_PLAYABLE_COURSE");
-                string dir = Path.Combine(CacheRoot, "objects", c.Server, c.Id, e.SongIdOnly ? c.TjaHash + "-" + c.AudioHash : c.Version);
-                string files = "/api/v1/charts/" + c.Id + (e.SongIdOnly ? "/" : "/versions/" + c.Version + "/");
-                snapshot.Step = DownloadProgress.Stage.Files;
-
-                async Task Ensure(string file, string digest, string kind, long limit, FileProgress transfer)
-                {
-                    if (cancel.IsCancellationRequested) throw new FanmadeException("DOWNLOAD_CANCELLED");
-                    if (File.Exists(file))
-                    {
-                        transfer.Status = FileProgress.State.Verifying; Publish();
-                        var cached = await CacheWork(() => File.ReadAllBytes(file), cancel);
-                        if (await CacheWork(() => FanmadeEndpoint.Sha256Hex(cached), cancel) == digest)
-                        {
-                            transfer.Status = FileProgress.State.Cached; transfer.Received = transfer.Total = cached.Length; Publish();
-                            return;
-                        }
-                    }
-                    SetStatus(e.Config.DisplayName + ": downloading " + kind);
-                    transfer.Status = FileProgress.State.Downloading; transfer.Received = transfer.Total = 0; Publish();
-                    var bytes = await e.RequestBytesAsync(files + kind, limit: limit, cancel: cancel, progress: (received, total) =>
-                    {
-                        if (transfer.Received == received && transfer.Total == total) return;
-                        transfer.Received = received; transfer.Total = total; Publish();
-                    });
-                    transfer.Status = FileProgress.State.Verifying; transfer.Received = transfer.Total = bytes.Length; Publish();
-                    if (await CacheWork(() => FanmadeEndpoint.Sha256Hex(bytes), cancel) != digest) throw new FanmadeException("DOWNLOAD_HASH_MISMATCH");
-                    await CacheWork(() => { WriteAtomic(file, bytes); return true; }, cancel);
-                    transfer.Status = FileProgress.State.Complete; Publish();
-                }
-
-                await Ensure(Path.Combine(dir, "original.tja"), c.TjaHash, "tja", 4L * 1024 * 1024, snapshot.Chart);
-                string audio = Path.Combine(dir, c.CachedAudioName), oldAudio = Path.Combine(dir, "audio.ogg");
-                // Older clients stored MP3 bytes as .ogg; reuse only a verified cache.
-                if (audio != oldAudio && !File.Exists(audio) && File.Exists(oldAudio)
-                    && FanmadeEndpoint.Sha256Hex(File.ReadAllBytes(oldAudio)) == c.AudioHash)
-                    File.Move(oldAudio, audio);
-                await Ensure(audio, c.AudioHash, "audio", 256L * 1024 * 1024, snapshot.Audio);
-                snapshot.Step = DownloadProgress.Stage.Preparing; Publish();
-                string playable = Path.Combine(dir, "play.tja");
-                string text = PlayableTja.Build(PlayableTja.ToUtf8(File.ReadAllBytes(Path.Combine(dir, "original.tja")), c.Encoding), c);
-                WriteAtomic(playable, new UTF8Encoding(false).GetBytes(text));
-                lock (sync)
-                {
-                    if (charts.TryGetValue(c.Server, out var list))
-                    {
-                        int index = list.FindIndex(x => x.Id == c.Id);
-                        if (index >= 0) list[index] = c;
-                    }
-                }
-                Interlocked.Increment(ref revision);
-                SetStatus(e.Config.DisplayName + ": ready");
-                snapshot.Step = DownloadProgress.Stage.Ready; Publish();
-                return (playable, selected.SelectedPlayer.Length > 0 ? c.ForPlayer(selected.SelectedPlayer) : c);
-            }
-            finally { e.Transport.Release(); }
-        }
-
-        // Queues a finished play of a logged-in account, then sends it in the background. Guests,
-        // DOUBLE-only courses and unknown charts are not uploaded. The request body and its
-        // idempotency key are fixed when queued, so retries never create a second score.
+        // Queues a finished play of a logged-in account, then sends it in the background. Guests
+        // and unknown charts are not uploaded. The request body and its idempotency key are fixed
+        // when queued, so retries never create a second score.
         public bool Submit(FanmadeChart chart, int difficulty, FanmadeScore score, PlayRecord replay = null)
         {
-            if (chart == null || difficulty < 0 || difficulty >= 5 || chart.Difficulties[difficulty] == null || !chart.Difficulties[difficulty].Cloud) return false;
+            if (chart == null || difficulty < 0 || difficulty >= 5 || chart.Difficulties[difficulty] == null) return false;
             var e = Endpoint(chart.Server);
             if (e == null || !e.IsConnected || !e.IsAuthenticated) return false;
             var body = new JObject
             {
-                ["songId"] = chart.Id, ["versionId"] = chart.Version, ["difficulty"] = chart.Difficulties[difficulty].Course,
+                ["songId"] = chart.Id, ["difficulty"] = chart.Difficulties[difficulty].Course,
                 ["good"] = score.Good, ["ok"] = score.Ok, ["bad"] = score.Bad, ["score"] = score.Score,
                 ["drumroll"] = score.Drumroll, ["max_combo"] = score.MaxCombo,
                 ["ClearStatus"] = score.ClearStatus,
+                ["replay_data"] = replay != null ? replay.ToJson() : JValue.CreateNull(),
             };
-            if (e.SongIdOnly) body.Remove("versionId");
-            if (e.ScoreReplayV1) body["replay_data"] = replay != null ? replay.ToJson() : JValue.CreateNull();
             try
             {
                 UploadQueue.Enqueue(e.Id, RandomKey(), body.ToString(Newtonsoft.Json.Formatting.None), chart.TjaHash, chart.AudioHash);
@@ -339,32 +264,20 @@ namespace OurTaiko.Online
                 {
                     try
                     {
-                        string body = queued.Body;
                         FanmadeScore score;
                         await e.Transport.WaitAsync();
                         try
                         {
-                            if (e.SongIdOnly)
-                            {
-                                var payload = Json.Parse(body);
-                                if (!Json.HexId(queued.TjaHash ?? "", 64) || !Json.HexId(queued.AudioHash ?? "", 64))
-                                { UploadQueue.Reject(queued.Key); continue; }
-                                var current = FanmadeChart.From(Json.Parse(await e.AuthorizedAsync("/api/v1/charts/" + Json.Str(payload, "songId"))), e.Id, true, e.CourseKeyedDifficulties);
-                                if (e.ResourceDownloadVersion == 1)
-                                {
-                                    var manifest = await e.ResourcesAsync(current.Id);
-                                    if (manifest.Tja.Hash != current.TjaHash || manifest.Audio.Hash != current.AudioHash)
-                                        throw new FanmadeException("CHART_UPDATING");
-                                }
-                                if (current.TjaHash != queued.TjaHash || current.AudioHash != queued.AudioHash)
-                                { UploadQueue.Reject(queued.Key); continue; }
-                                if (payload.Remove("versionId"))
-                                {
-                                    body = payload.ToString(Newtonsoft.Json.Formatting.None);
-                                    UploadQueue.UpdateBody(queued.Key, body);
-                                }
-                            }
-                            score = FanmadeScore.From(Json.Parse(await e.AuthorizedAsync("/api/v1/game/scores", body, queued.Key)), e.SongIdOnly);
+                            // A score belongs to the files it was played on; if they changed since, keep it aside.
+                            if (!Json.HexId(queued.TjaHash ?? "", 64) || !Json.HexId(queued.AudioHash ?? "", 64))
+                            { UploadQueue.Reject(queued.Key); continue; }
+                            var current = FanmadeChart.From(Json.Parse(await e.AuthorizedAsync("/api/v1/charts/" + Json.Str(Json.Parse(queued.Body), "songId"))), e.Id);
+                            var manifest = await e.ResourcesAsync(current.Id);
+                            if (manifest.Tja.Hash != current.TjaHash || manifest.Audio.Hash != current.AudioHash)
+                                throw new FanmadeException("CHART_UPDATING");
+                            if (current.TjaHash != queued.TjaHash || current.AudioHash != queued.AudioHash)
+                            { UploadQueue.Reject(queued.Key); continue; }
+                            score = FanmadeScore.From(Json.Parse(await e.AuthorizedAsync("/api/v1/game/scores", queued.Body, queued.Key)));
                         }
                         finally { e.Transport.Release(); }
                         lock (sync)
@@ -379,7 +292,7 @@ namespace OurTaiko.Online
                     catch (HttpStatusException error)
                     {
                         SetStatus(e.Config.DisplayName + ": score pending (" + error.Message + ")");
-                        // 409 (the chart changed version mid-play) and other permanent refusals are kept aside.
+                        // 409 (the chart's files changed mid-play) and other permanent refusals are kept aside.
                         if (error.Status >= 400 && error.Status < 500 && error.Status != 401 && error.Status != 408 && error.Status != 429)
                         {
                             UploadQueue.Reject(queued.Key);

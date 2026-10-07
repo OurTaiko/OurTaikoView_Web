@@ -132,7 +132,7 @@ namespace OurTaiko.Online
         {
             var keep = new HashSet<string>();
             songs.Clear(); charts.Clear();
-            foreach (var chart in Client.Charts.SelectMany(c => c.CourseKeyed && !c.IsSingle ? new[] { c.ForPlayer("P1"), c.ForPlayer("P2") }.Where(x => x.IsPlayable) : new[] { c }))
+            foreach (var chart in Client.Charts.SelectMany(c => !c.IsSingle ? new[] { c.ForPlayer("P1"), c.ForPlayer("P2") }.Where(x => x.IsPlayable) : new[] { c }))
             {
                 string key = SongKey(chart);
                 keep.Add(key);

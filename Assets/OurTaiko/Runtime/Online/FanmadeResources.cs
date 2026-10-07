@@ -49,7 +49,8 @@ namespace OurTaiko.Online
                 throw new FanmadeException("RESOURCE_URL_INVALID");
             if (uri.Scheme == "https") return;
 #if UNITY_INCLUDE_TESTS
-            if (AllowLoopbackResourcesForTests && uri.Scheme == "http" && uri.IsLoopback) return;
+            // A local test API may hand out plain-HTTP links to itself or another local fixture.
+            if (uri.Scheme == "http" && uri.IsLoopback && Uri.TryCreate(Config.baseUrl, UriKind.Absolute, out var api) && api.IsLoopback) return;
 #endif
             throw new FanmadeException("RESOURCE_URL_INVALID");
         }

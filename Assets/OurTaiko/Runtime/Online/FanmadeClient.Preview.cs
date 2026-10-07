@@ -12,7 +12,6 @@ namespace OurTaiko.Online
         public async Task<string> PreparePreviewAsync(FanmadeChart selected, CancellationToken cancel = default)
         {
             var endpoint = Endpoint(selected.Server) ?? throw new FanmadeException("SERVER_NOT_CONNECTED");
-            if (endpoint.ResourceDownloadVersion != 1) throw new FanmadeException("PREVIEW_UNAVAILABLE");
             await endpoint.Transport.WaitAsync(cancel);
             try
             {

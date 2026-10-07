@@ -8,9 +8,13 @@ namespace OurTaiko.Online
 {
     public sealed partial class FanmadeClient
     {
-        async Task<(string Path, FanmadeChart Chart)> PrepareResourcesAsync(FanmadeEndpoint e, FanmadeChart selected,
-            CancellationToken cancel, Action<DownloadProgress> progress)
+        // Refreshes the chart's details (the author may have replaced its files), then makes sure
+        // the TJA and audio from the signed resource links are cached with matching size and
+        // SHA-256, and writes play.tja. `progress` runs on worker threads.
+        public async Task<(string Path, FanmadeChart Chart)> PrepareAsync(FanmadeChart selected, CancellationToken cancel = default,
+            Action<DownloadProgress> progress = null)
         {
+            var e = Endpoint(selected.Server) ?? throw new FanmadeException("SERVER_NOT_CONNECTED");
             var state = new DownloadProgress();
             void Publish() { cancel.ThrowIfCancellationRequested(); progress?.Invoke(state.Clone()); }
             Publish();
@@ -21,7 +25,7 @@ namespace OurTaiko.Online
                 for (int attempt = 0; attempt < 2; attempt++)
                 {
                     cancel.ThrowIfCancellationRequested();
-                    var c = FanmadeChart.From(Json.Parse(await e.AuthorizedAsync("/api/v1/charts/" + selected.Id, cancel: cancel)), e.Id, e.SongIdOnly, e.CourseKeyedDifficulties);
+                    var c = FanmadeChart.From(Json.Parse(await e.AuthorizedAsync("/api/v1/charts/" + selected.Id, cancel: cancel)), e.Id);
                     if (c.Id != selected.Id) throw new FanmadeException("RESOURCE_CHART_MISMATCH");
                     c.Category = selected.Category; c.Genre = selected.Genre;
                     var manifest = await e.ResourcesAsync(c.Id, cancel);
@@ -43,23 +47,6 @@ namespace OurTaiko.Online
                         }
                         if (await CacheWork(() => Matches(file), cancel))
                         { transfer.Status = FileProgress.State.Cached; transfer.Received = transfer.Total = resource.Size; Publish(); return file; }
-                        // Older cache directories are only trusted after re-reading their actual bytes.
-                        var legacy = await CacheWork(() =>
-                        {
-                            if (!Directory.Exists(root)) return null;
-                            foreach (string directory in Directory.GetDirectories(root))
-                            {
-                                if (!Json.HexId(Path.GetFileName(directory), 32)) continue;
-                                string candidate = Path.Combine(directory, name);
-                                if (Matches(candidate)) return candidate;
-                            }
-                            return (string)null;
-                        }, cancel);
-                        if (legacy != null)
-                        {
-                            await CacheWork(() => { WriteAtomic(file, File.ReadAllBytes(legacy)); return true; }, cancel);
-                            transfer.Status = FileProgress.State.Cached; transfer.Received = transfer.Total = resource.Size; Publish(); return file;
-                        }
                         if (manifest.ExpiresAt <= DateTimeOffset.UtcNow.AddSeconds(45)) throw new FanmadeException("RESOURCE_LINK_EXPIRED");
                         transfer.Status = FileProgress.State.Downloading; transfer.Total = resource.Size; transfer.Received = 0; Publish();
                         var bytes = await e.ResourceBytesAsync(resource, cancel, (received, total) => { transfer.Received = received; transfer.Total = total; Publish(); });

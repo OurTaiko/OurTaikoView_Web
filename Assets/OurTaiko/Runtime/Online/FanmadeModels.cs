@@ -21,11 +21,10 @@ namespace OurTaiko.Online
 
     public sealed class FanmadeDifficulty
     {
+        // Course as the API names it: Easy..Edit, with _1p/_2p on a DOUBLE chart.
         public string Course = "", Player = "", Maker = "";
-        public int Level, BlockIndex;
-        // cloudScoreEligible: only these blocks take part in online scores.
-        public bool Cloud;
-        // The block has #BRANCHSTART (Fanmade migration 031); servers without the field report false.
+        public int Level;
+        // The block has #BRANCHSTART (Fanmade migration 031); a missing field is false.
         public bool Branching;
     }
 
@@ -34,32 +33,30 @@ namespace OurTaiko.Online
     {
         public static readonly string[] Courses = { "Easy", "Normal", "Hard", "Oni", "Edit" };
 
-        public string Server = "", Id = "", Version = "", Title = "", Subtitle = "", Maker = "";
+        public string Server = "", Id = "", Title = "", Subtitle = "", Maker = "";
         public string TjaHash = "", AudioHash = "", Encoding = "", AudioName = "";
         public string Category = "", Genre = "";
-        public bool SongIdOnly, CourseKeyed, IsSingle = true;
+        public bool IsSingle = true;
         public readonly Dictionary<string, string> Titles = new Dictionary<string, string>(), Subtitles = new Dictionary<string, string>();
         public double Bpm = 120, DemoStart;
-        // One slot per Easy..Edit; a cloud-eligible block wins over a DOUBLE-only one.
+        // One slot per Easy..Edit; a DOUBLE chart fills them per player through ForPlayer.
         public FanmadeDifficulty[] Difficulties = new FanmadeDifficulty[5];
         public readonly List<FanmadeDifficulty> Blocks = new List<FanmadeDifficulty>();
 
         public bool IsPlayable => Difficulties.Any(d => d != null);
 
-        public static FanmadeChart From(JToken v, string server, bool songIdOnly = false, bool courseKeyed = false)
+        public static FanmadeChart From(JToken v, string server)
         {
-            if (courseKeyed && v["isSingle"]?.Type != JTokenType.Boolean) throw new FanmadeException("API_DIFFICULTY_INVALID");
+            if (v["isSingle"]?.Type != JTokenType.Boolean) throw new FanmadeException("API_DIFFICULTY_INVALID");
             var c = new FanmadeChart
             {
-                Server = server, SongIdOnly = songIdOnly, CourseKeyed = courseKeyed,
-                IsSingle = !courseKeyed || v["isSingle"]?.Value<bool>() == true,
-                Id = Json.Str(v, "id"), Version = songIdOnly ? "" : Json.Str(v, "versionId"), Title = Json.Str(v, "title"),
+                Server = server, IsSingle = (bool)v["isSingle"],
+                Id = Json.Str(v, "id"), Title = Json.Str(v, "title"),
                 Subtitle = Json.Str(v, "subtitle"), Maker = Json.Str(v, "maker"), TjaHash = Json.Str(v, "tjaHash"),
                 AudioHash = Json.Str(v, "audioHash"), Encoding = Json.Str(v, "encoding"), AudioName = Json.Str(v, "audioName"),
             };
-            if (!Json.HexId(c.Id, 32) || (!songIdOnly && !Json.HexId(c.Version, 32)) || !Json.HexId(c.TjaHash, 64) || !Json.HexId(c.AudioHash, 64))
+            if (!Json.HexId(c.Id, 32) || !Json.HexId(c.TjaHash, 64) || !Json.HexId(c.AudioHash, 64))
                 throw new FanmadeException("API_ID_INVALID");
-            if (!songIdOnly) { c.Titles["en"] = c.Title; c.Subtitles["en"] = c.Subtitle; }
             foreach (var (key, target) in new[] { ("titleTranslations", c.Titles), ("subtitleTranslations", c.Subtitles) })
             {
                 if (v[key] == null) continue;
@@ -73,23 +70,21 @@ namespace OurTaiko.Online
             foreach (var d in difficulties)
             {
                 string name = Json.Str(d, "course");
-                string baseCourse = name.EndsWith("_1p") || name.EndsWith("_2p") ? name.Substring(0, name.Length - 3) : name;
-                int slot = Array.IndexOf(Courses, baseCourse);
+                string player = name.EndsWith("_1p") ? "P1" : name.EndsWith("_2p") ? "P2" : "";
+                int slot = Array.IndexOf(Courses, player.Length > 0 ? name.Substring(0, name.Length - 3) : name);
                 if (slot < 0) continue;  // Tower/Dan are not playable here.
-                if (!courseKeyed && d["cloudScoreEligible"]?.Type != JTokenType.Boolean) throw new FanmadeException("API_DIFFICULTY_INVALID");
-                long level = Json.Number(d, "level"), block = courseKeyed ? 0 : Json.Number(d, "blockIndex");
-                if (level > 100 || block > 100000) throw new FanmadeException("API_DIFFICULTY_INVALID");
+                long level = Json.Number(d, "level");
+                if (level > 100) throw new FanmadeException("API_DIFFICULTY_INVALID");
                 var difficulty = new FanmadeDifficulty
                 {
-                    Course = name, Level = (int)level, BlockIndex = (int)block,
-                    Cloud = courseKeyed || (bool)d["cloudScoreEligible"], Player = courseKeyed ? (name.EndsWith("_1p") ? "P1" : name.EndsWith("_2p") ? "P2" : "") : Json.Str(d, "player"),
+                    Course = name, Level = (int)level, Player = player,
                     Maker = d["maker"]?.Value<string>() ?? "",
                     Branching = d["branching"]?.Type == JTokenType.Boolean && (bool)d["branching"],
                 };
-                if (courseKeyed && (c.Blocks.Any(x => x.Course == name) || c.IsSingle != string.IsNullOrEmpty(difficulty.Player)))
+                if (c.Blocks.Any(x => x.Course == name) || c.IsSingle != (player.Length == 0))
                     throw new FanmadeException("API_DIFFICULTY_INVALID");
                 c.Blocks.Add(difficulty);
-                if (c.Difficulties[slot] == null || (!c.Difficulties[slot].Cloud && difficulty.Cloud)) c.Difficulties[slot] = difficulty;
+                c.Difficulties[slot] ??= difficulty;
             }
             return c;
         }
@@ -147,12 +142,12 @@ namespace OurTaiko.Online
         public string TitleHeaders()
         {
             var output = new System.Text.StringBuilder("MAKER:" + LineText(Maker) + "\n");
-            if (SongIdOnly) output.Append("TITLE:").Append(LineText(Title)).Append("\nSUBTITLE:").Append(LineText(Subtitle)).Append("\n");
+            output.Append("TITLE:").Append(LineText(Title)).Append("\nSUBTITLE:").Append(LineText(Subtitle)).Append("\n");
             foreach (var (key, values) in new[] { ("TITLE", Titles), ("SUBTITLE", Subtitles) })
                 foreach (var pair in values.OrderBy(p => p.Key, StringComparer.Ordinal))
                 {
                     if (pair.Key != "en" && pair.Key != "ja" && pair.Key != "zh" && pair.Key != "ko") continue;
-                    output.Append(key).Append(pair.Key == "en" && !SongIdOnly ? "" : pair.Key.ToUpperInvariant()).Append(':').Append(LineText(pair.Value)).Append('\n');
+                    output.Append(key).Append(pair.Key.ToUpperInvariant()).Append(':').Append(LineText(pair.Value)).Append('\n');
                 }
             return output.ToString();
         }
@@ -170,19 +165,19 @@ namespace OurTaiko.Online
 
     public sealed class FanmadeScore
     {
-        public string Id = "", Song = "", Version = "", Difficulty = "";
+        public string Id = "", Song = "", Difficulty = "";
         public long Good, Ok, Bad, Score, Drumroll, MaxCombo, ClearStatus;
 
-        public static FanmadeScore From(JToken v, bool songIdOnly = false) => new FanmadeScore
+        public static FanmadeScore From(JToken v) => new FanmadeScore
         {
-            Id = Json.Str(v, "id"), Song = Json.Str(v, "songId"), Version = songIdOnly ? "" : Json.Str(v, "versionId"), Difficulty = Json.Str(v, "difficulty"),
+            Id = Json.Str(v, "id"), Song = Json.Str(v, "songId"), Difficulty = Json.Str(v, "difficulty"),
             Good = Json.Number(v, "good"), Ok = Json.Number(v, "ok"), Bad = Json.Number(v, "bad"), Score = Json.Number(v, "score"),
             Drumroll = Json.Number(v, "drumroll"), MaxCombo = Json.Number(v, "max_combo"),
             ClearStatus = v["ClearStatus"] == null ? 0 : Json.Number(v, "ClearStatus"),
         };
     }
 
-    // Recorded input sent with a score when the server declares scoreReplayVersion 1.
+    // Recorded input sent with every score (scoreReplayVersion 1).
     // Types: 0 left ka, 1 left don, 2 right don, 3 right ka; times are judged game time in ms.
     public sealed class PlayRecord
     {
