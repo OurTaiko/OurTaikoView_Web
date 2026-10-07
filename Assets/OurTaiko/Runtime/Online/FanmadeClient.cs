@@ -181,10 +181,9 @@ namespace OurTaiko.Online
             Update();
         }
 
-        // Song ids only, course-keyed difficulties, signed resource links and replay uploads.
+        // Course-keyed difficulties, signed resource links and replay uploads.
         static bool SupportsProtocol(JObject snapshot) =>
-            snapshot["songIdOnly"]?.Type == JTokenType.Boolean && (bool)snapshot["songIdOnly"]
-            && snapshot["courseKeyedDifficulties"]?.Type == JTokenType.Boolean && (bool)snapshot["courseKeyedDifficulties"]
+            snapshot["courseKeyedDifficulties"]?.Type == JTokenType.Boolean && (bool)snapshot["courseKeyedDifficulties"]
             && snapshot["resourceDownloadVersion"]?.Type == JTokenType.Integer && (long)snapshot["resourceDownloadVersion"] == 1
             && snapshot["scoreReplayVersion"]?.Type == JTokenType.Integer && (long)snapshot["scoreReplayVersion"] == 1;
 
