@@ -25,6 +25,8 @@ namespace OurTaiko.Online
         public int Level, BlockIndex;
         // cloudScoreEligible: only these blocks take part in online scores.
         public bool Cloud;
+        // The block has #BRANCHSTART (Fanmade migration 031); servers without the field report false.
+        public bool Branching;
     }
 
     // A published chart as /api/v1/game/categories/{id}/charts and /api/v1/charts/{id} return it.
@@ -82,6 +84,7 @@ namespace OurTaiko.Online
                     Course = name, Level = (int)level, BlockIndex = (int)block,
                     Cloud = courseKeyed || (bool)d["cloudScoreEligible"], Player = courseKeyed ? (name.EndsWith("_1p") ? "P1" : name.EndsWith("_2p") ? "P2" : "") : Json.Str(d, "player"),
                     Maker = d["maker"]?.Value<string>() ?? "",
+                    Branching = d["branching"]?.Type == JTokenType.Boolean && (bool)d["branching"],
                 };
                 if (courseKeyed && (c.Blocks.Any(x => x.Course == name) || c.IsSingle != string.IsNullOrEmpty(difficulty.Player)))
                     throw new FanmadeException("API_DIFFICULTY_INVALID");
@@ -120,7 +123,11 @@ namespace OurTaiko.Online
             };
             for (int i = 0; i < Difficulties.Length; i++)
                 if (Difficulties[i] != null)
-                    info.Courses.Add(new CourseInfo { Difficulty = (Difficulty)i, Course = Difficulties[i].Course, Level = Difficulties[i].Level });
+                    info.Courses.Add(new CourseInfo
+                    {
+                        Difficulty = (Difficulty)i, Course = Difficulties[i].Course, Level = Difficulties[i].Level,
+                        IsBranching = Difficulties[i].Branching,
+                    });
             return info;
         }
 
