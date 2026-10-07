@@ -141,13 +141,13 @@ namespace OurTaiko.Online
                     var song = ScriptableObject.CreateInstance<SongDefinition>();
                     song.name = key;
                     song.hideFlags = HideFlags.DontSave;
-                    SetChartText(song, chart.CatalogTja());
                     owned.Add(song);
                     entry = (song, chart);
                 }
                 entry.Chart = chart;
                 entry.Song.onlineChart = chart;
-                SetChartText(entry.Song, chart.CatalogTja());
+                // A copy downloaded earlier may be an older version; loading downloads the chart again.
+                SetChartText(entry.Song, null);
                 entry.Song.genre = GenreFrame(chart.Genre);
                 entry.Song.course = chart.Difficulties.First(d => d != null).Course;
                 byKey[key] = entry;
@@ -182,11 +182,12 @@ namespace OurTaiko.Online
             if (music != null && !owned.Contains(music)) owned.Add(music);
         }
 
+        // null drops the chart: the song lists from its metadata until SongLoadingScene downloads it.
         void SetChartText(SongDefinition song, string text)
         {
             if (song.chart != null && owned.Remove(song.chart)) Destroy(song.chart);
-            song.chart = new TextAsset(text) { name = song.name, hideFlags = HideFlags.DontSave };
-            owned.Add(song.chart);
+            song.chart = text == null ? null : new TextAsset(text) { name = song.name, hideFlags = HideFlags.DontSave };
+            if (song.chart != null) owned.Add(song.chart);
         }
 
         void ClearSongs()

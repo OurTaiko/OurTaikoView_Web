@@ -30,26 +30,12 @@ namespace OurTaiko
         public TaikoChart Parse() => TjaParser.Parse(chart.text, ResolveCourse(course));
         public TaikoChart Parse(string requestedCourse) => TjaParser.Parse(chart.text, ResolveCourse(string.IsNullOrEmpty(requestedCourse) ? course : requestedCourse));
         public SongInfo ReadInfo() => SongInfo.Read(chart.text);
-        // Display metadata is separate from the parsed chart and score identity.
+        // Display metadata is separate from the parsed chart and score identity. Online songs take it
+        // from the server's metadata: their chart is only set once SongLoadingScene downloads it.
         public SongInfo ReadDisplayInfo()
         {
             string language = SettingManager.Instance != null ? SettingManager.Instance.Settings.general.Language : "en";
-            var info = SongInfo.Read(chart.text, language);
-            if (onlineChart?.SongIdOnly == true)
-            {
-                info.Title = onlineChart.DisplayTitle(language);
-                info.Subtitle = onlineChart.DisplayTitle(language, true);
-            }
-            if (onlineChart?.CourseKeyed == true)
-            {
-                info.Courses.RemoveAll(entry => onlineChart.Difficulties[(int)entry.Difficulty] == null);
-                foreach (var entry in info.Courses)
-                {
-                    var d = onlineChart.Difficulties[(int)entry.Difficulty];
-                    if (d != null) { entry.Course = d.Course; entry.Level = d.Level; }
-                }
-            }
-            return info;
+            return onlineChart != null ? onlineChart.ToSongInfo(language) : SongInfo.Read(chart.text, language);
         }
     }
 }

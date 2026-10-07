@@ -106,13 +106,22 @@ namespace OurTaiko.Online
             }
             return copy;
         }
-        public string DisplayTitle(string language, bool subtitle = false)
+
+        // Song-select metadata straight from the API; the chart itself is only downloaded to play.
+        // Names use the chosen language's translation, else the chart's original title/subtitle.
+        public SongInfo ToSongInfo(string language)
         {
-            var values = subtitle ? Subtitles : Titles;
-            language = language == "zh-Hans" ? "zh" : language;
-            if (!values.TryGetValue(language ?? "en", out var value) || string.IsNullOrWhiteSpace(value))
-                if (!values.TryGetValue("en", out value) || string.IsNullOrWhiteSpace(value)) value = subtitle ? Subtitle : Title;
-            return subtitle ? value.TrimStart('-', '+') : value + (SelectedPlayer.Length > 0 ? " " + SelectedPlayer : "");
+            language = language == "zh-Hans" ? "zh" : language ?? "en";
+            var info = new SongInfo
+            {
+                Title = SongInfo.Translated(Titles, language, Title) + (SelectedPlayer.Length > 0 ? " " + SelectedPlayer : ""),
+                Subtitle = SongInfo.Translated(Subtitles, language, Subtitle).TrimStart('-', '+'),
+                Genre = Genre, Bpm = Bpm, DemoStart = DemoStart,
+            };
+            for (int i = 0; i < Difficulties.Length; i++)
+                if (Difficulties[i] != null)
+                    info.Courses.Add(new CourseInfo { Difficulty = (Difficulty)i, Course = Difficulties[i].Course, Level = Difficulties[i].Level });
+            return info;
         }
 
         // The verified audio keeps its real container in the cache name; anything else is refused.
@@ -127,7 +136,7 @@ namespace OurTaiko.Online
             }
         }
 
-        // MAKER and the TITLE/SUBTITLE translations the playable copy and the catalog entry use.
+        // MAKER and the TITLE/SUBTITLE translations the playable copy uses.
         public string TitleHeaders()
         {
             var output = new System.Text.StringBuilder("MAKER:" + LineText(Maker) + "\n");
@@ -139,18 +148,6 @@ namespace OurTaiko.Online
                     output.Append(key).Append(pair.Key == "en" && !SongIdOnly ? "" : pair.Key.ToUpperInvariant()).Append(':').Append(LineText(pair.Value)).Append('\n');
                 }
             return output.ToString();
-        }
-
-        // Song-select metadata only (no notes): it is never played, the download replaces it.
-        public string CatalogTja()
-        {
-            var text = new System.Text.StringBuilder("// Fanmade catalog metadata only. Never play this file.\n");
-            text.Append(TitleHeaders());
-            text.Append("BPM:").Append(Bpm.ToString(CultureInfo.InvariantCulture)).Append('\n');
-            text.Append("DEMOSTART:").Append(DemoStart.ToString(CultureInfo.InvariantCulture)).Append('\n');
-            foreach (var d in Difficulties)
-                if (d != null) text.Append("COURSE:").Append(d.Course).Append("\nLEVEL:").Append(d.Level).Append("\n#START\n0,\n#END\n");
-            return text.ToString();
         }
 
         internal static string LineText(string s) => (s ?? "").Replace('\n', ' ').Replace('\r', ' ').Replace('\0', ' ');

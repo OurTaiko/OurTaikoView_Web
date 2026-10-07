@@ -101,12 +101,10 @@ namespace OurTaiko
             return info;
         }
 
-        static string Translated(Dictionary<string, string> values, string language, string fallback)
-        {
-            if (values.TryGetValue(language, out string text) && !string.IsNullOrWhiteSpace(text)) return text;
-            if (values.TryGetValue("ja", out text) && !string.IsNullOrWhiteSpace(text)) return text;
-            return fallback;
-        }
+        // Display names: the chosen language's translation, else the chart's original TITLE/SUBTITLE.
+        // Online metadata uses the same rule.
+        internal static string Translated(Dictionary<string, string> values, string language, string original)
+            => values.TryGetValue(language, out string text) && !string.IsNullOrWhiteSpace(text) ? text : original;
 
         static string TitleLanguage(string suffix) => suffix switch
         {
