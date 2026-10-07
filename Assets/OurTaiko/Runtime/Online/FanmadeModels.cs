@@ -24,7 +24,7 @@ namespace OurTaiko.Online
         // Course as the API names it: Easy..Edit, with _1p/_2p on a DOUBLE chart.
         public string Course = "", Player = "", Maker = "";
         public int Level;
-        // The block has #BRANCHSTART (Fanmade migration 031); a missing field is false.
+        // The block has #BRANCHSTART (Fanmade migration 031).
         public bool Branching;
     }
 
@@ -59,7 +59,6 @@ namespace OurTaiko.Online
                 throw new FanmadeException("API_ID_INVALID");
             foreach (var (key, target) in new[] { ("titleTranslations", c.Titles), ("subtitleTranslations", c.Subtitles) })
             {
-                if (v[key] == null) continue;
                 if (!(v[key] is JObject translations)) throw new FanmadeException("API_TRANSLATIONS_INVALID");
                 foreach (var pair in translations)
                     if (pair.Value.Type == JTokenType.String) target[pair.Key] = (string)pair.Value;
@@ -74,12 +73,11 @@ namespace OurTaiko.Online
                 int slot = Array.IndexOf(Courses, player.Length > 0 ? name.Substring(0, name.Length - 3) : name);
                 if (slot < 0) continue;  // Tower/Dan are not playable here.
                 long level = Json.Number(d, "level");
-                if (level > 100) throw new FanmadeException("API_DIFFICULTY_INVALID");
+                if (level > 100 || d["branching"]?.Type != JTokenType.Boolean) throw new FanmadeException("API_DIFFICULTY_INVALID");
                 var difficulty = new FanmadeDifficulty
                 {
                     Course = name, Level = (int)level, Player = player,
-                    Maker = d["maker"]?.Value<string>() ?? "",
-                    Branching = d["branching"]?.Type == JTokenType.Boolean && (bool)d["branching"],
+                    Maker = Json.Str(d, "maker"), Branching = (bool)d["branching"],
                 };
                 if (c.Blocks.Any(x => x.Course == name) || c.IsSingle != (player.Length == 0))
                     throw new FanmadeException("API_DIFFICULTY_INVALID");
@@ -173,7 +171,7 @@ namespace OurTaiko.Online
             Id = Json.Str(v, "id"), Song = Json.Str(v, "songId"), Difficulty = Json.Str(v, "difficulty"),
             Good = Json.Number(v, "good"), Ok = Json.Number(v, "ok"), Bad = Json.Number(v, "bad"), Score = Json.Number(v, "score"),
             Drumroll = Json.Number(v, "drumroll"), MaxCombo = Json.Number(v, "max_combo"),
-            ClearStatus = v["ClearStatus"] == null ? 0 : Json.Number(v, "ClearStatus"),
+            ClearStatus = Json.Number(v, "ClearStatus"),
         };
     }
 

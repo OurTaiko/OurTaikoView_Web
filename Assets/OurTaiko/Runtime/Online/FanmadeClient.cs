@@ -131,7 +131,7 @@ namespace OurTaiko.Online
                 {
                     var category = (Json.Str(v, "id"), Json.Str(v, "title"), Json.Str(v, "genre"));
                     if (!ValidCategory(category.Item1) || categories.Any(c => c.Id == category.Item1)) throw new FanmadeException("API_CATEGORY_INVALID");
-                    if (v["chartCount"] != null) Json.Number(v, "chartCount");
+                    Json.Number(v, "chartCount");
                     categories.Add(category);
                 }
                 var scores = new List<FanmadeScore>();
