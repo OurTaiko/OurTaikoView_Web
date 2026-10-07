@@ -12,8 +12,8 @@ files = {p.relative_to(source).as_posix(): hashlib.sha256(p.read_bytes()).hexdig
 build_id = hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()[:16]
 target = frontend / 'public/player' / build_id
 shutil.copytree(source, target, dirs_exist_ok=True, ignore=shutil.ignore_patterns('.DS_Store'))
-(frontend / 'player-build.json').write_text(json.dumps({
+(frontend / 'public/player-build.json').write_text(json.dumps({
     'path': f'/player/{build_id}/index.html', 'files': files
 }, indent=2) + '\n')
-print(f'Installed player at {target}; commit player-build.json and the new directory with Git LFS')
+print(f'Installed player at {target}; commit public/player-build.json and the new directory with Git LFS')
 PYTHON

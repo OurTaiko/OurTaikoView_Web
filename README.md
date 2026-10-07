@@ -19,7 +19,7 @@ sh scripts/install-player.sh ../Fanmade/frontend
 
 产物为 `Builds/Web` 整个目录，构建报告 `Builds/report.json`。构建工具通过 Editor API 清理非 PracticeScene 的场景及无关美术依赖，保留场景序列化引用。
 
-Fanmade 直接将构建产物保存于 `public/player/<内容哈希>/`，`.unityweb` 大文件使用 Git LFS。安装脚本同时更新前端 `player-build.json`，固定入口和各文件 SHA-256；前端构建校验文件完整性，避免发布 LFS 指针。内容哈希目录避免浏览器混用不同版本的缓存。
+Fanmade 直接将构建产物保存于 `public/player/<内容哈希>/`，`.unityweb` 大文件使用 Git LFS。安装脚本同时更新前端 `public/player-build.json`，固定入口和各文件 SHA-256；前端构建校验文件完整性，避免发布 LFS 指针。内容哈希目录避免浏览器混用不同版本的缓存。
 
 更新播放器：构建 Web → 运行安装脚本 → 在前端提交新目录及 player-build.json → 推送。前端 CI 和服务器均须安装 Git LFS 并拉取对象。也可用 `VITE_PLAYER_URL` 指向独立地址，跨域时需配置资源 CORS。
 
