@@ -8103,9 +8103,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 546, y: 60}
+  m_AnchoredPosition: {x: 546, y: -20}
   m_SizeDelta: {x: 144, y: 80}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0, y: 0}
 --- !u!222 &1017079118
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -10754,7 +10754,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OurTaiko.Runtime::OurTaiko.PlayScene
   practiceView: {fileID: 208061732}
-  defaultSong: {fileID: 0}
   music: {fileID: 976959716}
   hitAudio: {fileID: 549007535}
   don: {fileID: 8300000, guid: 9a0f28655cff14d18b91e1f38cf50211, type: 3}
@@ -10844,6 +10843,7 @@ MonoBehaviour:
   - {fileID: 1274982036}
   - {fileID: 859119830}
   gogoTint: {fileID: 270388919}
+  ending: {fileID: 0}
 --- !u!4 &1415223208
 Transform:
   m_ObjectHideFlags: 0
@@ -14886,6 +14886,7 @@ MonoBehaviour:
   number: {fileID: 1197382233}
   text: {fileID: 859641817}
   voices:
+  - {fileID: 8300000, guid: da15fb597aff44642916ba75cb8cf49e, type: 3}
   - {fileID: 8300000, guid: 2d6d4bbf0fb37451184f0b0f74186dbb, type: 3}
   - {fileID: 8300000, guid: 69cce2da59da54c0c9c1e3fc0cfeef4b, type: 3}
   - {fileID: 8300000, guid: e9992b164793a4d83803720f74bc7098, type: 3}

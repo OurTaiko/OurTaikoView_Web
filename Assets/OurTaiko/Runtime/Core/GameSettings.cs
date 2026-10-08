@@ -21,6 +21,8 @@ namespace OurTaiko
             var settings = new GameSettings();
             if (!string.IsNullOrWhiteSpace(json)) JsonUtility.FromJsonOverwrite(json, settings);
             settings.general ??= new GeneralSettings();
+            settings.general.keyboard ??= new KeyboardBindings();
+            settings.general.keyboard.Normalize();
             settings.play ??= new PlaySettings();
             settings.display ??= new DisplaySettings();
             settings.audio ??= new AudioOptions();
@@ -36,6 +38,7 @@ namespace OurTaiko
         public static readonly string[] LanguageNames = { "English", "日本語", "简体中文", "繁體中文", "Korean" };
         // Only song titles/subtitles use this setting until interface localization is added.
         public string language = "en";
+        public KeyboardBindings keyboard = new KeyboardBindings();
         public string Language => Array.IndexOf(Languages, language) >= 0 ? language : "en";
     }
 

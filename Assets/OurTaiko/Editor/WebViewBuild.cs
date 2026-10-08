@@ -17,8 +17,6 @@ namespace OurTaiko.Editor
         public static void Build()
         {
             var scene = EditorSceneManager.OpenScene(Scene);
-            var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
-            play.defaultSong = null;
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(Scene, true) };

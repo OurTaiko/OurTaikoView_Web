@@ -1,3 +1,11 @@
+# Web 播放器验证 — 2026-10-08（同步主仓库）
+
+- 从 OurTaikoPlay `1183c5c` 同步共享逻辑和表现，保留嵌入协议、Web Audio 和练习结束行为；[范围与差异](SharedCodeSync.md)。
+- EditMode 114/114 通过；WebGL 构建成功，0 errors，35,437,048 bytes。
+- Chrome 真实 WASM 回归通过：自动演奏、手动键盘/鼓面、鼓声音量、结束重置、三条固定路线、OGG/WAV、390px 布局与卸载，无 pageerror 或 API POST。
+- 使用临时入口加载本次构建；既有浏览器测试的移动布局末步临时适配为先打开“谱面”分区。未修改前端源码或安装播放器。
+- 未提交、推送或部署；未验证 Safari、Firefox 与真实移动设备。
+
 # Web 播放器验证 — 2026-10-06（Web Audio 后端）
 
 - 音频改走 Web Audio：单个 `latencyHint: interactive` 的 AudioContext（本机 Chrome：48 kHz，baseLatency 5.3 ms，outputLatency 24 ms）。构建时禁用 Unity 音频，页面只创建这一个 AudioContext（无 Unity 的 AudioContext，也无 OfflineAudioContext）；已删除 BrowserAudioDecoder 与 PCM AudioClip 回退。

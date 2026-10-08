@@ -19,7 +19,7 @@ namespace OurTaiko
     // Song-select metadata of a TJA file: the header and every course with a complete #START/#END.
     public sealed class SongInfo
     {
-        public string Title = "Untitled", Subtitle = "", Genre = "";
+        public string Title = "Untitled", Subtitle = "", Genre = "", Wave = "";
         public double Bpm = 120, DemoStart;
         public readonly List<CourseInfo> Courses = new List<CourseInfo>();
 
@@ -79,6 +79,7 @@ namespace OurTaiko
                     case "TITLE": info.Title = value; titles["en"] = value; break;
                     case "SUBTITLE": info.Subtitle = value.TrimStart('-', '+'); subtitles["en"] = info.Subtitle; break;
                     case "GENRE": info.Genre = value; break;
+                    case "WAVE": info.Wave = value; break;
                     case "BPM": info.Bpm = Number(value, info.Bpm); break;
                     case "DEMOSTART": info.DemoStart = Number(value, 0); break;
                     case "COURSE": course = value; level = 0; break;

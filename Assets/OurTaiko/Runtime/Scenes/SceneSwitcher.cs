@@ -125,7 +125,7 @@ namespace OurTaiko
         public void Play(SongDefinition song, string course, bool autoPlay)
         {
             if (IsInputBlocked || song == null) return;
-            SelectedSong = song; SelectedCourse = course; AutoPlay = autoPlay;
+            Select(song, course, autoPlay);
             completedSong = null; completedRecord = null;
             preparedChart = null;
             if (CurrentScene != GameScene && CurrentScene != PracticeScene && CurrentScene != ResultScene && CurrentScene != SongLoadingScene && !string.IsNullOrEmpty(CurrentScene))
@@ -134,6 +134,12 @@ namespace OurTaiko
             if (songTransition == null || !Application.CanStreamedLevelBeLoaded(SongLoadingScene)) { SwitchScene(SelectedPlayScene); return; }
             ShowSongOnCurtain(song);
             SwitchScene(SongLoadingScene, TransitionStyle.Curtain, false);
+        }
+
+        // The song the play scenes load next; Play() sets it before switching.
+        public void Select(SongDefinition song, string course = null, bool autoPlay = false)
+        {
+            SelectedSong = song; SelectedCourse = course; AutoPlay = autoPlay;
         }
 
         public void ShowSongOnCurtain(SongDefinition song)
@@ -167,7 +173,7 @@ namespace OurTaiko
             return chart;
         }
         public void ConfigureEmbedded(SongDefinition song, string course, bool autoPlay)
-        { SelectedSong = song; SelectedCourse = course; AutoPlay = autoPlay; PracticeMode = true; }
+        { Select(song, course, autoPlay); PracticeMode = true; }
 
         public void Restart() => SwitchScene(SelectedPlayScene);
         public void ReturnToMenu() => SwitchScene(Application.CanStreamedLevelBeLoaded(ReturnScene) ? ReturnScene : MenuScene);

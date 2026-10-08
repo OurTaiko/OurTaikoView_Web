@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace OurTaiko
 {
-    // ComboAnnounce (combo_announce.cpp with Nijiiro's combo_announce.lua): every 100 combo the scroll
+    // ComboAnnounce (combo_announce.cpp with Nijiiro's combo_announce.lua): at 50 and every 100 combo the scroll
     // (announce_bg_1p) shows the count in announce_digit_1p and コンボ!, fading in over 100 ms, holding
     // until 1666.67 ms and fading out over 100 ms (ComboAnnounce.anim, song clock); a newer announce
     // replaces it. The combo's voice (Sounds/game/combo/<n>_1p) is returned once per announce. Drawn
@@ -20,7 +20,7 @@ namespace OurTaiko
         [Tooltip("The digits and コンボ! are laid out from this rect's top-left (announce_digit x 362, y -196).")]
         public RectTransform number;
         public Image text;
-        [Tooltip("Voices for 100, 200, ... combo: element i is (i + 1) x 100.")]
+        [Tooltip("Voices for 50, 100, 200, ... combo: element 0 is 50; element i > 0 is i x 100.")]
         public AudioClip[] voices;
 
         readonly List<Image> images = new List<Image>();
@@ -29,7 +29,7 @@ namespace OurTaiko
         public int Combo { get; private set; }
         public bool IsShowing => gameObject.activeSelf;
 
-        // Combo % 100 == 0 starts a new announce; returns its voice (null if there is none).
+        // 50 or each multiple of 100 starts a new announce; returns its voice (null if there is none).
         public AudioClip Announce(int combo, double songTime)
         {
             Combo = combo;
@@ -37,7 +37,7 @@ namespace OurTaiko
             Layout(combo.ToString());
             gameObject.SetActive(true);
             ShowTime(songTime);
-            int index = combo / 100 - 1;
+            int index = combo == 50 ? 0 : combo / 100;
             return voices != null && index >= 0 && index < voices.Length ? voices[index] : null;
         }
 

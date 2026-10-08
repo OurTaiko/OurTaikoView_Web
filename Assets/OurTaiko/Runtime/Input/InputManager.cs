@@ -54,23 +54,14 @@ namespace OurTaiko
 
         public static void ResetBindings()
         {
-            SetBinding(InputKey.LeftDon, Key.F);
-            SetBinding(InputKey.RightDon, Key.J);
-            SetBinding(InputKey.LeftKa, Key.D);
-            SetBinding(InputKey.RightKa, Key.K);
-            SetBinding(InputKey.Confirm, Key.Enter, Key.NumpadEnter);
-            SetBinding(InputKey.Back, Key.Escape);
-            SetBinding(InputKey.Pause, Key.Space);
-            SetBinding(InputKey.Restart, Key.F1);
-            SetBinding(InputKey.MenuLeft, Key.LeftArrow);
-            SetBinding(InputKey.MenuRight, Key.RightArrow);
-            SetBinding(InputKey.MenuUp, Key.UpArrow);
-            SetBinding(InputKey.MenuDown, Key.DownArrow);
+            foreach (InputKey key in Enum.GetValues(typeof(InputKey)))
+                SetBinding(key, KeyboardBindings.DefaultKeys(key));
         }
 
         // A physical key drives at most one logical key; rebinding takes it from the old owner.
         public static void SetBinding(InputKey key, params Key[] keys)
         {
+            keys = KeyboardBindings.Clean(keys);
             foreach (var old in bindings[(int)key] ?? Array.Empty<Key>()) reverse.Remove(old);
             foreach (var physical in keys)
             {

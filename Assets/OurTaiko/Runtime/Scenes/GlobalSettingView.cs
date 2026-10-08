@@ -110,7 +110,7 @@ namespace OurTaiko
             int items = menu.CurrentType != null ? menu.ItemCount : 0;
             var item = menu.CurrentItem;
             bool numeric = item?.IsNumber == true;
-            int choices = numeric ? 1 : item?.Choices.Count ?? 0;
+            int choices = numeric ? 1 : menu.Choices.Count;
             int before = typeRows.Count + itemRows.Count + choiceRows.Count;
             Ensure(typeRows, types);
             Ensure(itemRows, Math.Max(1, items));
@@ -154,7 +154,7 @@ namespace OurTaiko
                 row.label.text = isReturn ? "Return" : rowItem.Label;
                 row.value.enableAutoSizing = true; row.value.fontSizeMin = 18; row.value.fontSizeMax = 40;
                 row.value.overflowMode = TextOverflowModes.Ellipsis;
-                row.value.text = isReturn ? "" : rowItem.Format(rowItem.Get(menu.Settings));
+                row.value.text = isReturn ? "" : rowItem.Format(menu.Settings);
                 row.box.sprite = inItems && i == menu.ItemIndex ? itemBoxSelected : itemBox;
             }
 
@@ -164,13 +164,18 @@ namespace OurTaiko
             detail.alpha = open ? 1 : 0;
             detail.blocksRaycasts = open;
             shade.gameObject.SetActive(open);
-            if (previousChoice != null) previousChoice.gameObject.SetActive(open && (numeric || choices > 3));
-            if (nextChoice != null) nextChoice.gameObject.SetActive(open && (numeric || choices > 3));
+            if (previousChoice != null) previousChoice.gameObject.SetActive(open && !menu.CapturingKey && (numeric || choices > 3));
+            if (nextChoice != null) nextChoice.gameObject.SetActive(open && !menu.CapturingKey && (numeric || choices > 3));
             if (open)
             {
                 detailTitle.text = shownItem.Label;
                 description.enableAutoSizing = true; description.fontSizeMin = 22; description.fontSizeMax = 32;
-                description.text = shownItem.Description;
+                description.overflowMode = TextOverflowModes.Ellipsis;
+                description.text = menu.CapturingKey
+                    ? "Press any key to add it (including Enter or Escape). Tap outside this panel to cancel."
+                    : shownItem.Description;
+                if (shownItem.BindingKey.HasValue && !menu.CapturingKey)
+                    description.text += "\nBound: " + menu.Settings.general.keyboard.Format(shownItem.BindingKey.Value);
                 if (numeric) description.text += $"\nDefault: {shownItem.Format(shownItem.DefaultValue)}  /  Step: {shownItem.Step} {shownItem.Unit}  /  Ka: adjust  /  Don or tap: save";
                 int lit = numeric ? 0 : menu.ChoiceIndex;
                 FirstChoice = Mathf.Clamp(lit - 1, 0, Math.Max(0, choices - 3));
@@ -180,13 +185,13 @@ namespace OurTaiko
                 for (int i = 0; i < choiceRows.Count; i++)
                 {
                     var row = choiceRows[i];
-                    bool shown = i < count;
+                    bool shown = !menu.CapturingKey && i < count;
                     row.root.gameObject.SetActive(shown);
                     if (!shown) continue;
                     row.root.anchoredPosition = choiceBase + new Vector2((i - (count - 1) / 2f) * choicePitch + shift, 0);
                     row.label.enableAutoSizing = true; row.label.fontSizeMin = 18; row.label.fontSizeMax = 40;
                     row.label.overflowMode = TextOverflowModes.Ellipsis;
-                    row.label.text = numeric ? shownItem.Format(menu.ChoiceIndex) : shownItem.Choices[i + FirstChoice];
+                    row.label.text = numeric ? shownItem.Format(menu.ChoiceIndex) : menu.Choices[i + FirstChoice];
                     row.box.sprite = i + FirstChoice == lit ? choiceOn : choiceOff;
                 }
             }
@@ -197,6 +202,7 @@ namespace OurTaiko
                 SettingsFocus.Items => itemRows[menu.ItemIndex].root,
                 _ => choiceRows[numeric ? 0 : menu.ChoiceIndex - FirstChoice].root,
             };
+            cursor.gameObject.SetActive(!menu.CapturingKey);
             PlaceCursor(target);
         }
 

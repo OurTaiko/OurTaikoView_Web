@@ -14,9 +14,9 @@ namespace OurTaiko.Online
     // server. Difference: every category is fetched when a server connects (OurTaikoPlayer waits
     // for the server folder to open); song select shows each category as a folder.
     //
-    // Cache layout under the root, keyed by content hash:
-    //   objects/<endpoint>/<chart>/tja|audio|preview/<sha256>/  verified downloads
-    //   objects/<endpoint>/<chart>/plays/<tja sha256>-<audio sha256>/  play.tja and its audio
+    // Cache layout under the root: objects/<first two hex digits>/<sha256>, one verified file per
+    // content hash (TJA, audio or preview), shared by every server, account and chart. Paths stay
+    // short enough for Windows' 260-character limit. The playable TJA is never written to disk.
     // Pending uploads live in the separate PendingScoreUploads SQLite table.
     public sealed partial class FanmadeClient : IDisposable
     {
@@ -323,15 +323,33 @@ namespace OurTaiko.Online
 #endif
         }
 
-        static void WriteAtomic(string path, byte[] bytes)
+        // The cached file for a content hash (the manifest only accepts 64-digit hex hashes).
+        string ObjectPath(string hash) => Path.Combine(CacheRoot, "objects", hash.Substring(0, 2), hash);
+
+        static bool Matches(string path, FanmadeResource resource)
+        {
+            if (!File.Exists(path) || new FileInfo(path).Length != resource.Size) return false;
+            using var stream = File.OpenRead(path);
+            using var sha = SHA256.Create();
+            return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant() == resource.Hash;
+        }
+
+        // Publishes verified bytes atomically. Two downloads of the same object can race (a preview
+        // requested again before the first finished, or one file on two servers): when the other
+        // one already published a matching file, or holds it open, that file is kept.
+        static void StoreObject(string path, byte[] bytes, FanmadeResource resource)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            string temporary = path + "." + Guid.NewGuid().ToString("N") + ".part";
+            string temporary = path + "." + Guid.NewGuid().ToString("N").Substring(0, 8) + ".part";
             try
             {
                 File.WriteAllBytes(temporary, bytes);
-                if (File.Exists(path)) File.Replace(temporary, path, null);
-                else File.Move(temporary, path);
+                try
+                {
+                    if (File.Exists(path)) File.Replace(temporary, path, null);
+                    else File.Move(temporary, path);
+                }
+                catch (IOException) when (Matches(path, resource)) { }
             }
             finally { if (File.Exists(temporary)) File.Delete(temporary); }
         }

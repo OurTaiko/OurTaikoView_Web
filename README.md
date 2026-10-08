@@ -28,7 +28,7 @@ Fanmade 直接将构建产物保存于 `public/player/<内容哈希>/`，`.unity
 iframe URL 的 `parentOrigin` 参数指定允许发送命令的宿主来源，默认与播放器同源。双方必须验证 origin 和 window source，并使用精确 targetOrigin。
 
 ```json
-{"channel":"ourtaiko-view","version":1,"type":"load","requestId":"unique-id","payload":{"chartText":"TITLE:...","audioUrl":"https://example.com/audio.ogg","audioType":"ogg","course":"Oni","branch":"normal","practice":true,"autoPlay":false,"replay":false}}
+{"channel":"ourtaiko-view","version":1,"type":"load","requestId":"unique-id","payload":{"chartText":"TITLE:...","audioUrl":"https://example.com/audio.ogg","audioType":"ogg","course":"Oni","practice":true,"autoPlay":false,"replay":false}}
 ```
 
 `audioType` 支持 `ogg/mp3/wav`；URL 无扩展名时必传（例如 Fanmade 的 `/audio`）。
@@ -41,4 +41,8 @@ iframe URL 的 `parentOrigin` 参数指定允许发送命令的宿主来源，�
 
 美术和玩法来自 OurTaikoPlay 的已有实现；参考项目 OurTaikoPlayer 为模拟器，并非原版游戏。资源权利归原权利人，见 LICENSE、NOTICE 和 Documentation/ImportedAssets.json；复制依赖所带许可证仍保留。ManagedBass 在此为独立复制的依赖，Web 不加载其原生库。
 
-分支通过 `branch: normal/expert/master` 固定选择普通／玄人／达人（默认普通），支持 p/r/s 三种分支条件的谱面，但不根据成绩动态切换路线。切换路线重新加载并回到第一小节暂停。局部分支缺少玄人时沿用普通，缺少达人时沿用玄人，与 Fanmade 谱面图片一致。BMSCROLL/HBSCROLL 等仍未实现的指令会明确报错，不静默改变谱面。
+分支通过游戏内练习菜单固定选择普通／玄人／达人（默认普通），不再从 load 载荷读取 `branch`，支持 p/r/s 三种分支条件的谱面，但不根据成绩动态切换路线。路线在练习菜单选择后确认开始播放。局部分支缺少玄人时沿用普通，缺少达人时沿用玄人，与 Fanmade 谱面图片一致。BMSCROLL/HBSCROLL 等仍未实现的指令会明确报错，不静默改变谱面。
+
+## 与主仓库同步
+
+共享玩法同步基线为 OurTaikoPlay `1183c5c`。同步范围、Web 保留差异及验证记录见 [SharedCodeSync.md](Documentation/SharedCodeSync.md)。

@@ -14,7 +14,6 @@ namespace OurTaiko
     // verified (fanmade.cpp prepare) with its progress on the curtain; Back cancels the download.
     public sealed class SongLoadingScene : MonoBehaviour
     {
-        public SongDefinition defaultSong;
         [Tooltip("The title and hints stay up at least this long, however fast the song loads.")]
         [Min(0)] public float minimumSeconds = 2;
         [Tooltip("How long a download error stays on the curtain before returning to the song list.")]
@@ -29,8 +28,14 @@ namespace OurTaiko
         IEnumerator Start()
         {
             var switcher = SceneSwitcher.EnsureInstance();
-            var song = switcher.SelectedSong != null ? switcher.SelectedSong : defaultSong;
-            string course = switcher.SelectedSong != null ? switcher.SelectedCourse : null;
+            var song = switcher.SelectedSong;
+            string course = switcher.SelectedCourse;
+            if (song == null)
+            {
+                Debug.LogWarning("No song is selected; returning to Entry.", this);
+                switcher.SwitchScene(SceneSwitcher.MenuScene);
+                yield break;
+            }
             if (!switcher.IsCovered)
             {
                 // Entered directly (Play mode on this scene): show the parked curtain at once.
@@ -125,12 +130,8 @@ namespace OurTaiko
                 Error = error is FanmadeException ? error.Message : "DOWNLOAD_FAILED";
                 yield break;
             }
-            var (path, chart) = task.Result;
+            var (text, audio, chart) = task.Result;
             switcher.Curtain?.SetStatus("音源を読み込み中…");
-            string audio = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(path), chart.CachedAudioName);
-            string text;
-            try { text = System.IO.File.ReadAllText(path); }
-            catch (Exception error) { Error = "CACHE_READ_FAILED"; Debug.LogException(error); yield break; }
             if (AudioEngine.EnsureInstance().Native)
             {
                 online.SetPrepared(song, chart, text, null);
@@ -139,13 +140,15 @@ namespace OurTaiko
             else
             {
                 string audioUrl = new Uri(audio).AbsoluteUri;
+                // Cached objects are extensionless; decode using the chart audio metadata.
+                string extension = System.IO.Path.GetExtension(chart.CachedAudioName).ToLowerInvariant();
+                var audioType = extension == ".mp3" ? AudioType.MPEG : extension == ".wav" ? AudioType.WAV : AudioType.OGGVORBIS;
 #if UNITY_WEBGL && !UNITY_EDITOR
                 // Browser fetch cannot open the virtual filesystem through file://.
-                string extension = System.IO.Path.GetExtension(audio).ToLowerInvariant();
                 string mime = extension == ".mp3" ? "audio/mpeg" : extension == ".wav" ? "audio/wav" : "audio/ogg";
                 audioUrl = "data:" + mime + ";base64," + Convert.ToBase64String(System.IO.File.ReadAllBytes(audio));
 #endif
-                using var request = UnityWebRequestMultimedia.GetAudioClip(audioUrl, AudioType.UNKNOWN);
+                using var request = UnityWebRequestMultimedia.GetAudioClip(audioUrl, audioType);
                 ((DownloadHandlerAudioClip)request.downloadHandler).streamAudio = false;
                 yield return request.SendWebRequest();
                 if (request.result != UnityWebRequest.Result.Success)

@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+using State = OurTaiko.SongSelectManager.State;
+using ItemKind = OurTaiko.SongSelectManager.ItemKind;
+using WheelItem = OurTaiko.SongSelectManager.WheelItem;
 
 namespace OurTaiko
 {
@@ -17,14 +20,14 @@ namespace OurTaiko
     // its songs follow with a もどる every ten songs, and opening another folder closes it first.
     // A root もどる ends the list (the wheel wraps, so it sits above the first song) and leaves for
     // Entry like the back key.
-    // Search, sorting, nested folders, the standalone neiro panel, dan boards and 2P are not ported.
+    // Nested folders, the standalone neiro panel, dan boards and 2P are not ported.
+    //
+    // This is the view: SongSelectManager holds the wheel, focus, phase, cursor and options and runs
+    // every command; this component draws it from the saved layout, animates its events (board
+    // slides, select_on/off, genre fades, the course panel, the Ura flip, the option panel) and plays
+    // the sounds, voices, BGM and preview.
     public sealed class SongSelectScene : MonoBehaviour
     {
-        public enum State { Browsing, CourseSelect, Decided }
-
-        [Header("Songs")]
-        public SongDefinition[] songs;
-
         [Header("Stage")]
         public RectTransform wheel, coursePanel;
         public SongSelectView view;
@@ -64,34 +67,17 @@ namespace OurTaiko
         public AudioClip don, ka, uraSwitch, voiceEnter, voiceStartSong;
 
         const double MoveMs = 166, OpenHoldMs = 61 / 120.0 * 1000, OpenGrowMs = 233, CloseMs = 13 / 0.06, FolderCloseMs = 8 / 0.06;
-        const int BackEvery = 10;
-        public const string BackLabel = "もどる";
         const double CourseExitMoveMs = 500, CourseEnterMoveMs = 800, BoardFadeMs = 166;
         const double CourseFadeDelayMs = 400, CourseFadeMs = 483, GenreFadeMs = 200, BackgroundLoopMs = 15000;
         const double UraChangeMs = 1500, UraSwapMs = 450;
         const int UraCells = 90;
         static readonly string[] ChipNames = { "かんたん", "ふつう", "むずかしい", "おに", "おに(裏)" };
 
-        public State Phase { get; private set; } = State.Browsing;
         public const int ListTimerSeconds = 100, CourseTimerSeconds = 60;
+        public SongSelectManager Manager { get; private set; }
         public ArcadeTimerView TimerView { get; private set; }
         public CoinOverlayView Coins { get; private set; }
-        public int Focused { get; private set; }
-        public DifficultyCursor Cursor { get; private set; }
-        public bool AutoPlay => PlayOptions.Shared.auto;
-        public bool IsOptionPanelOpen => optionPanel != null && optionPanel.IsOpen;
-        public OptionMenu OptionMenu => optionPanel?.Menu;
-        // null while a folder or もどる board is focused.
-        public SongDefinition FocusedSong => wheelBoards.Count > 0 ? wheelBoards[Focused].Song : null;
-        public int BoardCount => wheelBoards.Count;
-        public BoardKind FocusedKind => wheelBoards[Focused].Kind;
-        // The open folder's OnlineManager key, or null.
-        public string OpenFolder => openFolder >= 0 ? folders[openFolder].Key : null;
-        public IReadOnlyList<Online.OnlineFolder> Folders => folders;
-        public enum BoardKind { Song, Folder, Back }
-        public BoardKind KindAt(int index) => wheelBoards[index].Kind;
-        public SongDefinition SongAt(int index) => wheelBoards[index].Song;
-        public double CourseFade => Phase == State.Browsing ? 0 : Clamp01((Now - courseEnteredAt - CourseFadeDelayMs) / CourseFadeMs);
+        public double CourseFade => Manager.Phase == State.Browsing ? 0 : Clamp01((Now - courseEnteredAt - CourseFadeDelayMs) / CourseFadeMs);
         public bool IsPreviewPlaying => preview != null && preview.IsAudioPlaying();
 
         sealed class Plate { public Difficulty Difficulty; public CanvasGroup Group; }
@@ -103,27 +89,27 @@ namespace OurTaiko
             public Vector2[] PlateBase;
             public bool Saved;
         }
-        // One song on the wheel. Only boards on screen hold a view (Slot): the authored songs keep
-        // their saved scene boards, the rest share pooled SongBoard prefab instances, so a long
-        // online catalog costs a dozen board objects instead of one per song.
+        // Only boards on screen hold a view (Slot): the authored songs keep their saved scene
+        // boards, the rest share pooled SongBoard prefab instances, so a long online catalog costs
+        // a dozen board objects instead of one per song.
         sealed class FolderSlot
         {
             public FolderBoardView View;
             public Vector2 PanelSize, GlowSize, TitlePosition, CountPosition;
         }
+        // How one wheel item is drawn: its bound view and its slide, select_on/off and fade timing.
         sealed class Board
         {
-            public BoardKind Kind;
-            public int Folder = -1;  // folders[] index of a folder or もどる board (-1: the root もどる), or of the folder a song is in
-            // A song wears its folder's genre (the box.def it was loaded from), else its own.
-            public int Genre => Folder >= 0 ? folders[Folder].Genre : Song != null ? Song.genre : 0;
-            public Online.OnlineFolder[] folders;
+            public WheelItem Item;
+            public ItemKind Kind => Item.Kind;
+            public int Folder => Item.Folder;
+            public int Genre => Item.Genre;
+            public SongDefinition Song => Item.Song;
+            public SongInfo Info => Item.Info;
             public FolderSlot FolderSlot;
             public Slot Slot;
             public SongBoardView View;
             public Vector2 PanelSize, GlowSize, TitlePosition, CrownPosition, CrownSize, RankPosition, RootOffset;
-            public SongDefinition Song;
-            public SongInfo Info;
             public RectTransform Root;
             public CanvasGroup Group;
             public Image Glow, Panel, Crown;
@@ -143,12 +129,9 @@ namespace OurTaiko
             public TextMeshProUGUI Name;
         }
 
-        readonly List<Board> wheelBoards = new List<Board>();
+        readonly Dictionary<WheelItem, Board> visuals = new Dictionary<WheelItem, Board>();
         readonly Stack<Slot> boardPool = new Stack<Slot>();
         readonly Stack<FolderSlot> folderPool = new Stack<FolderSlot>();
-        Online.OnlineFolder[] folders = Array.Empty<Online.OnlineFolder>();
-        // The open folder, its もどる board's index and how many boards follow it.
-        int openFolder = -1, openAt = -1, openCount;
         LumenClip folderClip;
         bool restackBoards;
         readonly CourseCard[] cards = new CourseCard[4];
@@ -163,9 +146,12 @@ namespace OurTaiko
         OptionPanel optionPanel;
         Vector2 framePosition, glowPosition, balloonPosition;
         Vector2[] backgroundPositions;
+        Func<bool> courseReady;
 
         double Now => GameTimeline.FrameTime * 1000 - startedAt;
         static double Clamp01(double v) => v < 0 ? 0 : v > 1 ? 1 : v;
+        Board BoardOf(WheelItem item) => visuals[item];
+        Board FocusedBoard => visuals[Manager.FocusedItem];
 
         void Awake()
         {
@@ -178,22 +164,23 @@ namespace OurTaiko
             switcher.SceneChanging += OnSceneChanging;
             if (view == null) throw new InvalidOperationException("SongSelect requires a saved layout. Run OurTaiko/Apply Song Select Layout in the Editor.");
             wheel.gameObject.SetActive(true);
-            var online = Online.OnlineManager.EnsureInstance();
-            folders = online.Folders.ToArray();
+            Manager = SongSelectManager.EnsureInstance();
+            Manager.Load(optionArt.hitSounds != null ? optionArt.hitSounds.Count : 0);
+            Manager.CourseReady = courseReady = () => CourseFade >= 1;
+            Manager.SoundRequested += OnSound;
+            Manager.VoiceRequested += OnVoice;
+            Manager.FolderChanged += OnFolderChanged;
+            Manager.WheelRebuilt += OnWheelRebuilt;
+            Manager.SearchRequested += OnSearchRequested;
+            Manager.FocusChanged += OnFocusChanged;
+            Manager.PhaseChanged += OnPhaseChanged;
+            Manager.UraToggled += OnUraToggled;
+            Manager.OptionsOpened += OnOptionsOpened;
+            Manager.OptionChanged += OnOptionChanged;
+            Manager.OptionsClosing += OnOptionsClosing;
             BindBoards();
             backgroundPositions = backgroundTiles.Select(tile => tile.rectTransform.anchoredPosition).ToArray();
-            // Coming back from a song in a folder reopens that folder on the song (reopen_folder_path).
-            int remembered = Array.IndexOf(songs, switcher.SelectedSong);
-            int reopen = Array.FindIndex(folders, f => f.Key == online.OpenFolderKey);
-            if (reopen >= 0)
-            {
-                InsertFolder(FolderBoardIndex(reopen));
-                int inside = wheelBoards.FindIndex(openAt, openCount + 1, b => b.Song != null && b.Song == switcher.SelectedSong);
-                remembered = inside >= 0 ? inside : openAt;
-                foreach (var board in wheelBoards) board.FadeStart = -1;
-            }
-            Focused = remembered >= 0 ? remembered : 0;
-            currentGenre = previousGenre = GenreOf(wheelBoards[Focused]);
+            currentGenre = previousGenre = Manager.FocusedItem.Genre;
             BindCoursePanel();
             TimerView = new ArcadeTimerView(view.overlays, overlay);
             Coins = new CoinOverlayView(view.overlays, overlay);
@@ -205,6 +192,7 @@ namespace OurTaiko
             OpenFocused(holdMs: 0);
             coursePanel.gameObject.SetActive(false);
             DrawOverlays(0);
+            if (view.search != null) view.search.Bind(Manager);
         }
 
         void Start()
@@ -226,105 +214,56 @@ namespace OurTaiko
         {
             StopPreview();
             if (switcher != null) switcher.SceneChanging -= OnSceneChanging;
+            if (Manager == null) return;
+            Manager.SoundRequested -= OnSound;
+            Manager.VoiceRequested -= OnVoice;
+            Manager.FolderChanged -= OnFolderChanged;
+            Manager.WheelRebuilt -= OnWheelRebuilt;
+            Manager.SearchRequested -= OnSearchRequested;
+            Manager.FocusChanged -= OnFocusChanged;
+            Manager.PhaseChanged -= OnPhaseChanged;
+            Manager.UraToggled -= OnUraToggled;
+            Manager.OptionsOpened -= OnOptionsOpened;
+            Manager.OptionChanged -= OnOptionChanged;
+            Manager.OptionsClosing -= OnOptionsClosing;
+            // A newer song select may already have bound itself.
+            if (Manager.CourseReady == courseReady) Manager.CourseReady = null;
         }
 
         void OnSceneChanging(string scene)
         {
             StopPreview();
             bgm.StopAudio(); preview.StopAudio();
-            if (IsOptionPanelOpen) PlayOptions.Shared.Save();
+            Manager.Leave();
         }
-
-        // ---------------------------------------------------------------- input
 
         void Update()
         {
             if (!started) return;
             double now = Now;
-            HandleInput();
-            if (Phase == State.Decided && !voice.IsAudioPlaying() && !switcher.IsSwitching) StartSong();
+            if (view.search != null) view.search.Tick();
+            if (view.search == null || !view.search.BlocksInput) Manager.HandleInput();
+            if (Manager.Phase == State.Decided && !voice.IsAudioPlaying() && !switcher.IsSwitching) Manager.StartSong();
             UpdatePreview(now);
             DrawBackground(now);
-            for (int i = 0; i < wheelBoards.Count; i++) DrawBoard(wheelBoards[i], i == Focused, now);
+            var items = Manager.Items;
+            for (int i = 0; i < items.Count; i++) DrawBoard(BoardOf(items[i]), i == Manager.Focused, now);
             if (restackBoards) RestackBoards();
-            if (Phase != State.Browsing) DrawCoursePanel(now);
-            // Player::update: the options are saved once the panel has slid out.
-            if (optionPanel.Draw(now)) PlayOptions.Shared.Save();
+            if (Manager.Phase != State.Browsing) DrawCoursePanel(now);
+            if (optionPanel.Draw(now)) Manager.OptionsHidden();
             DrawOverlays(now);
             if (view.bestScore != null)
-                view.bestScore.Show(FocusedSong, FocusedKind == BoardKind.Song ? wheelBoards[Focused].Info : null,
-                    IsOptionPanelOpen ? 0 : 1, GameTimeline.FrameTime);
+                view.bestScore.Show(Manager.FocusedSong, Manager.FocusedKind == ItemKind.Song ? Manager.FocusedItem.Info : null,
+                    Manager.IsOptionPanelOpen ? 0 : 1, GameTimeline.FrameTime);
         }
 
-        void HandleInput()
-        {
-            if (switcher.IsInputBlocked) return;
-            // song_select.cpp: the back key leaves for Entry from any state (an open option panel closes first).
-            if (InputManager.GetKeyDown(InputKey.Back))
-            {
-                if (IsOptionPanelOpen) CloseOptions();
-                else if (Phase == State.Browsing && openFolder >= 0) { if (AcceptsInput()) { sfx.PlayAudioOneShot(don); CloseFolder(); } }
-                else switcher.SwitchScene(SceneSwitcher.EntryScene);
-                return;
-            }
-            bool leftKa = InputManager.GetKeyDown(InputKey.LeftKa) || InputManager.GetKeyDown(InputKey.MenuLeft);
-            bool rightKa = InputManager.GetKeyDown(InputKey.RightKa) || InputManager.GetKeyDown(InputKey.MenuRight);
-            bool donHit = InputManager.GetKeyDown(InputKey.LeftDon) || InputManager.GetKeyDown(InputKey.RightDon) || InputManager.GetKeyDown(InputKey.Confirm);
-            if (leftKa) Left();
-            else if (rightKa) Right();
-            else if (donHit) Confirm();
-        }
+        // ---------------------------------------------------------------- manager events
 
-        public void Left()
-        {
-            if (!AcceptsInput()) return;
-            sfx.PlayAudioOneShot(ka);
-            if (IsOptionPanelOpen) ChangeOption(-1);
-            else if (Phase == State.Browsing) Navigate(-1);
-            else Cursor.Left();
-        }
+        void OnSound(SongSelectManager.Sound sound)
+            => sfx.PlayAudioOneShot(sound == SongSelectManager.Sound.Don ? don : sound == SongSelectManager.Sound.Ka ? ka : uraSwitch);
 
-        public void Right()
-        {
-            if (!AcceptsInput()) return;
-            sfx.PlayAudioOneShot(ka);
-            if (IsOptionPanelOpen) ChangeOption(+1);
-            else if (Phase == State.Browsing) Navigate(+1);
-            else if (Cursor.Right()) AnimateUraChange();
-        }
-
-        void AnimateUraChange()
-        {
-            // Both drum input and long presses use the same 90-frame card flip.
-            sfx.PlayAudioOneShot(uraSwitch);
-            uraChangedAt = Now; uraChangeToUraSide = Cursor.IsUra;
-        }
-
-        public void Confirm()
-        {
-            if (!AcceptsInput()) return;
-            sfx.PlayAudioOneShot(don);
-            if (IsOptionPanelOpen) { optionPanel.Menu.Confirm(); return; }
-            if (Phase == State.Browsing)
-            {
-                var focused = wheelBoards[Focused];
-                if (focused.Kind == BoardKind.Folder) OpenFolderAt(Focused);
-                else if (focused.Kind == BoardKind.Back && focused.Folder < 0) switcher.SwitchScene(SceneSwitcher.EntryScene);
-                else if (focused.Kind == BoardKind.Back) CloseFolder();
-                else EnterCourseSelect();
-                return;
-            }
-            switch (Cursor.Selected)
-            {
-                case Difficulty.Back: ExitCourseSelect(); break;
-                case Difficulty.Modifier: OpenOptions(); break;
-                default:
-                    Phase = State.Decided;
-                    switcher.LastDifficulty = (int)Cursor.Selected;
-                    PlayVoice(voiceStartSong);
-                    break;
-            }
-        }
+        void OnVoice(SongSelectManager.Voice clip)
+            => PlayVoice(clip == SongSelectManager.Voice.StartSong ? voiceStartSong : optionArt.voice);
 
         void PlayVoice(AudioClip clip)
         {
@@ -333,162 +272,87 @@ namespace OurTaiko
             if (clip != null) voice.PlayAudio();
         }
 
-        bool AcceptsInput()
+        // Boards leaving the wheel release their views; new ones start on the anchor's slot, songs
+        // fading in as they slide to their rows (もどる and the folder board appear at once).
+        void OnFolderChanged(SongSelectManager.FolderChange change)
         {
-            if (switcher.IsInputBlocked || Phase == State.Decided) return false;
-            // The course panel ignores input while it is still fading in.
-            return Phase != State.CourseSelect || CourseFade >= 1;
-        }
-
-        void StartSong()
-        {
-            var course = wheelBoards[Focused].Info.Course(Cursor.Selected);
-            switcher.Play(FocusedSong, course.Course, AutoPlay);
-        }
-
-        // ---------------------------------------------------------------- play options
-
-        // SongSelectPlayer::handle_input_selecting: don on the option button opens ModifierSelector.
-        void OpenOptions()
-        {
-            optionPanel.Open(PlayOptions.Shared, Now);
-            PlayVoice(optionArt.voice);
-        }
-
-        void CloseOptions()
-        {
-            if (!AcceptsInput() || !IsOptionPanelOpen || optionPanel.IsClosing) return;
-            sfx.PlayAudioOneShot(don);
-            optionPanel.Close(Now);
-        }
-
-        void ChangeOption(int direction)
-        {
-            var menu = optionPanel.Menu;
-            if (!(direction < 0 ? menu.Left() : menu.Right())) return;
-            optionPanel.Changed(direction, Now);
-            // step_neiro previews the new set's don; 無音 plays nothing.
-            if (menu.Current == OptionRow.Neiro && optionArt.hitSounds != null
-                && optionArt.hitSounds.TryGet(menu.Options.neiro, out var preview, out _))
-                sfx.PlayAudioOneShot(preview, AudioGroup.Drum);
-        }
-
-        void OnOptionRowTapped(int row, int direction)
-        {
-            if (!AcceptsInput() || !IsOptionPanelOpen || optionPanel.IsClosing) return;
-            var menu = optionPanel.Menu;
-            if (direction == 0)
+            var anchor = BoardOf(change.Anchor);
+            foreach (var item in change.Removed)
             {
-                if (menu.Index == row) Confirm();
-                else { sfx.PlayAudioOneShot(ka); menu.Select(row); }
-                return;
+                ReleaseView(BoardOf(item));
+                visuals.Remove(item);
             }
-            menu.Select(row);
-            if (direction < 0) Left(); else Right();
+            foreach (var item in change.Added)
+            {
+                double fadeFrom = item.Kind == ItemKind.Song ? 0 : 1;
+                visuals[item] = new Board
+                {
+                    Item = item, Position = anchor.Position, Cross = anchor.Cross,
+                    FadeFrom = fadeFrom, FadeTo = 1, FadeStart = fadeFrom < 1 ? Now : -1,
+                };
+            }
         }
 
-        // ---------------------------------------------------------------- wheel
+        void OnSearchRequested() => view.search?.Open();
 
-        public void Navigate(int delta)
+        void OnWheelRebuilt()
         {
-            if (wheelBoards.Count == 0) return;
-            var previous = wheelBoards[Focused];
-            if (previous.OpenStart >= 0) { previous.CloseStart = Now; previous.OpenStart = -1; }
-            int count = wheelBoards.Count;
-            Focused = ((Focused + delta) % count + count) % count;
+            StopPreview();
+            foreach (var board in visuals.Values) ReleaseView(board);
+            visuals.Clear();
+            foreach (var item in Manager.Items) visuals[item] = new Board { Item = item };
+            SetPositions(true, 0); OpenFocused(0); ChangeGenre(Manager.FocusedItem.Genre);
+            if (view.search != null) view.search.RefreshSummary();
+        }
+
+        void OnFocusChanged(WheelItem previous, SongSelectManager.FocusReason reason)
+        {
+            if (reason == SongSelectManager.FocusReason.Navigate && visuals.TryGetValue(previous, out var left) && left.OpenStart >= 0)
+            {
+                left.CloseStart = Now; left.OpenStart = -1;
+            }
             SetPositions(false, MoveMs);
-            OpenFocused(OpenHoldMs);
-            ChangeGenre(GenreOf(wheelBoards[Focused]));
+            // A folder enter or exit snaps the new focus open (no 508 ms hold).
+            OpenFocused(reason == SongSelectManager.FocusReason.Navigate ? OpenHoldMs : 0);
+            if (reason != SongSelectManager.FocusReason.FolderClosed) ChangeGenre(Manager.FocusedItem.Genre);
             StopPreview();
         }
 
-        int GenreOf(Board board) => board.Genre;
+        void OnPhaseChanged(State previous)
+        {
+            if (Manager.Phase == State.CourseSelect) EnterCourseSelect();
+            else if (Manager.Phase == State.Browsing && previous != State.Browsing) ExitCourseSelect();
+        }
+
+        void OnUraToggled()
+        {
+            uraChangedAt = Now; uraChangeToUraSide = Manager.Cursor.IsUra;
+        }
+
+        void OnOptionsOpened(OptionMenu menu) => optionPanel.Open(menu, Now);
+
+        void OnOptionChanged(int direction)
+        {
+            optionPanel.Changed(direction, Now);
+            // step_neiro previews the new set's don; 無音 plays nothing.
+            var menu = Manager.OptionMenu;
+            if (menu.Current == OptionRow.Neiro && optionArt.hitSounds != null
+                && optionArt.hitSounds.TryGet(menu.Options.neiro, out var neiro, out _))
+                sfx.PlayAudioOneShot(neiro, AudioGroup.Drum);
+        }
+
+        void OnOptionsClosing() => optionPanel.Close(Now);
+
+        // ---------------------------------------------------------------- wheel animation
 
         void ChangeGenre(int genre)
         {
             previousGenre = currentGenre; currentGenre = genre; genreChangedAt = Now;
         }
 
-        // ---------------------------------------------------------------- folders
-
-        int FolderBoardIndex(int folder) => wheelBoards.FindIndex(b => b.Kind == BoardKind.Folder && b.Folder == folder);
-
-        // Opening a folder closes the open one first (collapse_inline_now), then opens inline.
-        public void OpenFolderAt(int index)
-        {
-            int folder = wheelBoards[index].Folder;
-            if (openFolder >= 0) { CollapseFolder(); index = FolderBoardIndex(folder); }
-            InsertFolder(index);
-            Focused = openAt;
-            Online.OnlineManager.Instance.OpenFolderKey = folders[folder].Key;
-            SetPositions(false, MoveMs);
-            // A folder enter snaps the new focus open (no 508 ms hold).
-            OpenFocused(0);
-            ChangeGenre(folders[folder].Genre);
-            StopPreview();
-        }
-
-        // もどる (or Back) closes the folder and focuses its board again.
-        public void CloseFolder()
-        {
-            if (openFolder < 0) return;
-            int folder = openFolder;
-            CollapseFolder();
-            Focused = FolderBoardIndex(folder);
-            Online.OnlineManager.Instance.OpenFolderKey = null;
-            SetPositions(false, MoveMs);
-            OpenFocused(0);
-            StopPreview();
-        }
-
-        // The folder board becomes もどる; its songs follow, with another もどる every ten songs.
-        void InsertFolder(int index)
-        {
-            var folderBoard = wheelBoards[index];
-            int folder = folderBoard.Folder;
-            ReleaseView(folderBoard);
-            var inserted = new List<Board>();
-            var songsIn = folders[folder].Songs;
-            for (int i = 0; i < songsIn.Length; i++)
-            {
-                if (i > 0 && i % BackEvery == 0) inserted.Add(NewBack(folder, folderBoard));
-                var song = new Board { Kind = BoardKind.Song, Song = songsIn[i], Info = songsIn[i].ReadDisplayInfo(), Folder = folder, folders = folders };
-                Place(song, folderBoard, 0);
-                inserted.Add(song);
-            }
-            wheelBoards[index] = NewBack(folder, folderBoard);
-            wheelBoards.InsertRange(index + 1, inserted);
-            openFolder = folder; openAt = index; openCount = inserted.Count;
-        }
-
-        Board NewBack(int folder, Board at)
-        {
-            var back = new Board { Kind = BoardKind.Back, Folder = folder, folders = folders };
-            Place(back, at, 1);
-            return back;
-        }
-
-        // Inserted boards start on the folder's slot and fade in as they slide to their rows.
-        void Place(Board board, Board at, double fadeFrom)
-        {
-            board.Position = at.Position; board.Cross = at.Cross;
-            board.FadeFrom = fadeFrom; board.FadeTo = 1; board.FadeStart = fadeFrom < 1 ? Now : -1;
-        }
-
-        void CollapseFolder()
-        {
-            var back = wheelBoards[openAt];
-            for (int i = openAt; i <= openAt + openCount; i++) ReleaseView(wheelBoards[i]);
-            wheelBoards.RemoveRange(openAt + 1, openCount);
-            var folderBoard = new Board { Kind = BoardKind.Folder, Folder = openFolder, folders = folders };
-            folderBoard.Position = back.Position; folderBoard.Cross = back.Cross;
-            wheelBoards[openAt] = folderBoard;
-            openFolder = -1; openAt = -1; openCount = 0;
-        }
-
         void OpenFocused(double holdMs)
         {
-            var board = wheelBoards[Focused];
+            var board = FocusedBoard;
             board.OpenStart = Now; board.Hold = holdMs; board.CloseStart = -1;
         }
 
@@ -496,15 +360,16 @@ namespace OurTaiko
         // each row 40 px further right; a jump of a whole screen snaps instead of sliding.
         void SetPositions(bool snap, double duration)
         {
-            int count = wheelBoards.Count;
+            var items = Manager.Items;
+            int count = items.Count, focused = Manager.Focused;
             for (int i = 0; i < count; i++)
             {
-                double offset = i - Focused;
+                double offset = i - focused;
                 if (offset > count / 2.0) offset -= count;
                 else if (offset < -count / 2.0) offset += count;
                 double position = view.wheelCentre.y + offset * view.rowPitch + Math.Sign(offset) * view.expandGap;
                 double cross = view.wheelCentre.x + offset * view.rowCurve;
-                var board = wheelBoards[i];
+                var board = BoardOf(items[i]);
                 if (snap || Math.Abs(position - board.Position) >= 1080) { board.Position = position; board.Cross = cross; board.MoveStart = -1; }
                 else MoveBoard(board, position, cross, duration);
             }
@@ -529,17 +394,15 @@ namespace OurTaiko
 
         void EnterCourseSelect()
         {
-            var board = wheelBoards[Focused];
-            var courses = board.Info.Courses.Select(c => c.Difficulty).ToList();
-            Cursor = new DifficultyCursor(courses, Cursor != null && Cursor.IsUra, switcher.LastDifficulty);
-            Phase = State.CourseSelect;
+            var board = FocusedBoard;
             courseEnteredAt = Now;
             uraChangedAt = -1;
             // Navigator::enter_diff_select: the other on-screen boards leave by 150 px and fade out.
-            for (int i = 0; i < wheelBoards.Count; i++)
+            var items = Manager.Items;
+            for (int i = 0; i < items.Count; i++)
             {
-                var other = wheelBoards[i];
-                if (i == Focused || other.Position < -100 || other.Position > 1180) continue;
+                var other = BoardOf(items[i]);
+                if (i == Manager.Focused || other.Position < -100 || other.Position > 1180) continue;
                 MoveBoard(other, other.Position < view.wheelCentre.y ? -150 : 1080 + 150, other.Cross, CourseEnterMoveMs);
                 FadeBoard(other, 0);
             }
@@ -549,10 +412,9 @@ namespace OurTaiko
 
         void ExitCourseSelect()
         {
-            Phase = State.Browsing;
             coursePanel.gameObject.SetActive(false);
             SetPositions(false, CourseExitMoveMs);
-            foreach (var board in wheelBoards) FadeBoard(board, 1);
+            foreach (var board in visuals.Values) FadeBoard(board, 1);
             // Course back replays select_on immediately on the focused board.
             OpenFocused(holdMs: 0);
         }
@@ -561,8 +423,8 @@ namespace OurTaiko
 
         void UpdatePreview(double now)
         {
-            var board = wheelBoards[Focused];
-            bool open = Phase == State.Browsing && board.Song != null && board.OpenStart >= 0 && now - board.OpenStart >= board.Hold + OpenGrowMs;
+            var board = FocusedBoard;
+            bool open = Manager.Phase == State.Browsing && board.Song != null && board.OpenStart >= 0 && now - board.OpenStart >= board.Hold + OpenGrowMs;
             bool remote = board.Song != null && Online.OnlineManager.Instance?.IsOnline(board.Song) == true;
             if (open && !previewStarted && (remote || board.Song.music != null || !string.IsNullOrEmpty(board.Song.audioPath)))
             {
@@ -579,7 +441,6 @@ namespace OurTaiko
             if (onlinePreviewSong == null) return;
             if (preview != null) preview.GetComponent<AudioBus>()?.Release();
             if (preview != null) preview.clip = null;
-            if (onlinePreviewSong.music != null) Destroy(onlinePreviewSong.music);
             Destroy(onlinePreviewSong); onlinePreviewSong = null;
         }
         IEnumerator LoadOnlinePreview(SongDefinition song, int generation)
@@ -614,12 +475,13 @@ namespace OurTaiko
                 }
                 else
                 {
+                    // The preview API supplies Ogg audio; cache objects have no extension.
                     string url = new Uri(path).AbsoluteUri;
 #if UNITY_WEBGL && !UNITY_EDITOR
-                    string mime = System.IO.Path.GetExtension(path).ToLowerInvariant() == ".mp3" ? "audio/mpeg" : "audio/ogg";
+                    string mime = "audio/ogg";
                     url = "data:" + mime + ";base64," + Convert.ToBase64String(System.IO.File.ReadAllBytes(path));
 #endif
-                    using var request = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.UNKNOWN);
+                    using var request = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.OGGVORBIS);
                     ((DownloadHandlerAudioClip)request.downloadHandler).streamAudio = false;
                     var operation = request.SendWebRequest();
                     while (!operation.isDone) { if (Stale()) { request.Abort(); yield break; } yield return null; }
@@ -728,8 +590,8 @@ namespace OurTaiko
                 board.Cross = board.CrossFrom + (board.CrossTo - board.CrossFrom) * p;
                 if (now - board.MoveStart >= board.MoveDuration) board.MoveStart = -1;
             }
-            if (board.Kind != BoardKind.Song) { DrawFolderBoard(board, focused, now); return; }
-            bool hidden = focused && Phase != State.Browsing;
+            if (board.Kind != ItemKind.Song) { DrawFolderBoard(board, focused, now); return; }
+            bool hidden = focused && Manager.Phase != State.Browsing;
             if (hidden || board.Position <= -400 || board.Position >= 1480) { ReleaseView(board); return; }
             AcquireView(board);
             board.Root.gameObject.SetActive(true);
@@ -807,7 +669,7 @@ namespace OurTaiko
             item.glow.rectTransform.sizeDelta = slot.GlowSize + expansion;
             double pulse = glowClip.Get("#12@0", now * 0.06 % Math.Max(1, glowClip.Last - glowClip.First + 1), "a", 1);
             item.glow.Alpha((float)(pb * pulse));
-            if (board.Kind == BoardKind.Back)
+            if (board.Kind == ItemKind.Back)
             {
                 item.title.rectTransform.anchoredPosition = slot.TitlePosition;
                 return;
@@ -860,15 +722,16 @@ namespace OurTaiko
             float fade = (float)CourseFade;
             var group = coursePanel.GetComponent<CanvasGroup>();
             group.alpha = fade;
-            var board = wheelBoards[Focused];
-            var selected = Cursor.Selected;
+            var board = FocusedBoard;
+            var cursor = Manager.Cursor;
+            var selected = cursor.Selected;
             int column = selected >= Difficulty.Easy ? Math.Min((int)Difficulty.Oni, (int)selected) : -1;
             mark.enabled = column >= 0;
             if (column >= 0) mark.sprite = courseMarks[(int)selected];
 
             double ura = uraChangedAt < 0 ? -1 : now - uraChangedAt;
             if (ura >= UraChangeMs) { uraChangedAt = -1; ura = -1; }
-            bool oniShowsUra = Cursor.IsUra;
+            bool oniShowsUra = cursor.IsUra;
             if (ura >= 0 && ura < UraSwapMs) oniShowsUra = !oniShowsUra;
             for (int i = 0; i < 4; i++)
                 FillCard(cards[i], board, i == 3 && oniShowsUra ? Difficulty.Ura : (Difficulty)i, i == 3 && ura >= 0);
@@ -878,7 +741,7 @@ namespace OurTaiko
                 var cells = uraChangeToUraSide ? UraFrames(ref uraToUraCells, uraChangeToUra) : UraFrames(ref uraToOniCells, uraChangeToOni);
                 uraChange.sprite = cells[Math.Min(UraCells - 1, (int)(ura / UraChangeMs * UraCells))];
             }
-            auto.enabled = AutoPlay;
+            auto.enabled = Manager.AutoPlay;
 
             // draw_selector: the course frame / button glow under the boards, the 1P bubble above.
             float x = column >= 0 ? cards[column].Board.rectTransform.anchoredPosition.x
@@ -927,9 +790,9 @@ namespace OurTaiko
                 if (candidate > 0 && (rank == 0 || info.Difficulty > course)) { rank = candidate; course = info.Difficulty; }
             }
             // While selecting a course, prefer its record if it has an earned rank.
-            if (board.Song == FocusedSong && Phase != State.Browsing && Cursor != null)
+            if (board.Song == Manager.FocusedSong && Manager.Phase != State.Browsing && Manager.Cursor != null)
             {
-                var selected = Cursor.Selected;
+                var selected = Manager.Cursor.Selected;
                 if ((int)selected >= 0 && (int)selected <= 4 && board.Info.Has(selected))
                 {
                     int candidate = ScoreRank.FromScore(SongScores.Get(board.Song, selected)?.score ?? 0);
@@ -963,21 +826,19 @@ namespace OurTaiko
 
         // ---------------------------------------------------------------- saved view binding
 
+        // Every wheel item gets a board; the authored boards stay bound to the first local songs and
+        // later songs borrow pooled prefabs on screen.
         void BindBoards()
         {
             var saved = view.songBoards ?? Array.Empty<SongBoardView>();
-            for (int i = 0; i < songs.Length; i++)
+            int next = 0;
+            foreach (var item in Manager.Items)
             {
-                var board = new Board { Kind = BoardKind.Song, Song = songs[i], Info = songs[i].ReadDisplayInfo() };
-                wheelBoards.Add(board);
-                // The authored song list keeps its scene objects; later songs borrow pooled prefabs on screen.
-                if (i < saved.Length) Bind(board, NewSlot(saved[i], true));
+                var board = new Board { Item = item };
+                visuals[item] = board;
+                if (item.Kind == ItemKind.Song && item.Folder < 0 && next < saved.Length) Bind(board, NewSlot(saved[next++], true));
             }
             for (int i = 0; i < saved.Length; i++) saved[i].gameObject.SetActive(false);
-            // The online categories, closed.
-            for (int f = 0; f < folders.Length; f++) wheelBoards.Add(new Board { Kind = BoardKind.Folder, Folder = f, folders = folders });
-            // The root もどる, which returns to Entry.
-            wheelBoards.Add(new Board { Kind = BoardKind.Back, folders = folders });
         }
 
         // Later songs draw over earlier ones, as when every song had its own board: the bound views
@@ -985,7 +846,7 @@ namespace OurTaiko
         void RestackBoards()
         {
             restackBoards = false;
-            var bound = wheelBoards.Where(b => b.Slot != null || b.FolderSlot != null).ToList();
+            var bound = Manager.Items.Select(BoardOf).Where(b => b.Slot != null || b.FolderSlot != null).ToList();
             var indices = bound.Select(b => b.Root.GetSiblingIndex()).OrderBy(i => i).ToList();
             for (int i = 0; i < bound.Count; i++) bound[i].Root.SetSiblingIndex(indices[i]);
         }
@@ -1003,7 +864,7 @@ namespace OurTaiko
 
         void AcquireView(Board board)
         {
-            if (board.Kind != BoardKind.Song)
+            if (board.Kind != ItemKind.Song)
             {
                 if (board.FolderSlot != null) return;
                 FolderSlot folderSlot;
@@ -1048,20 +909,20 @@ namespace OurTaiko
             var item = slot.View;
             restackBoards = true;
             board.FolderSlot = slot; board.Root = item.Root; board.Group = item.group; board.RootOffset = Vector2.zero;
-            item.click.Clicked = () => OnBoardClicked(board);
-            bool back = board.Kind == BoardKind.Back;
-            var folder = board.Folder >= 0 ? folders[board.Folder] : null;
-            item.panelClosed.sprite = back ? backBoard : boards[folder.Genre];
+            item.click.Clicked = () => Manager.SelectItem(board.Item);
+            bool back = board.Kind == ItemKind.Back, search = board.Kind == ItemKind.Search;
+            var folder = board.Folder >= 0 ? Manager.Folders[board.Folder] : null;
+            item.panelClosed.sprite = back ? backBoard : boards[board.Genre];
             item.panelClosed.Alpha(1);
             item.panelOpen.enabled = false;
             item.charaLeft.enabled = item.charaRight.enabled = false;
-            item.title.text = back ? BackLabel : folder.Title;
+            item.title.text = back ? SongSelectManager.BackLabel : search ? Manager.SearchFolderTitle : folder.Title;
             item.title.Squeeze(860);
-            item.count.text = back ? "" : $"{folder.Songs.Length} songs　{folder.ServerName}";
+            item.count.text = back ? "" : search ? Manager.SearchFolderDescription : $"{folder.Songs.Length} songs　{folder.ServerName}";
             if (!back)
             {
-                item.panelOpen.sprite = folderBoards[folder.Genre];
-                int chara = Mathf.Clamp(folder.Genre, 0, charaLeft.Length - 1);
+                item.panelOpen.sprite = folderBoards[board.Genre];
+                int chara = Mathf.Clamp(board.Genre, 0, charaLeft.Length - 1);
                 item.charaLeft.sprite = charaLeft[chara];
                 item.charaRight.sprite = charaRight[chara];
             }
@@ -1078,7 +939,7 @@ namespace OurTaiko
             board.Title = item.title; board.Subtitle = item.subtitle; board.Contents = item.contents;
             board.PanelSize = slot.PanelSize; board.GlowSize = slot.GlowSize; board.TitlePosition = slot.TitlePosition;
             board.RankPosition = slot.RankPosition; board.CrownPosition = slot.CrownPosition; board.CrownSize = slot.CrownSize; board.RootOffset = slot.RootOffset;
-            item.click.Clicked = () => OnBoardClicked(board);
+            item.click.Clicked = () => Manager.SelectItem(board.Item);
             board.Panel.sprite = boards[board.Genre];
             board.Title.text = board.Info.Title;
             board.Title.Squeeze(860);
@@ -1127,14 +988,14 @@ namespace OurTaiko
                 AddClick(saved.board, (Difficulty)i);
             }
             optionPanel = new OptionPanel(view.options, optionArt);
-            optionPanel.RowTapped += OnOptionRowTapped;
-            optionPanel.OutsideTapped += CloseOptions;
+            optionPanel.RowTapped += Manager.TapOptionRow;
+            optionPanel.OutsideTapped += Manager.CloseOptions;
         }
 
         void DrawOverlays(double now)
         {
             if (TimerView == null) return;
-            TimerView.Show(Phase == State.Browsing ? ListTimerSeconds : CourseTimerSeconds);
+            TimerView.Show(Manager.Phase == State.Browsing ? ListTimerSeconds : CourseTimerSeconds);
             // coin_overlay: the invite shows while a 2P join would still be allowed (songs played < 2).
             Coins.ShowInvite(switcher.SongsPlayed < 2, now);
         }
@@ -1145,43 +1006,10 @@ namespace OurTaiko
             var pointer = image.GetComponent<PointerRelay>();
             if (difficulty == Difficulty.Oni)
             {
-                pointer.CanLongPress = () => AcceptsInput() && Phase == State.CourseSelect && !IsOptionPanelOpen
-                    && wheelBoards[Focused].Info.Has(Difficulty.Oni) && wheelBoards[Focused].Info.Has(Difficulty.Ura);
-                pointer.LongPressed = () =>
-                {
-                    if (pointer.CanLongPress() && Cursor.TryToggleUra()) AnimateUraChange();
-                };
+                pointer.CanLongPress = Manager.CanLongPressOni;
+                pointer.LongPressed = Manager.LongPressOni;
             }
-            pointer.Clicked = () =>
-            {
-                if (!AcceptsInput() || Phase != State.CourseSelect || IsOptionPanelOpen) return;
-                var target = difficulty == Difficulty.Oni && Cursor.IsUra ? Difficulty.Ura : difficulty;
-                if (target >= Difficulty.Easy && wheelBoards[Focused].Info.Course(target) == null) return;
-                if (Cursor.Selected == target) { Confirm(); return; }
-                // Walk the cursor so a click obeys the same rules as the drum.
-                for (int guard = 0; guard < 8 && Cursor.Selected != target; guard++)
-                {
-                    if (Order(Cursor.Selected) < Order(target)) Cursor.Right(); else Cursor.Left();
-                }
-                if (Cursor.Selected == target)
-                {
-                    if (target < Difficulty.Easy) Confirm();
-                    else sfx.PlayAudioOneShot(ka);
-                }
-            };
-            static int Order(Difficulty d) => d == Difficulty.Ura ? (int)Difficulty.Oni : (int)d;
-        }
-
-        void OnBoardClicked(Board board)
-        {
-            if (Phase != State.Browsing || !AcceptsInput()) return;
-            int index = wheelBoards.IndexOf(board);
-            if (index == Focused) { Confirm(); return; }
-            sfx.PlayAudioOneShot(ka);
-            int count = wheelBoards.Count, delta = index - Focused;
-            if (delta > count / 2) delta -= count;
-            else if (delta < -count / 2) delta += count;
-            Navigate(delta);
+            pointer.Clicked = () => Manager.SelectCourse(difficulty);
         }
     }
 

@@ -29,6 +29,6 @@ namespace OurTaiko
             return points;
         }
 
-        public void AddLongHit() => Total += LongHitPoints;
+        public int AddLongHit() { Total += LongHitPoints; return LongHitPoints; }
     }
 }

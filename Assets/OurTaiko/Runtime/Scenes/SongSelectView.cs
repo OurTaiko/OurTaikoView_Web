@@ -29,6 +29,7 @@ namespace OurTaiko
         public NameplateView nameplate;
         public SongSelectOverlayView overlays;
         public SongBestScoreView bestScore;
+        public SongSearchView search;
         [Header("Wheel animation layout")]
         public Vector2 wheelCentre = new Vector2(960, 540);
         public float rowPitch = 135, expandGap = 120, rowCurve = 40;

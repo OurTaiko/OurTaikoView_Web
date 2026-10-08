@@ -7,13 +7,6 @@ using UnityEngine;
 namespace OurTaiko.Online
 {
     // A server category as a song-select folder: its songs in API order (shared SongDefinitions).
-    public sealed class OnlineFolder
-    {
-        public string Key = "", Title = "", ServerName = "";
-        public int Genre;
-        public SongDefinition[] Songs = Array.Empty<SongDefinition>();
-    }
-
     // Global holder of the online servers, created before the first scene and kept across loads
     // (like SettingManager). It reads servers.json, owns the FanmadeClient, pumps its score
     // uploads every frame and turns the connected catalog into SongDefinitions and category
@@ -29,12 +22,10 @@ namespace OurTaiko.Online
         // The connected catalog as playable songs; the same instance for a chart until Reset.
         public IReadOnlyList<SongDefinition> Songs => songs;
         // One folder per server category, in server then bootstrap order.
-        public IReadOnlyList<OnlineFolder> Folders => folders;
-        // The folder song select had open, reopened when it comes back from a song; reset by ServerLogin.
-        public string OpenFolderKey { get; set; }
+        public IReadOnlyList<SongFolder> Folders => folders;
 
         readonly List<SongDefinition> songs = new List<SongDefinition>();
-        readonly List<OnlineFolder> folders = new List<OnlineFolder>();
+        readonly List<SongFolder> folders = new List<SongFolder>();
         readonly Dictionary<string, (SongDefinition Song, FanmadeChart Chart)> byKey = new Dictionary<string, (SongDefinition, FanmadeChart)>();
         readonly Dictionary<SongDefinition, FanmadeChart> charts = new Dictionary<SongDefinition, FanmadeChart>();
         readonly List<UnityEngine.Object> owned = new List<UnityEngine.Object>();
@@ -43,7 +34,7 @@ namespace OurTaiko.Online
         static void ResetStatics() => Instance = null;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Bootstrap() { } // Embedded player has no server login or upload queue.
+        static void Bootstrap() { } // Embedded player does not start desktop catalog services.
 
         public static OnlineManager EnsureInstance()
         {
@@ -157,12 +148,31 @@ namespace OurTaiko.Online
             foreach (string key in byKey.Keys.Where(k => !keep.Contains(k)).ToList()) byKey.Remove(key);
             folders.Clear();
             foreach (var category in Client.Categories)
-                folders.Add(new OnlineFolder
+                folders.Add(new SongFolder
                 {
                     Key = category.Server + "/" + category.Id, Title = category.Title, ServerName = category.ServerName,
                     Genre = GenreFrame(category.Genre),
                     Songs = category.ChartIds.SelectMany(id => songs.Where(song => charts[song].Server == category.Server && charts[song].Id == id)).ToArray(),
                 });
+        }
+
+        // Search can discover songs not present in any category. Register them for preview,
+        // download and score lookup without rebuilding or replacing the browsing catalog.
+        public SongDefinition SearchSong(FanmadeChart chart)
+        {
+            string key = SongKey(chart);
+            if (!byKey.TryGetValue(key, out var entry))
+            {
+                var song = ScriptableObject.CreateInstance<SongDefinition>();
+                song.name = key; song.hideFlags = HideFlags.DontSave;
+                owned.Add(song); entry = (song, chart);
+            }
+            entry.Chart = chart;
+            entry.Song.onlineChart = chart;
+            entry.Song.genre = GenreFrame(chart.Genre);
+            entry.Song.course = chart.Difficulties.First(d => d != null).Course;
+            byKey[key] = entry; charts[entry.Song] = chart;
+            return entry.Song;
         }
 
         public static string SongKey(FanmadeChart chart) => "fanmade/" + chart.Server + "/" + chart.Id + (chart.SelectedPlayer.Length > 0 ? "/" + chart.SelectedPlayer : "");
@@ -194,7 +204,6 @@ namespace OurTaiko.Online
         {
             foreach (var item in owned) if (item != null) Destroy(item);
             owned.Clear(); songs.Clear(); byKey.Clear(); charts.Clear(); folders.Clear();
-            OpenFolderKey = null;
         }
 
         // box.def GENRE names (enums.h GENRE_MAP) to the Nijiiro bar_genre frame (GENRE_TO_REF_FRAME).

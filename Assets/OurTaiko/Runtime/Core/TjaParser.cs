@@ -169,7 +169,6 @@ namespace OurTaiko
                 string[] parts = arg.Split(',');
                 if (parts.Length != 3) throw new FormatException("#BRANCHSTART requires condition, expert threshold, master threshold.");
                 string condition = parts[0].Trim().ToLowerInvariant();
-                // s (score) is recorded but never evaluated; only a fixed route can play it.
                 if (condition != "p" && condition != "r" && condition != "s")
                     throw new NotSupportedException("Only p (accuracy), r (drumroll) and s (score) branch conditions are recognised.");
                 double expert = Number(parts[1]), master = Number(parts[2]);

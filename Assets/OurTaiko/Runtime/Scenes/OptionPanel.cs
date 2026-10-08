@@ -68,9 +68,10 @@ namespace OurTaiko
             root.gameObject.SetActive(false);
         }
 
-        public void Open(PlayOptions options, double now)
+        // Shows SongSelectManager's menu; the panel only draws it and slides.
+        public void Open(OptionMenu menu, double now)
         {
-            Menu = new OptionMenu(options, art.hitSounds != null ? art.hitSounds.Count : 0);
+            Menu = menu ?? throw new ArgumentNullException(nameof(menu));
             openedAt = now; closedAt = -1; changedAt = -1;
             root.SetAsLastSibling();
             root.gameObject.SetActive(true);

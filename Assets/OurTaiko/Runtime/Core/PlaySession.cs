@@ -45,14 +45,15 @@ namespace OurTaiko
         readonly int[] selectedRoutes;
         readonly List<BranchRoute> branchHistory = new List<BranchRoute>();
         readonly List<TimelineEvent> timeline = new List<TimelineEvent>();
-        int nextEvent, branchNotes, branchRolls;
+        int nextEvent;
         // Notes are sorted by time (TjaParser), so only two groups can still owe a result: the
         // unresolved notes already reached (pending, ascending index) and the notes from head on.
         // Every note before head and not pending is resolved or on a decided unselected route.
         readonly bool timeSorted;
         int head;
         List<int> pending = new List<int>(), revisit = new List<int>();
-        double branchPoints;
+        readonly BranchFeed branchFeed = new BranchFeed();
+        readonly IBranchCondition[] conditions;
         double practiceStart = double.NegativeInfinity;
 
         sealed class TimelineEvent
@@ -64,24 +65,21 @@ namespace OurTaiko
         }
 
         // A fixed route (practice) plays every branch on ResolveRoute(route) and evaluates no
-        // condition. Without one, branches are judged as in the reference player, which defines
-        // neither s (score) conditions nor omitted routes, so such charts are refused, not guessed.
+        // condition. Without one, branches are judged by their p, r or s condition; the reference
+        // player does not define omitted routes, so such charts are refused, not guessed.
         public PlaySession(TaikoChart chart, double judgeOffset = 0, BranchRoute? forcedBranch = null)
         {
             if (!forcedBranch.HasValue)
                 foreach (var branch in chart.Branches)
-                {
-                    if (branch.Condition == BranchCondition.Score)
-                        throw new NotSupportedException("s (score) branches can only be played on a fixed route, as in practice.");
                     if (!branch.HasAllRoutes)
                         throw new NotSupportedException("A branch without #E or #M can only be played on a fixed route, as in practice.");
-                }
             ForcedBranch = forcedBranch;
             JudgeOffset = judgeOffset;
             Chart = chart; resolved = new bool[chart.Notes.Count]; missed = new bool[chart.Notes.Count]; longHits = new int[chart.Notes.Count];
             var statistics = new ChartStatistics(chart);
             scoring = new ShinuchiScore(statistics);
             gauge = new SoulGauge(statistics.JudgeableNotes, chart.Course, chart.Level);
+            conditions = BranchConditions.Create(branchFeed, HeldRollHits);
             bool easy = chart.Course == "Easy" || chart.Course == "Normal";
             goodWindow = easy ? 0.0417083358764648 : GoodWindow;
             okWindow = easy ? 0.108441665649414 : OkWindow;
@@ -153,36 +151,33 @@ namespace OurTaiko
                 var item = timeline[nextEvent++];
                 AdvanceNotes(item.Time - 1e-9, auto);
                 if (item.Branch != null) SelectBranch(item.Branch);
-                else if (IsActive(item.Section.BranchId, item.Section.Route)) ResetBranchStats();
+                else if (IsActive(item.Section.BranchId, item.Section.Route)) branchFeed.Clear();
             }
             AdvanceNotes(time, auto);
         }
 
-        void ResetBranchStats() { branchPoints = 0; branchNotes = 0; branchRolls = 0; }
+        // Hits so far on an active drumroll that spans the decision, for r conditions.
+        int HeldRollHits(ChartBranch branch)
+        {
+            int hits = 0;
+            for (int i = 0; i < Chart.Notes.Count; i++)
+            {
+                var note = Chart.Notes[i];
+                if (IsActive(note) && note.IsLong && !note.IsBalloon && note.Time <= branch.DecisionTime && branch.DecisionTime < note.EndTime)
+                    hits = Math.Max(hits, longHits[i]);
+            }
+            return hits;
+        }
 
         void SelectBranch(ChartBranch branch)
         {
-            double value;
-            if (ForcedBranch.HasValue) value = 0;
-            else if (branch.Condition == BranchCondition.Accuracy)
-                value = branchNotes == 0 ? 0 : Math.Max(0, Math.Min(100, (int)(branchPoints / branchNotes * 100)));
-            else
-            {
-                int activeRollHits = 0;
-                for (int i = 0; i < Chart.Notes.Count; i++)
-                {
-                    var note = Chart.Notes[i];
-                    if (IsActive(note) && note.IsLong && !note.IsBalloon && note.Time <= branch.DecisionTime && branch.DecisionTime < note.EndTime)
-                        activeRollHits = Math.Max(activeRollHits, longHits[i]);
-                }
-                value = Math.Max(branchRolls, activeRollHits);
-            }
+            double value = ForcedBranch.HasValue ? 0 : conditions[(int)branch.Condition].Value(branch);
             var chosen = value >= branch.ExpertThreshold && value < branch.MasterThreshold && branch.ExpertThreshold >= 0
                 ? BranchRoute.Expert : value >= branch.MasterThreshold ? BranchRoute.Master : BranchRoute.Normal;
             chosen = branch.ResolveRoute(ForcedBranch ?? chosen);
             selectedRoutes[branch.Id] = (int)chosen;
             CurrentBranch = chosen; LastBranchValue = value; branchHistory.Add(chosen); Version++;
-            ResetBranchStats();
+            branchFeed.Clear();
             BranchSelected?.Invoke(branch, chosen);
         }
 
@@ -298,8 +293,8 @@ namespace OurTaiko
 
         void HitLong(int i)
         {
-            var n = Chart.Notes[i]; longHits[i]++; Rolls++; scoring.AddLongHit(); Version++;
-            if (!n.IsBalloon) branchRolls++;
+            var n = Chart.Notes[i]; longHits[i]++; Rolls++; Version++;
+            branchFeed.Hit(n, scoring.AddLongHit());
             if (n.IsBalloon && longHits[i] == n.BalloonHits) resolved[i] = true;
             Judged?.Invoke(i, Judgment.Roll);
         }
@@ -307,16 +302,15 @@ namespace OurTaiko
         void Resolve(int i, Judgment result)
         {
             resolved[i] = true; Version++;
-            branchNotes++;
-            branchPoints += result == Judgment.Good ? 1 : result == Judgment.Ok ? 0.5 : 0;
             if (result == Judgment.Bad) { Bad++; Combo = 0; }
             else
             {
                 if (result == Judgment.Good) Good++; else Ok++;
                 Combo++; MaxCombo = Math.Max(MaxCombo, Combo);
             }
-            scoring.ApplyJudgment(result);
+            int points = scoring.ApplyJudgment(result);
             gauge.ApplyJudgment(result);
+            branchFeed.Judge(result, points);
             Judged?.Invoke(i, result);
         }
     }

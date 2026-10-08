@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.InputSystem;
 
 namespace OurTaiko
 {
@@ -11,6 +13,7 @@ namespace OurTaiko
         public string Label { get; }
         public string Description { get; }
         public IReadOnlyList<string> Choices { get; }
+        public InputKey? BindingKey { get; private set; }
         public bool IsNumber { get; private set; }
         public int DefaultValue { get; private set; }
         public int Step { get; private set; }
@@ -24,6 +27,13 @@ namespace OurTaiko
             Label = label; Description = description; Choices = choices;
             this.get = get; this.set = set;
         }
+
+        public static SettingItem Keyboard(InputKey key) => new SettingItem("Keyboard: " + KeyboardBindings.Label(key),
+            "Keys move from their old action. Mouse/touch works even when unbound.",
+            Array.Empty<string>(), _ => 0, (_, __) => { }) { BindingKey = key };
+
+        public string Format(GameSettings settings) => BindingKey.HasValue
+            ? settings.general.keyboard.Format(BindingKey.Value) : Format(Get(settings));
 
         public int Get(GameSettings settings) => get(settings);
         public void Set(GameSettings settings, int choice) => set(settings, choice);
@@ -69,6 +79,32 @@ namespace OurTaiko
         public int TypeIndex { get; private set; }
         public int ItemIndex { get; private set; }
         public int ChoiceIndex { get; private set; }
+        public bool CapturingKey { get; private set; }
+        public IReadOnlyList<string> Choices => CurrentItem?.BindingKey is InputKey key
+            ? new[] { "Add Key", "Clear All", "Defaults" }.Concat(Settings.general.keyboard.Get(key).Select(k => "Remove " + k)).ToArray()
+            : CurrentItem?.Choices ?? Array.Empty<string>();
+
+        public Result CaptureKey(Key key)
+        {
+            if (!CapturingKey || KeyboardBindings.Clean(new[] { key }).Length == 0) return Result.None;
+            var action = CurrentItem.BindingKey.Value;
+            Settings.general.keyboard.Set(action, Settings.general.keyboard.Get(action).Concat(new[] { key }).ToArray());
+            CapturingKey = false;
+            ChoiceIndex = 0;
+            return Result.Changed;
+        }
+
+        Result EditBinding()
+        {
+            var key = CurrentItem.BindingKey.Value;
+            var keyboard = Settings.general.keyboard;
+            if (ChoiceIndex == 0) { CapturingKey = true; return Result.Entered; }
+            if (ChoiceIndex == 1) keyboard.Set(key);
+            else if (ChoiceIndex == 2) keyboard.Set(key, KeyboardBindings.DefaultKeys(key));
+            else keyboard.Set(key, keyboard.Get(key).Where((_, i) => i != ChoiceIndex - 3).ToArray());
+            ChoiceIndex = 0;
+            return Result.Changed;
+        }
 
         public SettingsMenu(IReadOnlyList<SettingType> types, GameSettings settings)
         {
@@ -85,7 +121,7 @@ namespace OurTaiko
                     GeneralSettings.LanguageNames,
                     s => Array.IndexOf(GeneralSettings.Languages, s.general.Language),
                     (s, choice) => s.general.language = GeneralSettings.Languages[choice]),
-            }),
+            }.Concat(Enum.GetValues(typeof(InputKey)).Cast<InputKey>().Select(SettingItem.Keyboard)).ToArray()),
             new SettingType("Play", new[]
             {
                 SettingItem.Toggle("Enable Drumpad for Single Player Mode",
@@ -124,12 +160,12 @@ namespace OurTaiko
         // Drum ka: left ka = -1 (up), right ka = +1 (down) within the focused list.
         public Result Ka(int delta)
         {
-            if (delta == 0) return Result.None;
+            if (CapturingKey || delta == 0) return Result.None;
             switch (Focus)
             {
                 case SettingsFocus.Types: TypeIndex = Wrap(TypeIndex + delta, TypeCount); ItemIndex = 0; break;
                 case SettingsFocus.Items: ItemIndex = Wrap(ItemIndex + delta, ItemCount); break;
-                default: ChoiceIndex = CurrentItem.Move(ChoiceIndex, delta); break;
+                default: ChoiceIndex = CurrentItem.BindingKey.HasValue ? Wrap(ChoiceIndex + delta, Choices.Count) : CurrentItem.Move(ChoiceIndex, delta); break;
             }
             return Result.Moved;
         }
@@ -137,6 +173,7 @@ namespace OurTaiko
         // Drum don: confirm the focused entry.
         public Result Don()
         {
+            if (CapturingKey) return Result.None;
             switch (Focus)
             {
                 case SettingsFocus.Types:
@@ -150,6 +187,7 @@ namespace OurTaiko
                     ChoiceIndex = CurrentItem.Get(Settings);
                     return Result.Entered;
                 default:
+                    if (CurrentItem.BindingKey.HasValue) return EditBinding();
                     var settings = Settings.Clone();
                     CurrentItem.Set(settings, ChoiceIndex);
                     Settings = settings;
@@ -161,6 +199,7 @@ namespace OurTaiko
         // Back (Esc): one level out without changing anything; from the types it leaves the menu.
         public Result Back()
         {
+            if (CapturingKey) { CapturingKey = false; return Result.Returned; }
             switch (Focus)
             {
                 case SettingsFocus.Choice: Focus = SettingsFocus.Items; return Result.Returned;
@@ -173,6 +212,7 @@ namespace OurTaiko
         // pulling the focus back to the types from wherever it was.
         public Result TapType(int index)
         {
+            if (CapturingKey) return Result.None;
             if (index < 0 || index >= TypeCount) return Result.None;
             if (Focus == SettingsFocus.Types && index == TypeIndex) return Don();
             bool moved = index != TypeIndex;
@@ -185,6 +225,7 @@ namespace OurTaiko
         // Touch: a tap on an item row of the current type. Tapping the focused item confirms it.
         public Result TapItem(int index)
         {
+            if (CapturingKey) return Result.None;
             if (CurrentType == null || index < 0 || index >= ItemCount) return Result.None;
             if (Focus == SettingsFocus.Items && index == ItemIndex) return Don();
             Focus = SettingsFocus.Items;
@@ -195,9 +236,10 @@ namespace OurTaiko
         // Touch: a tap on a choice of the current item applies it at once.
         public Result TapChoice(int index)
         {
+            if (CapturingKey) return Result.None;
             if (Focus == SettingsFocus.Choice && CurrentItem?.IsNumber == true)
                 return index == 0 ? Don() : Result.None;
-            if (CurrentItem == null || index < 0 || index >= CurrentItem.Choices.Count) return Result.None;
+            if (CurrentItem == null || index < 0 || index >= Choices.Count) return Result.None;
             Focus = SettingsFocus.Choice;
             ChoiceIndex = index;
             return Don();
@@ -206,12 +248,14 @@ namespace OurTaiko
         // Touch: a swipe over a list moves the focus into that list and then through it.
         public Result SwipeTypes(int delta)
         {
+            if (CapturingKey) return Result.None;
             Focus = SettingsFocus.Types;
             return Ka(delta);
         }
 
         public Result SwipeItems(int delta)
         {
+            if (CapturingKey) return Result.None;
             if (CurrentType == null) return Result.None;
             Focus = SettingsFocus.Items;
             return Ka(delta);

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,17 +20,16 @@ namespace OurTaiko.Online
                     var manifest = await endpoint.ResourcesAsync(selected.Id, cancel);
                     var resource = manifest.Preview;
                     if (resource == null) throw new FanmadeException("PREVIEW_UNAVAILABLE");
-                    string path = Path.Combine(CacheRoot, "objects", endpoint.Id, selected.Id, "preview", resource.Hash, "preview.ogg");
+                    string path = ObjectPath(resource.Hash);
                     try
                     {
-                        bool valid = await CacheWork(() => File.Exists(path) && new FileInfo(path).Length == resource.Size &&
-                            FanmadeEndpoint.Sha256Hex(File.ReadAllBytes(path)) == resource.Hash, cancel);
+                        bool valid = await CacheWork(() => Matches(path, resource), cancel);
                         if (valid) { cancel.ThrowIfCancellationRequested(); return path; }
                         if (manifest.ExpiresAt <= DateTimeOffset.UtcNow.AddSeconds(45)) throw new FanmadeException("RESOURCE_LINK_EXPIRED");
                         var bytes = await endpoint.ResourceBytesAsync(resource, cancel);
                         if (bytes.LongLength != resource.Size || await CacheWork(() => FanmadeEndpoint.Sha256Hex(bytes), cancel) != resource.Hash)
                             throw new FanmadeException("DOWNLOAD_INTEGRITY_FAILED");
-                        await CacheWork(() => { cancel.ThrowIfCancellationRequested(); WriteAtomic(path, bytes); return true; }, cancel);
+                        await CacheWork(() => { cancel.ThrowIfCancellationRequested(); StoreObject(path, bytes, resource); return true; }, cancel);
                         cancel.ThrowIfCancellationRequested();
                         return path;
                     }

@@ -8,7 +8,6 @@ namespace OurTaiko
 {
     public sealed partial class PlayScene : MonoBehaviour
     {
-        public SongDefinition defaultSong;
         public AudioSource music, hitAudio;
         public AudioClip don, ka, balloonPop;
         public HitSoundLibrary hitSounds;
@@ -45,6 +44,7 @@ namespace OurTaiko
         [Tooltip("Dancer.anim on each dancer: the 0_loop frames at 8 fps on the song clock.")]
         public ClipSampler[] dancers;
         public CanvasGroup gogoTint;
+        public EndingView ending;
 
         public PlaySession Session { get; private set; }
         public bool IsPaused { get; private set; }
@@ -116,7 +116,14 @@ namespace OurTaiko
             // Direct Editor runs must return to the same mode after Back and another song.
             switcher.PracticeMode = IsPractice;
             switcher.SceneChanging += PrepareToLeave;
-            song = switcher.SelectedSong != null ? switcher.SelectedSong : defaultSong;
+            song = switcher.SelectedSong;
+            // Play scenes start from the song list; a direct run without a song goes back to Entry.
+            if (song == null)
+            {
+                Debug.LogWarning("No song is selected; returning to Entry.", this);
+                switcher.SwitchScene(SceneSwitcher.MenuScene);
+                yield break;
+            }
             autoPlay = switcher.AutoPlay;
             var playSettings = SettingManager.EnsureInstance().Settings.play;
             audioOffset = (song.audioOffsetMs + (double)playSettings.audioOffsetMs) / 1000.0;
@@ -142,7 +149,7 @@ namespace OurTaiko
             try
             {
                 // SongLoadingScene parsed the chart behind the curtain; restarts and direct runs parse here.
-                string course = switcher.SelectedSong != null ? switcher.SelectedCourse : null;
+                string course = switcher.SelectedCourse;
                 var options = PlayOptions.Shared;
                 var chart = switcher.TakePreparedChart(song, course) ?? PrepareChart(song, course);
                 // Practice plays a fixed route, chosen only in its menu; a normal play evaluates branches.
@@ -209,6 +216,7 @@ namespace OurTaiko
         void Update()
         {
             if (switcher == null || switcher.IsInputBlocked || !songClock.Started) return;
+            if (IsFinished) return;
             // Keep the intentional frame-based judgment; input event timestamps only sort hits.
             double? playback = AudioEngine.EnsureInstance().Backend == AudioBackend.Bass && music.IsAudioPlaying()
                 ? music.AudioPosition() : null;
@@ -228,6 +236,13 @@ namespace OurTaiko
             Session.Advance(time, autoPlay);
             if (branchLane != null) branchLane.ShowTime(time);
             if (!autoPlay) HitFirstDrumPress();
+            UpdatePlayVisuals(time);
+            if (time > Session.Chart.Duration + Math.Max(0, judgeOffset) + 1 && SongTime > music.AudioLength() + 1) Finish();
+        }
+
+        // Presentation can keep running after the result is captured, without advancing judgment.
+        void UpdatePlayVisuals(double time)
+        {
             balloonCounter.ShowTime(time);
             RenderNotes(time - visualOffset);
             soulGauge.ShowTime(time);
@@ -240,7 +255,6 @@ namespace OurTaiko
             hitFace.ShowTime(time);
             hitRing.ShowTime(time);
             for (int i = 0; i < drumFlashes.Length; i++) ShowFlash(i);
-            if (time > Session.Chart.Duration + Math.Max(0, judgeOffset) + 1 && SongTime > music.AudioLength() + 1) Finish();
         }
 
         // Input mutex: a frame judges only its earliest drum press; later ones in the same frame are dropped.
@@ -290,7 +304,7 @@ namespace OurTaiko
             hitRing.Play(result, big, judgedAt);
             if (result != Judgment.Roll)
             {
-                // Long-note hits must not restart the previous normal judgment's text fade.
+                // Long-note hits must not restart the previous normal judgment's text animation.
                 feedbackTime = GameTimeline.FrameTime;
                 judgment.sprite = judgmentSprites[(int)result - 1];
             }
@@ -327,8 +341,8 @@ namespace OurTaiko
             scoreCounter.Show(Session.Score);
             judgeCounter.Show(Session.Good, Session.Ok, Session.Bad, Session.Rolls);
             combo.Show(Session.Combo);
-            // Player::check_note: each 100th combo starts a ComboAnnounce and its voice.
-            if (Session.Combo != lastCombo && Session.Combo > 0 && Session.Combo % 100 == 0)
+            // Announce at 50, then at each 100th combo, once per combo change.
+            if (Session.Combo != lastCombo && (Session.Combo == 50 || Session.Combo > 0 && Session.Combo % 100 == 0))
             {
                 var voice = comboAnnounce.Announce(Session.Combo, ChartTime);
                 if (voice != null) hitAudio.PlayAudioOneShot(voice, AudioGroup.Voice);
@@ -409,6 +423,32 @@ namespace OurTaiko
             Result = PlayResult.From(Session, song.name, autoPlay);
             Result.Title = displayInfo.Title;
             Result.Subtitle = displayInfo.Subtitle;
+            DisableDrumPads();
+            pauseButton.interactable = false;
+            StartCoroutine(ShowEnding());
+        }
+
+        IEnumerator ShowEnding()
+        {
+            if (ending != null)
+            {
+                ending.Begin(Result);
+                double started = GameTimeline.FrameTime;
+                double chartTime = ChartTime;
+                while (GameTimeline.FrameTime - started < ending.Duration)
+                {
+                    double elapsed = GameTimeline.FrameTime - started;
+                    // Continue from the last song frame on the ending's real-time clock. The
+                    // stopped SongClock and Session remain untouched; dancers, gauge loops and
+                    // existing hit effects keep playing while input and scoring stay disabled.
+                    UpdatePlayVisuals(chartTime + elapsed);
+                    if (branchLane != null) branchLane.ShowTime(chartTime + elapsed);
+                    ending.ShowTime(elapsed);
+                    yield return null;
+                }
+                UpdatePlayVisuals(chartTime + ending.Duration);
+                ending.ShowTime(ending.Duration);
+            }
             switcher.ShowResult(Result, song, Record);
         }
         public void Restart()

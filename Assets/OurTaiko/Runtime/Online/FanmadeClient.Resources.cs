@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,8 +9,9 @@ namespace OurTaiko.Online
     {
         // Refreshes the chart's details (the author may have replaced its files), then makes sure
         // the TJA and audio from the signed resource links are cached with matching size and
-        // SHA-256, and writes play.tja. `progress` runs on worker threads.
-        public async Task<(string Path, FanmadeChart Chart)> PrepareAsync(FanmadeChart selected, CancellationToken cancel = default,
+        // SHA-256. Returns the playable TJA (built from the API metadata, kept in memory only) and
+        // the audio object's path. `progress` runs on worker threads.
+        public async Task<(string Tja, string AudioPath, FanmadeChart Chart)> PrepareAsync(FanmadeChart selected, CancellationToken cancel = default,
             Action<DownloadProgress> progress = null)
         {
             var e = Endpoint(selected.Server) ?? throw new FanmadeException("SERVER_NOT_CONNECTED");
@@ -33,19 +33,11 @@ namespace OurTaiko.Online
                     { if (attempt == 0) continue; throw new FanmadeException("CHART_UPDATING"); }
                     if (!c.IsPlayable) throw new FanmadeException("CHART_NO_PLAYABLE_COURSE");
                     c.AudioName = manifest.Audio.ContentType == "audio/ogg" ? "audio.ogg" : "audio.mp3";
-                    string root = Path.Combine(CacheRoot, "objects", e.Id, c.Id);
-                    async Task<string> Ensure(FanmadeResource resource, string kind, string name, FileProgress transfer)
+                    async Task<string> Ensure(FanmadeResource resource, FileProgress transfer)
                     {
-                        string file = Path.Combine(root, kind, resource.Hash, name);
+                        string file = ObjectPath(resource.Hash);
                         transfer.Status = FileProgress.State.Verifying; Publish();
-                        bool Matches(string candidate)
-                        {
-                            if (!File.Exists(candidate) || new FileInfo(candidate).Length != resource.Size) return false;
-                            using var stream = File.OpenRead(candidate);
-                            using var sha = System.Security.Cryptography.SHA256.Create();
-                            return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant() == resource.Hash;
-                        }
-                        if (await CacheWork(() => Matches(file), cancel))
+                        if (await CacheWork(() => Matches(file, resource), cancel))
                         { transfer.Status = FileProgress.State.Cached; transfer.Received = transfer.Total = resource.Size; Publish(); return file; }
                         if (manifest.ExpiresAt <= DateTimeOffset.UtcNow.AddSeconds(45)) throw new FanmadeException("RESOURCE_LINK_EXPIRED");
                         transfer.Status = FileProgress.State.Downloading; transfer.Total = resource.Size; transfer.Received = 0; Publish();
@@ -53,47 +45,20 @@ namespace OurTaiko.Online
                         transfer.Status = FileProgress.State.Verifying; Publish();
                         if (bytes.LongLength != resource.Size || await CacheWork(() => FanmadeEndpoint.Sha256Hex(bytes), cancel) != resource.Hash)
                             throw new FanmadeException("DOWNLOAD_INTEGRITY_FAILED");
-                        await CacheWork(() => { cancel.ThrowIfCancellationRequested(); WriteAtomic(file, bytes); return true; }, cancel);
+                        await CacheWork(() => { cancel.ThrowIfCancellationRequested(); StoreObject(file, bytes, resource); return true; }, cancel);
                         transfer.Status = FileProgress.State.Complete; Publish(); return file;
                     }
                     try
                     {
                         state.Step = DownloadProgress.Stage.Files; Publish();
-                        string original = await Ensure(manifest.Tja, "tja", "original.tja", state.Chart);
-                        string audio = await Ensure(manifest.Audio, "audio", c.CachedAudioName, state.Audio);
+                        string original = await Ensure(manifest.Tja, state.Chart);
+                        string audio = await Ensure(manifest.Audio, state.Audio);
                         state.Step = DownloadProgress.Stage.Preparing; Publish();
-                        // Publish a complete, unique pair only after both content objects are verified.
-                        string ready = Path.Combine(root, "plays", c.TjaHash + "-" + c.AudioHash);
-                        string playable = Path.Combine(ready, "play.tja");
-                        await CacheWork(() =>
+                        // Rebuilt on every preparation: it depends on the API metadata, not only on the files.
+                        string text = await CacheWork(() =>
                         {
                             cancel.ThrowIfCancellationRequested();
-                            string text = PlayableTja.Build(PlayableTja.ToUtf8(File.ReadAllBytes(original), c.Encoding), c);
-                            Directory.CreateDirectory(ready);
-                            string destination = Path.Combine(ready, c.CachedAudioName);
-                            // Verify the playable copy as well; a corrupt alias must never bypass hashing.
-                            bool valid = false;
-                            if (File.Exists(destination) && new FileInfo(destination).Length == manifest.Audio.Size)
-                            {
-                                using var stream = File.OpenRead(destination);
-                                using var sha = System.Security.Cryptography.SHA256.Create();
-                                valid = BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant() == c.AudioHash;
-                            }
-                            if (!valid)
-                            {
-                                string temporary = destination + ".part";
-                                try
-                                {
-                                    File.Copy(audio, temporary, true);
-                                    cancel.ThrowIfCancellationRequested();
-                                    if (File.Exists(destination)) File.Replace(temporary, destination, null);
-                                    else File.Move(temporary, destination);
-                                }
-                                finally { if (File.Exists(temporary)) File.Delete(temporary); }
-                            }
-                            cancel.ThrowIfCancellationRequested();
-                            WriteAtomic(playable, new UTF8Encoding(false).GetBytes(text));
-                            return true;
+                            return PlayableTja.Build(PlayableTja.ToUtf8(File.ReadAllBytes(original), c.Encoding), c);
                         }, cancel);
                         lock (sync)
                         {
@@ -102,7 +67,7 @@ namespace OurTaiko.Online
                         }
                         Interlocked.Increment(ref revision);
                         state.Step = DownloadProgress.Stage.Ready; Publish(); SetStatus(e.Config.DisplayName + ": ready");
-                        return (playable, selected.SelectedPlayer.Length > 0 ? c.ForPlayer(selected.SelectedPlayer) : c);
+                        return (text, audio, selected.SelectedPlayer.Length > 0 ? c.ForPlayer(selected.SelectedPlayer) : c);
                     }
                     catch (HttpStatusException error) when (attempt == 0 && (error.Status == 403 || error.Status == 404 || error.Status >= 500)) { }
                     catch (FanmadeException error) when (attempt == 0 && (error.Message == "RESOURCE_LINK_EXPIRED" || error.Message == "NETWORK_TIMEOUT")) { }

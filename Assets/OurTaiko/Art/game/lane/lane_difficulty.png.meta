@@ -157,138 +157,6 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: OniDifficulty
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 288
-        width: 132
-        height: 96
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 8c578352e23a847eaa51f9a608b0f00d
-      internalID: 63005204
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BestScoreDifficulty0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 576
-        width: 132
-        height: 96
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 280b3a68b467941ae90fa094e18f49cb
-      internalID: -164008391
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BestScoreDifficulty1
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 480
-        width: 132
-        height: 96
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e0e53c3f5b6f441d18363906aa17300d
-      internalID: 309027140
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BestScoreDifficulty2
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 384
-        width: 132
-        height: 96
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 802a1ac9ad12b4291baa7ead81556998
-      internalID: -531916825
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BestScoreDifficulty3
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 288
-        width: 132
-        height: 96
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a968a2af92e8541aa9097502d55a1633
-      internalID: -1795082308
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BestScoreDifficulty4
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 192
-        width: 132
-        height: 96
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b8c2eff8a90b24b1db52f86847f8f563
-      internalID: -609447608
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: LaneDifficulty0
       rect:
         serializedVersion: 2
@@ -412,17 +280,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BestScoreDifficulty0: -164008391
-      BestScoreDifficulty1: 309027140
-      BestScoreDifficulty2: -531916825
-      BestScoreDifficulty3: -1795082308
-      BestScoreDifficulty4: -609447608
       LaneDifficulty0: -455977207
       LaneDifficulty1: -1335733205
       LaneDifficulty2: -834173487
       LaneDifficulty3: 1702319767
       LaneDifficulty4: 1511858840
-      OniDifficulty: 63005204
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

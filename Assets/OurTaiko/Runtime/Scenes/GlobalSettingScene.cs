@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace OurTaiko
 {
@@ -18,6 +19,7 @@ namespace OurTaiko
         public bool HasLeft { get; private set; }
 
         SceneSwitcher switcher;
+        int captureFrame;
 
         void Awake()
         {
@@ -54,6 +56,13 @@ namespace OurTaiko
         void Update()
         {
             if (switcher.IsInputBlocked || HasLeft) return;
+            if (Menu.CapturingKey)
+            {
+                if (Time.frameCount <= captureFrame || Keyboard.current == null) return;
+                foreach (var key in Keyboard.current.allKeys)
+                    if (key.wasPressedThisFrame) { Handle(Menu.CaptureKey(key.keyCode)); break; }
+                return;
+            }
             if (InputManager.GetKeyDown(InputKey.LeftDon) || InputManager.GetKeyDown(InputKey.RightDon) || InputManager.GetKeyDown(InputKey.Confirm))
                 Don();
             else if (InputManager.GetKeyDown(InputKey.LeftKa) || InputManager.GetKeyDown(InputKey.MenuUp) || InputManager.GetKeyDown(InputKey.MenuLeft))
@@ -70,7 +79,9 @@ namespace OurTaiko
         void Run(System.Func<SettingsMenu.Result> action)
         {
             if (switcher.IsInputBlocked || HasLeft) return;
+            bool capturing = Menu.CapturingKey;
             Handle(action());
+            if (!capturing && Menu.CapturingKey) captureFrame = Time.frameCount;
         }
         void Handle(SettingsMenu.Result result)
         {
