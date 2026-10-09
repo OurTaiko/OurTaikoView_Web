@@ -10,7 +10,7 @@
       "Condition": {
         "StringEquals": {
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:sub": "repo:OurTaiko/OurTaikoView_Web:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub": "repo:OurTaiko@252237704/OurTaikoView_Web@1406471985:ref:refs/heads/main"
         }
       }
     }

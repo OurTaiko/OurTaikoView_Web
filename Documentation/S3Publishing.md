@@ -4,16 +4,16 @@ Bucket：`ourtaiko-play-tokyo`。CDN：`https://d2mguycu233w0q.cloudfront.net`�
 
 完整播放器存放在 `player/<内容哈希>/`，根目录的 `player-build.json` 指向当前版本。
 Fanmade 生产配置通过 `VITE_PLAYER_MANIFEST_URL` 在每次打开播放器时读取清单，解析到清单所在 CDN 的版本目录。
-网站只需部署这次接入；后续保持 Bridge v1 兼容的播放器更新仅发布 S3。正在游玩的会话不自动重载。
+网站只需部署这次接入；后续保持 当前音频传输协议的播放器更新仅发布 S3。正在游玩的会话不自动重载。
 
 ## 一次性配置
 
 - 私有 S3，通过 CloudFront OAC 读取。
 - CloudFront `/player-build.json` behavior：`CachingDisabled`，`SimpleCORS`，HTTPS。
 - 默认 behavior 缓存版本目录；不添加阻止 Fanmade iframe 的 `X-Frame-Options`。
-- 音乐请求由 CDN 页面发出。Fanmade 后端已补充该域名对 `/api/v1/charts/<id>/audio` 的 GET/HEAD 和预检许可，必须先部署这项后端改动再发布前端；未开放账号 API 或凭据读取。播放器清单的 SimpleCORS 不会替音乐接口配置 CORS。
+- 音乐由 Fanmade 父页面同源下载，再通过 postMessage 转移 ArrayBuffer 给 CDN iframe，在播放器 JavaScript 内用 Web Audio 解码。谱面直接传文本；播放器不下载谱面或音乐 URL，不需要给后端新增 CloudFront CORS。清单仍需 SimpleCORS。
+- Bridge 不带协议版本字段，只接受谱面文本和音频字节，不支持音频 URL 或固定播放器地址回退。关闭播放器、重试或切换谱面时取消旧下载。
 - 安装 AWS CLI v2，使用已有身份/命名 profile，上传身份需要此桶 `player/*` 和 `player-build.json` 的 `s3:PutObject`。不把密钥写入脚本或仓库。
-- Fanmade 已有 `VITE_PLAYER_URL` 固定地址覆盖项时，应移除它以启用清单发现。
 
 ## GitHub Actions 自动构建与发布（推荐）
 
@@ -44,6 +44,11 @@ IAM → Roles → Create role → Web identity，选择上面的 GitHub provider
 绑定刚创建的上传策略，角色名例如 `OurTaikoViewWebPublisher`。
 核对最终 Trust relationships 与 [信任策略](aws-github-trust-policy.json) 一致；文件中的 `<AWS_ACCOUNT_ID>` 换成自己的 AWS 账户 ID。
 当前工作流没有 GitHub environment，信任条件使用分支 subject，不能换成 environment subject。
+本仓库已启用 immutable subject，必须保留组织与仓库的数字 ID：
+`repo:OurTaiko@252237704/OurTaikoView_Web@1406471985:ref:refs/heads/main`。
+只有名称、不含 `@ID` 的旧格式会导致 `sts:AssumeRoleWithWebIdentity` 被拒绝。
+可以用 `gh api repos/OurTaiko/OurTaikoView_Web/actions/oidc/customization/sub` 核对当前 `sub_claim_prefix`。
+若 Unity 构建已成功而 AWS 授权失败，修正 IAM 信任策略后在原运行选择 **Re-run failed jobs**，可复用已保存的构建产物。
 
 ### 3. GitHub 配置
 
@@ -63,7 +68,7 @@ Secrets（Personal license，与 OurTaikoPlay 的 GameCI 配置相同）：
 
 确保 CloudFront 清单 behavior 已部署，然后将工作流及发布脚本提交/推送到 main。
 在 Actions 查看 `Build and publish Web player`；如需重试，选择 main 后 Run workflow。
-首次 S3 发布成功后，先部署 Fanmade 的音乐 CORS 后端改动，再部署云端清单前端改动，并完成真实浏览器验收。
+首次切换音频字节传输时，先发布新版播放器并确认云端清单已指向它，再部署新版 Fanmade 前端，并完成真实浏览器验收；两端都必须使用音频字节传输。此前后端 CORS 方案已撤销，无需部署后端。
 后续播放器 Bridge 协议兼容的更新只需推送 View_Web main，不需要更新 Fanmade。
 
 参考：[GameCI Activation](https://game.ci/docs/github/activation/)、[GitHub AWS OIDC](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws)。
@@ -87,4 +92,4 @@ Secrets（Personal license，与 OurTaikoPlay 的 GameCI 配置相同）：
 `python3 -m unittest discover -s scripts -p 'test_publish_player.py'`
 
 Fanmade 本地开发默认继续使用 `/player-build.json` 和现有本地产物。生产构建排除 `public/player` 与本地清单，不把 WASM 复制进网站部署目录。
-旧本地产物暂保留用于开发和迁移验证，待云端发布成功后再单独清理。
+本地开发须安装当前构建；旧构建不受支持，不作为加载失败时的回退。

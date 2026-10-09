@@ -3,7 +3,6 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace OurTaiko
 {
@@ -14,8 +13,6 @@ namespace OurTaiko
         public SongDefinition Song { get; private set; }
         PlayScene player;
         Coroutine loading;
-        UnityWebRequest request;
-        AudioClip decodingClip;
         int decodingBuffer;
         string requestId = "";
         int generation;
@@ -23,13 +20,13 @@ namespace OurTaiko
         [Serializable] public sealed class Command
         {
             public string channel, type, requestId;
-            public int version;
             public Payload payload;
         }
         [Serializable] public sealed class Payload
         {
-            public string chartText, chartUrl, audioUrl, audioType, course = "Oni";
+            public string chartText, audioType, course = "Oni";
             public bool practice = true, autoPlay, replay;
+            public bool audioTransferred;
             // setDrumVolume: 0-100, the hit-sound (Drum group) volume.
             public float? volume;
         }
@@ -55,7 +52,7 @@ namespace OurTaiko
             Command command;
             try { command = JsonConvert.DeserializeObject<Command>(json); }
             catch { Emit("error", new { code = "INVALID_MESSAGE" }); return; }
-            if (command == null || command.channel != "ourtaiko-view" || command.version != 1) return;
+            if (command == null || command.channel != "ourtaiko-view") return;
             if (command.type == "hello") { Emit("ready"); return; }
             // Accepted with or without a loaded chart; it also changes hit sounds that are still sounding.
             if (command.type == "setDrumVolume")
@@ -74,7 +71,7 @@ namespace OurTaiko
                 var value = command.payload;
                 if (value == null || value.replay || (!value.practice && !value.autoPlay))
                 { Emit("error", new { code = value?.replay == true ? "REPLAY_NOT_SUPPORTED" : "INVALID_MODE" }, command.requestId); return; }
-                if (!ValidUrl(value.audioUrl) || (string.IsNullOrWhiteSpace(value.chartText) && !ValidUrl(value.chartUrl)))
+                if (!value.audioTransferred || string.IsNullOrEmpty(command.requestId) || string.IsNullOrWhiteSpace(value.chartText))
                 { Emit("error", new { code = "INVALID_RESOURCE" }, command.requestId); return; }
                 if (value.chartText?.Length > 4 * 1024 * 1024)
                 { Emit("error", new { code = "CHART_TOO_LARGE" }, command.requestId); return; }
@@ -96,21 +93,10 @@ namespace OurTaiko
                 default: Emit("error", new { code = "UNKNOWN_COMMAND" }, command.requestId); break;
             }
         }
-        static bool ValidUrl(string value) => Uri.TryCreate(value, UriKind.Absolute, out var uri)
-            && (uri.Scheme == "https" || uri.Scheme == "http") && string.IsNullOrEmpty(uri.UserInfo);
         IEnumerator Load(Payload value, int ticket)
         {
             Emit("loading", new { stage = "chart" });
             string chart = value.chartText;
-            if (string.IsNullOrWhiteSpace(chart))
-            {
-                request = UnityWebRequest.Get(value.chartUrl); request.timeout = 60;
-                yield return request.SendWebRequest();
-                if (request.result != UnityWebRequest.Result.Success) { Fail("CHART_DOWNLOAD_FAILED"); yield break; }
-                if (request.downloadedBytes > 4 * 1024 * 1024) { Fail("CHART_TOO_LARGE"); yield break; }
-                chart = request.downloadHandler.text;
-                request.Dispose(); request = null;
-            }
             try
             {
                 // Validate exactly as practice plays it: on a fixed route, which is chosen in its menu.
@@ -118,47 +104,22 @@ namespace OurTaiko
             }
             catch (Exception error) { Debug.LogException(error); Fail("INVALID_CHART", error.Message); yield break; }
             Emit("loading", new { stage = "audio" });
-            string format = (value.audioType ?? System.IO.Path.GetExtension(new Uri(value.audioUrl).AbsolutePath)).TrimStart('.').ToLowerInvariant();
-            AudioType type = format == "ogg" ? AudioType.OGGVORBIS : format == "mp3" ? AudioType.MPEG : format == "wav" ? AudioType.WAV : AudioType.UNKNOWN;
-            if (type == AudioType.UNKNOWN) { Fail("AUDIO_TYPE_REQUIRED"); yield break; }
+            string format = (value.audioType ?? "").TrimStart('.').ToLowerInvariant();
+            if (format != "ogg" && format != "mp3" && format != "wav") { Fail("AUDIO_TYPE_REQUIRED"); yield break; }
 #if UNITY_WEBGL && !UNITY_EDITOR
-            request = UnityWebRequest.Get(value.audioUrl); request.timeout = 120;
-            yield return request.SendWebRequest();
-            if (request.result != UnityWebRequest.Result.Success) { Fail("AUDIO_DOWNLOAD_OR_DECODE_FAILED"); yield break; }
-            var bytes = request.downloadHandler.data;
-            request.Dispose(); request = null;
-            // Unity audio is disabled in the Web build: the decoded AudioBuffer stays in the browser
-            // and Web Audio plays it directly.
+            // Encoded bytes arrive in the iframe via postMessage, never via a network
+            // request or a JSON/C# byte array. Decoded audio also stays in JavaScript.
             if (AudioEngine.EnsureInstance().Backend != AudioBackend.WebAudio) { Fail("AUDIO_UNAVAILABLE"); yield break; }
-            AudioClip clip = null;
-            int buffer = decodingBuffer = WebAudio.Decode(bytes);
-            bytes = null;
+            int buffer = decodingBuffer = WebAudio.DecodeTransferred(requestId);
             double decodeDeadline = Time.realtimeSinceStartupAsDouble + 30;
             while (WebAudio.State(buffer) == 0 && Time.realtimeSinceStartupAsDouble < decodeDeadline) yield return null;
             if (WebAudio.State(buffer) != 1) { Fail("AUDIO_DECODE_FAILED"); yield break; }
-#else
-            request = UnityWebRequestMultimedia.GetAudioClip(value.audioUrl, type);
-            request.timeout = 120;
-            ((DownloadHandlerAudioClip)request.downloadHandler).streamAudio = false;
-            yield return request.SendWebRequest();
-            if (request.result != UnityWebRequest.Result.Success) { Fail("AUDIO_DOWNLOAD_OR_DECODE_FAILED"); yield break; }
-            AudioClip clip = decodingClip = DownloadHandlerAudioClip.GetContent(request);
-            int buffer = 0;
-            // Web's decodeAudioData completes after the HTTP operation and Unity's loadState
-            // can still report Loaded before its AudioBuffer has a sample count.
-            double decodeDeadline = Time.realtimeSinceStartupAsDouble + 30;
-            yield return new WaitForSecondsRealtime(0.1f);
-            while (clip != null && clip.length <= 0 && Time.realtimeSinceStartupAsDouble < decodeDeadline)
-                yield return new WaitForSecondsRealtime(0.05f);
-            request.Dispose(); request = null;
-            if (clip == null || clip.length <= 0) { Fail("AUDIO_DECODE_FAILED"); yield break; }
-#endif
-            decodingClip = null; decodingBuffer = 0;
-            if (ticket != generation) { if (clip != null) Destroy(clip); WebAudio.Release(buffer); yield break; }
+            decodingBuffer = 0;
+            if (ticket != generation) { WebAudio.Release(buffer); yield break; }
             var old = Song;
             Song = ScriptableObject.CreateInstance<SongDefinition>();
             Song.name = "Embedded chart";
-            Song.chart = new TextAsset(chart); Song.music = clip; Song.webAudioBuffer = buffer; Song.course = value.course;
+            Song.chart = new TextAsset(chart); Song.music = null; Song.webAudioBuffer = buffer; Song.course = value.course;
             var switcher = SceneSwitcher.EnsureInstance();
             while (switcher.IsSwitching) yield return null;
             switcher.ConfigureEmbedded(Song, value.course, value.autoPlay);
@@ -167,6 +128,10 @@ namespace OurTaiko
             Release(old);
             loading = null;
             if (transition.IsFaulted) Fail("SCENE_LOAD_FAILED");
+#else
+            Fail("WEB_PLAYER_REQUIRED");
+            yield break;
+#endif
         }
         public void Attach(PlayScene value)
         {
@@ -183,8 +148,7 @@ namespace OurTaiko
         }
         void Fail(string code, string detail = null)
         {
-            request?.Dispose(); request = null; loading = null;
-            if (decodingClip != null) Destroy(decodingClip); decodingClip = null;
+            loading = null;
             WebAudio.Release(decodingBuffer); decodingBuffer = 0;
             Emit("error", new { code, detail });
         }
@@ -192,8 +156,7 @@ namespace OurTaiko
         {
             generation++;
             if (loading != null) StopCoroutine(loading);
-            loading = null; request?.Abort(); request?.Dispose(); request = null;
-            if (decodingClip != null) Destroy(decodingClip); decodingClip = null;
+            loading = null;
             WebAudio.Release(decodingBuffer); decodingBuffer = 0;
         }
         static void Release(SongDefinition song)
@@ -206,7 +169,7 @@ namespace OurTaiko
         }
         void Emit(string type, object payload = null, string id = null)
         {
-            string json = JsonConvert.SerializeObject(new { channel = "ourtaiko-view", version = 1, type, requestId = id ?? requestId, payload });
+            string json = JsonConvert.SerializeObject(new { channel = "ourtaiko-view", type, requestId = id ?? requestId, payload });
 #if UNITY_WEBGL && !UNITY_EDITOR
             OurTaikoViewEmit(json);
 #else

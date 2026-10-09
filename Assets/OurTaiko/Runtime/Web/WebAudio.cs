@@ -12,6 +12,7 @@ namespace OurTaiko
         [DllImport("__Internal")] static extern int OurTaikoAudioInit();
         [DllImport("__Internal")] static extern double OurTaikoAudioInfo(int field);
         [DllImport("__Internal")] static extern int OurTaikoAudioDecode(byte[] bytes, int length);
+        [DllImport("__Internal")] static extern int OurTaikoAudioDecodeTransferred(string requestId);
         [DllImport("__Internal")] static extern double OurTaikoAudioBufferInfo(int buffer, int field);
         [DllImport("__Internal")] static extern void OurTaikoAudioRelease(int buffer);
         [DllImport("__Internal")] internal static extern int OurTaikoVoiceCreate(int buffer, bool normalize, bool speedChange);
@@ -30,6 +31,7 @@ namespace OurTaiko
             + (OurTaikoAudioInfo(4) == 0 ? "; waiting for a user gesture" : "");
         // Decoding is asynchronous: poll State until it leaves 0 (1 decoded, -1 failed).
         internal static int Decode(byte[] encoded) => OurTaikoAudioDecode(encoded, encoded.Length);
+        internal static int DecodeTransferred(string requestId) => OurTaikoAudioDecodeTransferred(requestId);
         internal static int State(int buffer) => (int)OurTaikoAudioBufferInfo(buffer, 0);
         internal static double Duration(int buffer) => OurTaikoAudioBufferInfo(buffer, 1);
         internal static void Release(int buffer) { if (buffer != 0) OurTaikoAudioRelease(buffer); }
