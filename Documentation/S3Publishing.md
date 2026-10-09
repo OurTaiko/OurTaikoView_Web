@@ -4,7 +4,7 @@ Bucket：`ourtaiko-play-tokyo`。CDN：`https://d2mguycu233w0q.cloudfront.net`�
 
 完整播放器存放在 `player/<内容哈希>/`，根目录的 `player-build.json` 指向当前版本。
 Fanmade 生产配置通过 `VITE_PLAYER_MANIFEST_URL` 在每次打开播放器时读取清单，解析到清单所在 CDN 的版本目录。
-网站只需部署这次接入；后续保持 当前音频传输协议的播放器更新仅发布 S3。正在游玩的会话不自动重载。
+网站只需部署这次接入；后续保持当前音频传输协议的播放器更新仅发布 S3。正在游玩的会话不自动重载。
 
 ## 一次性配置
 
@@ -91,5 +91,5 @@ Secrets（Personal license，与 OurTaikoPlay 的 GameCI 配置相同）：
 
 `python3 -m unittest discover -s scripts -p 'test_publish_player.py'`
 
-Fanmade 本地开发默认继续使用 `/player-build.json` 和现有本地产物。生产构建排除 `public/player` 与本地清单，不把 WASM 复制进网站部署目录。
-本地开发须安装当前构建；旧构建不受支持，不作为加载失败时的回退。
+Fanmade 开发和生产均通过 CloudFront 清单加载。前端已移除 `public/player/`、`public/player-build.json`、本地构建校验脚本及播放器 LFS 配置，并清理对应 Git 历史。Vite 使用普通 public 复制流程，无需为播放器增加过滤插件。
+本地构建的浏览器测试可通过 `PLAYER_TEST_BUILD_DIR` 注入临时 CDN 响应；这仅是测试夹具，不向前端仓库安装构建产物。
