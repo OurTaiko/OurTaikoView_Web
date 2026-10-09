@@ -22,7 +22,7 @@ namespace OurTaiko.Tests
         public sealed class Chart
         {
             public string Id = Hex(32), Title = "Fixture Song", Subtitle = "", Maker = "Tester";
-            public string Encoding = "utf-8", AudioName = "song.ogg";
+            public string Encoding, AudioName = "song.ogg";
             public byte[] Tja = new byte[0], Audio = new byte[0];
             public string[] Categories = { "game" };
             // Base course, level and #START player ("", "P1" or "P2"); a chart with players is DOUBLE.
@@ -32,19 +32,24 @@ namespace OurTaiko.Tests
             // Courses (as the API names them) reported with "branching": true; the rest are false.
             public readonly HashSet<string> Branching = new HashSet<string>();
 
-            public JObject ToJson() => new JObject
+            public JObject ToJson()
             {
-                ["id"] = Id, ["title"] = Title, ["subtitle"] = Subtitle, ["maker"] = Maker,
-                ["tjaHash"] = Sha(Tja), ["audioHash"] = Sha(Audio), ["encoding"] = Encoding, ["audioName"] = AudioName,
-                ["titleTranslations"] = new JObject { ["ja"] = Title + " JA" }, ["subtitleTranslations"] = new JObject(),
-                ["bpm"] = Bpm, ["demoStart"] = DemoStart,
-                ["isSingle"] = Difficulties.All(d => string.IsNullOrEmpty(d.Player)),
-                ["difficulties"] = new JArray(Difficulties.Select(d =>
+                var value = new JObject
                 {
-                    string course = d.Course + (d.Player == "P1" ? "_1p" : d.Player == "P2" ? "_2p" : "");
-                    return new JObject { ["course"] = course, ["level"] = d.Level, ["maker"] = Maker, ["branching"] = Branching.Contains(course) };
-                })),
-            };
+                    ["id"] = Id, ["title"] = Title, ["subtitle"] = Subtitle, ["maker"] = Maker,
+                    ["tjaHash"] = Sha(Tja), ["audioHash"] = Sha(Audio), ["audioName"] = AudioName,
+                    ["titleTranslations"] = new JObject { ["ja"] = Title + " JA" }, ["subtitleTranslations"] = new JObject(),
+                    ["bpm"] = Bpm, ["demoStart"] = DemoStart,
+                    ["isSingle"] = Difficulties.All(d => string.IsNullOrEmpty(d.Player)),
+                    ["difficulties"] = new JArray(Difficulties.Select(d =>
+                    {
+                        string course = d.Course + (d.Player == "P1" ? "_1p" : d.Player == "P2" ? "_2p" : "");
+                        return new JObject { ["course"] = course, ["level"] = d.Level, ["maker"] = Maker, ["branching"] = Branching.Contains(course) };
+                    })),
+                };
+                if (Encoding != null) value["encoding"] = Encoding;
+                return value;
+            }
         }
 
         public readonly string BaseUrl;

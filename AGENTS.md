@@ -16,3 +16,5 @@
 - 2026-10-06 从 OurTaikoPlay `2834759`（单次加分数字：最终高度横向滑入、平齐一行、淡出上移 15 px，删除 `fanStep`）与 `e754b76`（轨道难度图标按谱面 COURSE 切换，`PlayScene.laneDifficulty`／`laneDifficultySprites`＝`lane_difficulty` 切片 `LaneDifficulty0–4`）同步。`ScoreAdditionView.cs`、`ScoreAddition.anim`、`lane_difficulty.png.meta` 原样复制（本项目原文件与来源父提交逐字相同）；PlayScene 只合入新增字段与 `ShowDifficulty`，保留 Bridge 差异；PracticeScene 绑定经 Editor API 完成，场景差异与来源一致。未构建、未安装到 Fanmade 前端。
 
 - 2026-10-08 同步 OurTaikoPlay `1183c5c`：p/r/s 分支条件、内容哈希缓存、键位配置、曲库/搜索逻辑、50 Combo 提示和语音、判定文字回弹（250ms 内不淡出）。详见 `Documentation/SharedCodeSync.md`。`SyncPlayPresentation.Apply` 通过 Editor API 重建相关场景绑定与动画；首次补齐 50 Combo 音源时读取相邻 OurTaikoPlay。新增 LocalSongLibrary/SongSelectManager 与 OnlineManager 一样不在嵌入启动时初始化。保留 Web Audio、双时钟、无持久化设置和 bridge。共享 EndingView 仅供普通游玩代码编译，PracticeScene 无结束演出资源，网页仍结束回首小节暂停。
+
+- 2026-10-09 同步 OurTaikoPlay `4d15dbb`：UTF-8 下载解析、连打计数扇形面板、共用高清数字、气球魂槽层级修复、共享搜索交互。`SyncPlayPresentation.ApplyCounters()` 只修改 PracticeScene 的连打与气球绑定，保留 Web 差异；详见 Documentation/SharedCodeSync.md。当前有 EditMode 测试程序集，早期“无测试程序集”说明已过时。

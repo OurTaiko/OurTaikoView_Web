@@ -22,6 +22,7 @@ namespace OurTaiko
         public Sprite[] mojiSprites;
         public Sprite mojiRollSprite;
         public BalloonCounterView balloonCounter;
+        public DrumrollCounterView drumrollCounter;
         public Sprite[] judgmentSprites;
         public UnityEngine.UI.Image judgment;
         public HitFaceView hitFace;
@@ -160,6 +161,7 @@ namespace OurTaiko
                 // 音色: hit_sounds/<neiro>/don.ogg and ka.ogg; 無音 leaves both empty.
                 if (hitSounds != null) hitSounds.TryGet(options.neiro, out don, out ka);
                 balloonCounter.ResetDisplay();
+                drumrollCounter.ResetDisplay();
                 soulGauge.Initialize(Session.ClearThreshold);
                 foreach (string warning in Session.Chart.Warnings) Debug.LogWarning("Ignored TJA command: " + warning);
                 Session.Judged += OnJudged;
@@ -244,6 +246,7 @@ namespace OurTaiko
         void UpdatePlayVisuals(double time)
         {
             balloonCounter.ShowTime(time);
+            drumrollCounter.ShowTime(time);
             RenderNotes(time - visualOffset);
             soulGauge.ShowTime(time);
             if (noteArcs != null) noteArcs.ShowTime(time);
@@ -315,6 +318,8 @@ namespace OurTaiko
                     ChartTime);
                 if (Session.LongHits[index] == note.BalloonHits) hitAudio.PlayAudioOneShot(balloonPop);
             }
+            else if (judged.Kind == NoteKind.Roll || judged.Kind == NoteKind.BigRoll)
+                drumrollCounter.RecordHit(index, Session.LongHits[index], judgedAt);
             UpdateHud();
         }
         // note_correct sends good/ok notes 1-4 and a popped balloon; check_drumroll sends one small

@@ -1,3 +1,11 @@
+# Web 播放器验证 — 2026-10-09（连打与 UTF-8 同步）
+
+- 来源：OurTaikoPlay `4d15dbb`；同步范围及保留差异见 [SharedCodeSync.md](SharedCodeSync.md)。
+- EditMode 共 116 项：完整程序集运行中其余 115 项通过；预览场景的世界矩阵断言改为检查实际保存的锚点后，EmbeddedPresentationTests 的 6 项全部通过。覆盖分支、输入、动画、编码、连打计数/淡出和气球层级。
+- 最终 WebGL 构建 Succeeded，0 errors，35,497,170 bytes，报告 `Builds/report.json`。初次构建的唯一错误来自同步 Pipeline 请求的 5 秒超时；改为独立的编辑器回调后重新构建，无此错误。
+- Chrome 实际 WASM：自动演奏、手动键盘/鼓面、音量、结束重置、普通/玄人/达人分支、OGG/WAV、390px 布局及卸载通过；新增小/大连打与气球流程，自动演奏产生 69 次连打，截图确认扇形计数、共享数字及气球。
+- 本机临时 Vite 入口直接提供 `Builds/Web`；业务 API 使用测试夹具，不写生产成绩。此次不安装到 Fanmade 前端，不发布生产 WASM；未验证 Safari、Firefox、真实移动设备。
+
 # Web 播放器验证 — 2026-10-08（同步主仓库）
 
 - 从 OurTaikoPlay `1183c5c` 同步共享逻辑和表现，保留嵌入协议、Web Audio 和练习结束行为；[范围与差异](SharedCodeSync.md)。

@@ -55,6 +55,82 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        // The embedded player has only PracticeScene; preserve its bridge and Web Audio bindings.
+        [MenuItem("OurTaikoView/Sync Shared Counters")]
+        public static void ApplyCounters()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string art = "Assets/OurTaiko/Art/game/drumroll_counter/";
+            var digits = AssetDatabase.LoadAllAssetsAtPath(art + "counter.png").OfType<Sprite>()
+                .Where(sprite => sprite.name.StartsWith("CounterDigit", StringComparison.Ordinal)).OrderBy(sprite => sprite.name).ToArray();
+            var bubble = AssetDatabase.LoadAssetAtPath<Sprite>(art + "bubble.png");
+            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/OurTaiko/Generated/Clips/DrumrollCounter.anim");
+            if (digits.Length != 10 || bubble == null || clip == null) throw new InvalidOperationException("Import the shared counter assets first.");
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                var lane = (RectTransform)play.noteLayer.parent.parent;
+                var rig = lane.Find("DrumrollCounter") as RectTransform;
+                if (rig == null) rig = CounterRect("DrumrollCounter", lane, Vector2.zero, Vector2.zero);
+                rig.anchorMin = Vector2.zero; rig.anchorMax = Vector2.one;
+                rig.offsetMin = rig.offsetMax = Vector2.zero;
+                PlaceBefore(rig, play.scoreCounter.transform);
+                var view = rig.GetComponent<DrumrollCounterView>();
+                if (view == null) view = rig.gameObject.AddComponent<DrumrollCounterView>();
+                view.visuals = rig.GetComponent<CanvasGroup>();
+                if (view.visuals == null) view.visuals = rig.gameObject.AddComponent<CanvasGroup>();
+                view.visuals.interactable = view.visuals.blocksRaycasts = false;
+                var picture = rig.Find("Bubble") as RectTransform;
+                if (picture == null) picture = CounterRect("Bubble", rig, new Vector2(296, 271), bubble.rect.size);
+                view.bubble = picture.GetComponent<UnityEngine.UI.Image>();
+                if (view.bubble == null) view.bubble = picture.gameObject.AddComponent<UnityEngine.UI.Image>();
+                view.bubble.sprite = bubble; view.bubble.raycastTarget = false;
+                view.number = rig.Find("Number") as RectTransform;
+                if (view.number == null) view.number = CounterRect("Number", rig, new Vector2(520, 215), Vector2.zero);
+                view.digitSprites = digits; view.digitSize = new Vector2(96, 112);
+                if (rig.GetComponent<Animator>() == null) rig.gameObject.AddComponent<Animator>();
+                rig.GetComponent<ClipSampler>().clip = clip;
+                view.ResetDisplay();
+                play.drumrollCounter = view;
+                play.balloonCounter.digitSprites = digits;
+                play.balloonCounter.digitSize = new Vector2(77, 90);
+                var balloon = (RectTransform)play.balloonCounter.transform;
+                balloon.SetParent(lane.parent, false);
+                balloon.anchorMin = lane.anchorMin; balloon.anchorMax = lane.anchorMax;
+                balloon.pivot = lane.pivot; balloon.sizeDelta = lane.sizeDelta;
+                balloon.anchoredPosition3D = lane.anchoredPosition3D;
+                balloon.localScale = lane.localScale; balloon.localRotation = lane.localRotation;
+                PlaceBefore(balloon, play.pauseButton.transform);
+                EditorUtility.SetDirty(play);
+                EditorUtility.SetDirty(play.balloonCounter);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                AssetDatabase.SaveAssets();
+                // Every surviving balloon now references the new shared sheet.
+                AssetDatabase.DeleteAsset("Assets/OurTaiko/Art/game/balloon/counter.png");
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
+        static RectTransform CounterRect(string name, Transform parent, Vector2 position, Vector2 size)
+        {
+            var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
+            rect.anchoredPosition = position; rect.sizeDelta = size;
+            return rect;
+        }
+
+        static void PlaceBefore(Transform item, Transform next)
+        {
+            int index = next.GetSiblingIndex();
+            item.SetSiblingIndex(item.GetSiblingIndex() < index ? index - 1 : index);
+        }
+
         static void SetSteps(AnimationClip clip, Type type, string property, Keyframe[] keys)
         {
             var curve = new AnimationCurve(keys);

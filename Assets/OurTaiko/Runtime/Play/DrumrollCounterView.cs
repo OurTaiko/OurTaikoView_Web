@@ -6,50 +6,43 @@ using UnityEngine;
 namespace OurTaiko
 {
     [RequireComponent(typeof(ClipSampler), typeof(AnimatedFloat))]
-    public sealed class BalloonCounterView : MonoBehaviour
+    public sealed class DrumrollCounterView : MonoBehaviour
     {
-        public UnityEngine.UI.Image bubble, body;
+        public UnityEngine.UI.Image bubble;
         public RectTransform number;
         public CanvasGroup visuals;
-        public Sprite[] digitSprites, bodyFrames;
-        public Vector2 digitSize = new Vector2(77, 90);
-        [Tooltip("TextStretch.anim while inflating; BalloonPop.anim (the same stretch plus the 166 ms fade) once popped.")]
-        public AnimationClip stretchClip, popClip;
+        public Sprite[] digitSprites;
+        public Vector2 digitSize = new Vector2(96, 112);
 
-        public const double PopFadeSeconds = 0.166;
         public int NoteIndex { get; private set; } = -1;
-        public int Remaining { get; private set; }
+        public int Count { get; private set; }
         public bool IsVisible => NoteIndex >= 0;
-        public bool IsPopped { get; private set; }
         readonly List<UnityEngine.UI.Image> digits = new List<UnityEngine.UI.Image>();
-        static readonly int[] InflationFrames = { 0, 2, 3, 4, 5, 6 };
-        double lastHitTime, endTime;
+        double lastHitTime;
         int digitCount;
 
         public void ResetDisplay()
         {
-            NoteIndex = -1; Remaining = 0; IsPopped = false;
+            NoteIndex = -1;
+            Count = 0;
             visuals.alpha = 0;
             gameObject.SetActive(false);
         }
 
-        public void RecordHit(int index, int total, int hits, double endsAt, double time)
+        public void RecordHit(int index, int hits, double time)
         {
+            if (hits <= 0) return;
             NoteIndex = index;
-            endTime = endsAt;
+            Count = hits;
             lastHitTime = time;
-            Remaining = Math.Max(0, total - hits);
-            IsPopped = total > 0 && hits >= total;
-            int step = total > 0 ? (int)Math.Min(5, (long)hits * 6 / total) : 0;
-            body.sprite = bodyFrames[IsPopped ? 7 : InflationFrames[step]];
-            SetNumber(Remaining);
+            SetNumber();
             gameObject.SetActive(true);
             ShowTime(time);
         }
 
-        void SetNumber(int remaining)
+        void SetNumber()
         {
-            string text = remaining.ToString(CultureInfo.InvariantCulture);
+            string text = Count.ToString(CultureInfo.InvariantCulture);
             digitCount = text.Length;
             while (digits.Count < digitCount)
             {
@@ -60,14 +53,13 @@ namespace OurTaiko
                 image.raycastTarget = false;
                 digits.Add(image);
             }
-            // Keep the balloon's original layout while sharing the larger drumroll sheet.
-            float advance = digitSize.x * (64f / 77f);
+            // Preserve the fan's layout independently of the shared sheet's source resolution.
+            float advance = digitSize.x * (80f / 96f);
             for (int i = 0; i < digits.Count; i++)
             {
                 digits[i].gameObject.SetActive(i < digitCount);
                 if (i >= digitCount) continue;
                 digits[i].sprite = digitSprites[text[i] - '0'];
-                digits[i].rectTransform.sizeDelta = digitSize;
                 digits[i].rectTransform.anchoredPosition = new Vector2(-digitCount * advance / 2 + i * advance, 0);
             }
         }
@@ -75,24 +67,20 @@ namespace OurTaiko
         public void ShowTime(double time)
         {
             if (!IsVisible) return;
+            var sampler = GetComponent<ClipSampler>();
             double elapsed = Math.Max(0, time - lastHitTime);
-            if ((!IsPopped && time > endTime) || (IsPopped && elapsed >= PopFadeSeconds))
+            if (elapsed >= sampler.clip.length)
             {
                 ResetDisplay();
                 return;
             }
-            // TextStretchAnimation id 6: 50 ms rise, then 116 ms of stepped return; a popped balloon
-            // also fades out over 166 ms.
-            if (!IsPopped) visuals.alpha = 1;
-            var sampler = GetComponent<ClipSampler>();
-            sampler.clip = IsPopped ? popClip : stretchClip;
-            sampler.Sample(Math.Min(elapsed, sampler.clip.length));
+            sampler.Sample(elapsed);
             float stretch = GetComponent<AnimatedFloat>().value;
             for (int i = 0; i < digitCount; i++)
             {
                 var rect = digits[i].rectTransform;
                 Vector2 size = digitSize;
-                float offset = stretch * size.y / 90f;
+                float offset = stretch * size.y / 112f;
                 rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, offset);
                 rect.sizeDelta = new Vector2(size.x, size.y + offset);
             }

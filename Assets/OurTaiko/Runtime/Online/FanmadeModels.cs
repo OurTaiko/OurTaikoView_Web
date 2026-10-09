@@ -34,7 +34,7 @@ namespace OurTaiko.Online
         public static readonly string[] Courses = { "Easy", "Normal", "Hard", "Oni", "Edit" };
 
         public string Server = "", Id = "", Title = "", Subtitle = "", Maker = "";
-        public string TjaHash = "", AudioHash = "", Encoding = "", AudioName = "";
+        public string TjaHash = "", AudioHash = "", AudioName = "";
         public string Category = "", Genre = "";
         public bool IsSingle = true;
         public readonly Dictionary<string, string> Titles = new Dictionary<string, string>(), Subtitles = new Dictionary<string, string>();
@@ -53,7 +53,7 @@ namespace OurTaiko.Online
                 Server = server, IsSingle = (bool)v["isSingle"],
                 Id = Json.Str(v, "id"), Title = Json.Str(v, "title"),
                 Subtitle = Json.Str(v, "subtitle"), Maker = Json.Str(v, "maker"), TjaHash = Json.Str(v, "tjaHash"),
-                AudioHash = Json.Str(v, "audioHash"), Encoding = Json.Str(v, "encoding"), AudioName = Json.Str(v, "audioName"),
+                AudioHash = Json.Str(v, "audioHash"), AudioName = Json.Str(v, "audioName"),
             };
             if (!Json.HexId(c.Id, 32) || !Json.HexId(c.TjaHash, 64) || !Json.HexId(c.AudioHash, 64))
                 throw new FanmadeException("API_ID_INVALID");

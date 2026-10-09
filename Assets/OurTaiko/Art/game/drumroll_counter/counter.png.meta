@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ec1fb8dac745c4e459114bfa56d5d9c1
+guid: f6ce04595b43f403abfb0cfca8400542
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -36,7 +36,7 @@ TextureImporter:
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -64,7 +64,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 2
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -75,7 +75,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -99,7 +99,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -137,6 +137,19 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
     buildTarget: iOS
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -153,13 +166,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BalloonDigit0
+      name: CounterDigit0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -168,20 +181,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3029b81e2b02c47b79c83fe49467d53d
-      internalID: -880366329
+      spriteID: 0bac3d6a55a6848f9ae97c8386769f46
+      internalID: -641088576
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit1
+      name: CounterDigit1
       rect:
         serializedVersion: 2
-        x: 77
+        x: 96
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -190,20 +203,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3fcb4b7f696ef4799915371e9fe64c2b
-      internalID: -277533763
+      spriteID: 37bb7a58c4c22474aab92b53c47d0d8b
+      internalID: 1634585917
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit2
+      name: CounterDigit2
       rect:
         serializedVersion: 2
-        x: 154
+        x: 192
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -212,20 +225,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 925fcc06d55964e9b855f421b3c96f74
-      internalID: -184956164
+      spriteID: 3861bd687cbcf4fb993d731d6f07ad52
+      internalID: -2138447661
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit3
+      name: CounterDigit3
       rect:
         serializedVersion: 2
-        x: 231
+        x: 288
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -234,20 +247,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 83f95ca6ddd87496e92ce70730a5884f
-      internalID: -1907735984
+      spriteID: 8a40602a113744457bf53fa8b279c9c5
+      internalID: -363107999
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit4
+      name: CounterDigit4
       rect:
         serializedVersion: 2
-        x: 308
+        x: 384
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -256,20 +269,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5fb8e284fd17d49aebe5e8c9371fbe60
-      internalID: -465621317
+      spriteID: 4d862b93f499848e6b801f25a6984e7f
+      internalID: 168019215
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit5
+      name: CounterDigit5
       rect:
         serializedVersion: 2
-        x: 385
+        x: 480
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -278,20 +291,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f0be353d9e3a846e19a135990e942c43
-      internalID: -1457434377
+      spriteID: 8aef0828048264bd8a56c831ceb5fb1e
+      internalID: -1304728468
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit6
+      name: CounterDigit6
       rect:
         serializedVersion: 2
-        x: 462
+        x: 576
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -300,20 +313,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8f335e6272be74e22b1d059197e3ce9c
-      internalID: -972056716
+      spriteID: ecff53316a29d46a7bf5dd0d974dbe6b
+      internalID: 2142470402
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit7
+      name: CounterDigit7
       rect:
         serializedVersion: 2
-        x: 539
+        x: 672
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -322,20 +335,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ff1efe93e85b44984a22e2064015b881
-      internalID: 261320285
+      spriteID: cfeb93078511749da81844cf343a5e9f
+      internalID: 1816734709
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit8
+      name: CounterDigit8
       rect:
         serializedVersion: 2
-        x: 616
+        x: 768
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -344,20 +357,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 164133cb881ec45f2977e7410bbfdd26
-      internalID: -696443609
+      spriteID: 162e1fbb4c22b431ba971ce5bb3ff617
+      internalID: -244479971
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BalloonDigit9
+      name: CounterDigit9
       rect:
         serializedVersion: 2
-        x: 693
+        x: 864
         y: 0
-        width: 77
-        height: 90
+        width: 96
+        height: 112
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -366,8 +379,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0e2233471607447e3a3c2e321cac674e
-      internalID: -1952743785
+      spriteID: 9dcc2278af8a9499d969167ae876c1c5
+      internalID: -1769461992
       vertices: []
       indices: 
       edges: []
@@ -386,16 +399,16 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BalloonDigit0: -880366329
-      BalloonDigit1: -277533763
-      BalloonDigit2: -184956164
-      BalloonDigit3: -1907735984
-      BalloonDigit4: -465621317
-      BalloonDigit5: -1457434377
-      BalloonDigit6: -972056716
-      BalloonDigit7: 261320285
-      BalloonDigit8: -696443609
-      BalloonDigit9: -1952743785
+      CounterDigit0: -641088576
+      CounterDigit1: 1634585917
+      CounterDigit2: -2138447661
+      CounterDigit3: -363107999
+      CounterDigit4: 168019215
+      CounterDigit5: -1304728468
+      CounterDigit6: 2142470402
+      CounterDigit7: 1816734709
+      CounterDigit8: -244479971
+      CounterDigit9: -1769461992
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

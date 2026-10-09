@@ -10,15 +10,9 @@ namespace OurTaiko.Online
     // #START player, so Oni_1p is the Oni block started with P1) and takes its titles from the API.
     public static class PlayableTja
     {
-        public static string ToUtf8(byte[] bytes, string encoding)
+        public static string ToUtf8(byte[] bytes)
         {
-            if (encoding == "utf-8") return new UTF8Encoding(false).GetString(bytes);
-            if (encoding != "shift-jis") throw new FanmadeException("TJA_ENCODING_UNSUPPORTED");
-            Encoding shiftJis;
-            try { shiftJis = Encoding.GetEncoding(932, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback); }
-            catch (Exception error) when (error is ArgumentException || error is NotSupportedException)
-            { throw new FanmadeException("SHIFT_JIS_UNSUPPORTED_ON_THIS_PLATFORM", error); }
-            try { return shiftJis.GetString(bytes); }
+            try { return new UTF8Encoding(false, true).GetString(bytes); }
             catch (DecoderFallbackException error) { throw new FanmadeException("TJA_ENCODING_INVALID", error); }
         }
 

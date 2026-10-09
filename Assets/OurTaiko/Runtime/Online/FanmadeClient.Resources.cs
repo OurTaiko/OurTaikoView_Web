@@ -58,7 +58,7 @@ namespace OurTaiko.Online
                         string text = await CacheWork(() =>
                         {
                             cancel.ThrowIfCancellationRequested();
-                            return PlayableTja.Build(PlayableTja.ToUtf8(File.ReadAllBytes(original), c.Encoding), c);
+                            return PlayableTja.Build(PlayableTja.ToUtf8(File.ReadAllBytes(original)), c);
                         }, cancel);
                         lock (sync)
                         {

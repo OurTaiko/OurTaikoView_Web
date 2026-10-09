@@ -12,7 +12,7 @@ namespace OurTaiko
     {
         public GameObject panel;
         public TMP_InputField keyword;
-        public UnityEngine.UI.Button apply, clear, close;
+        public UnityEngine.UI.Button apply, close;
         public UnityEngine.UI.Button[] previous, next;
         public TextMeshProUGUI[] values, labels;
         public TextMeshProUGUI title, status, summary, hint;
@@ -36,7 +36,6 @@ namespace OurTaiko
         {
             manager = model;
             apply.onClick.AddListener(Submit);
-            clear.onClick.AddListener(Clear);
             close.onClick.AddListener(Close);
             for (int i = 0; i < previous.Length; i++)
             {
@@ -45,6 +44,7 @@ namespace OurTaiko
                 next[i].onClick.AddListener(() => Change(index, 1));
             }
             keyword.onSubmit.AddListener(_ => FinishKeyword());
+            keyword.onTouchScreenKeyboardStatusChanged.AddListener(OnTouchKeyboardStatusChanged);
             keyword.onValueChanged.AddListener(_ => { if (busy) { Cancel(); status.text = ""; Draw(); } });
             keyword.shouldActivateOnSelect = false;
             keyword.enabled = false;
@@ -58,7 +58,7 @@ namespace OurTaiko
             if (manager == null || manager.Phase != SongSelectManager.State.Browsing || SceneSwitcher.EnsureInstance().IsInputBlocked) return;
             var query = manager.SearchQuery;
             difficulty = query.Difficulty.HasValue ? (int)query.Difficulty.Value + 1 : 0;
-            level = query.Level; order = (int)query.Order; row = 0;
+            level = query.Level; order = (int)query.Order; row = 1;
             editingKeyword = false; composition = ""; keyword.enabled = false;
             EventSystem.current?.SetSelectedGameObject(null);
             keyword.SetTextWithoutNotify(query.Keyword);
@@ -78,12 +78,6 @@ namespace OurTaiko
             panel.SetActive(false); manager.SearchDialogOpen = false; closedFrame = Time.frameCount;
             RefreshSummary();
         }
-        public void Clear()
-        {
-            if (editingKeyword || Time.frameCount == fieldSubmitFrame) return;
-            manager.PlaySearchSound(SongSelectManager.Sound.Don);
-            Cancel(); manager.ClearSearch(); CloseDialog(false);
-        }
         // The disabled TMP field lets its pointer clicks bubble to this saved parent view.
         // Selecting a row and activating text entry are deliberately separate gestures.
         public void OnPointerClick(PointerEventData eventData)
@@ -91,8 +85,8 @@ namespace OurTaiko
             var hit = eventData.pointerPressRaycast.gameObject;
             if (!IsOpen || editingKeyword || Time.frameCount == fieldSubmitFrame || eventData.button != PointerEventData.InputButton.Left
                 || hit == null || !hit.transform.IsChildOf(keyword.transform)) return;
-            if (row == 3) BeginKeyword();
-            else { MoveRow(3 - row, SongSelectManager.Sound.Ka); Draw(); }
+            if (row == 0) BeginKeyword();
+            else { MoveRow(-row, SongSelectManager.Sound.Ka); Draw(); }
         }
         void BeginKeyword()
         {
@@ -104,6 +98,18 @@ namespace OurTaiko
         void FinishKeyword()
         {
             if (!editingKeyword || Time.frameCount == editingFrame || !string.IsNullOrEmpty(composition) || Time.frameCount == compositionFrame) return;
+            EndKeywordEditing();
+        }
+        void OnTouchKeyboardStatusChanged(TouchScreenKeyboard.Status status)
+        {
+            if (!editingKeyword || status == TouchScreenKeyboard.Status.Visible) return;
+            // TMP has copied the native keyboard text before reporting dismissal.
+            // Done, Cancel and LostFocus all end this session, even during IME composition.
+            composition = ""; compositionFrame = -1;
+            EndKeywordEditing();
+        }
+        void EndKeywordEditing()
+        {
             fieldSubmitFrame = Time.frameCount;
             editingKeyword = false;
             keyword.DeactivateInputField(); keyword.enabled = false;
@@ -114,7 +120,7 @@ namespace OurTaiko
         {
             if (editingKeyword || Time.frameCount == fieldSubmitFrame) return;
             manager.PlaySearchSound(SongSelectManager.Sound.Ka);
-            Cancel(); row = index;
+            Cancel(); row = index + 1;
             keyword.DeactivateInputField(); EventSystem.current?.SetSelectedGameObject(null);
             if (index == 0) difficulty = (difficulty + delta + 6) % 6;
             if (index == 1) level = (level + delta + 11) % 11;
@@ -142,7 +148,7 @@ namespace OurTaiko
         }
         void MoveRow(int delta, SongSelectManager.Sound sound)
         {
-            row = (row + delta + 7) % 7;
+            row = (row + delta + 6) % 6;
             manager.PlaySearchSound(sound);
         }
         public void Tick()
@@ -151,7 +157,7 @@ namespace OurTaiko
             if (SceneSwitcher.EnsureInstance().IsInputBlocked) return;
             if (!IsOpen || Time.frameCount == openedFrame) return;
             if (Time.frameCount == fieldSubmitFrame) return;
-            // Only confirmation releases text entry. TMP owns typing, arrows and IME;
+            // Confirmation or native keyboard dismissal releases text entry. TMP owns typing, arrows and IME;
             // escape, Tab, drum bindings and outside clicks never operate the menu here.
             if (editingKeyword)
             {
@@ -167,15 +173,15 @@ namespace OurTaiko
             }
             if (InputManager.GetKeyDown(InputKey.MenuUp)) MoveRow(-1, SongSelectManager.Sound.Ka);
             else if (InputManager.GetKeyDown(InputKey.MenuDown)) MoveRow(1, SongSelectManager.Sound.Ka);
-            else if (row == 3 && (InputManager.GetKeyDown(InputKey.LeftKa) || InputManager.GetKeyDown(InputKey.RightKa))) BeginKeyword();
+            else if (row == 0 && InputManager.GetKeyDown(InputKey.Confirm)) BeginKeyword();
             else if (InputManager.GetKeyDown(InputKey.LeftKa) || InputManager.GetKeyDown(InputKey.MenuLeft))
-            { if (row < 3) Change(row, -1); else MoveRow(-1, SongSelectManager.Sound.Ka); }
+            { if (row > 0 && row < 4) Change(row - 1, -1); else MoveRow(-1, SongSelectManager.Sound.Ka); }
             else if (InputManager.GetKeyDown(InputKey.RightKa) || InputManager.GetKeyDown(InputKey.MenuRight))
-            { if (row < 3) Change(row, 1); else MoveRow(1, SongSelectManager.Sound.Ka); }
+            { if (row > 0 && row < 4) Change(row - 1, 1); else MoveRow(1, SongSelectManager.Sound.Ka); }
             else if (InputManager.GetKeyDown(InputKey.Confirm) || InputManager.GetKeyDown(InputKey.LeftDon) || InputManager.GetKeyDown(InputKey.RightDon))
             {
                 if (row < 4) MoveRow(1, SongSelectManager.Sound.Don);
-                else if (row == 4) Submit(); else if (row == 5) Clear(); else Close();
+                else if (row == 4) Submit(); else Close();
             }
             Draw();
         }
@@ -184,24 +190,32 @@ namespace OurTaiko
             title.text = Words("Song search", "曲をさがす", "歌曲搜索");
             string all = Words("All", "すべて", "全部");
             labels[0].text = Words("Difficulty", "むずかしさ", "难度"); labels[1].text = Words("Stars", "★の数", "星级");
-            labels[2].text = Words("Sort by", "表示順", "排序"); labels[3].text = "Keyword";
+            labels[2].text = Words("Sort by", "表示順", "排序"); labels[3].text = Words("Keyword", "キーワード", "关键词");
+            ((TMP_Text)keyword.placeholder).text = Words("Title / Subtitle / Maker", "曲名 / サブタイトル / 譜面作者", "曲名 / 副标题 / 谱师");
             values[0].text = difficulty == 0 ? all : new[] { "Easy", "Normal", "Hard", "Oni", "Ura" }[difficulty - 1];
             values[1].text = level == 0 ? all : "★ " + level;
             values[2].text = order == 0 ? Words("Default", "いつもどおり", "通常") : order == 1 ? Words("Not FC first", "未フルコンボ優先", "未 FC 优先") : Words("Not AP first", "未ドンダフル優先", "未 AP 优先");
             apply.GetComponentInChildren<TMP_Text>().text = busy ? Words("Searching…", "検索中…", "搜索中…") : Words("Search", "検索", "搜索");
-            clear.GetComponentInChildren<TMP_Text>().text = Words("Clear filters", "解除", "清除筛选");
             close.GetComponentInChildren<TMP_Text>().text = Words("Back", "もどる", "返回");
-            hint.text = editingKeyword
-                ? Words("Enter / keyboard Done: finish typing", "Enter／キーボードの完了：入力を終了", "回车／键盘完成：结束输入")
-                : Words("Don / Tab / ↑↓ Select · Ka Change / type Keyword · Enter Confirm", "ドン / Tab / ↑↓ 選択 · カッ 変更／Keyword入力 · Enter 決定", "咚 / Tab / ↑↓ 选择 · 咔 调整／输入 Keyword · 回车 确认");
+            hint.text = Application.isMobilePlatform
+                ? editingKeyword
+                    ? Words("Close the keyboard to finish typing", "キーボードを閉じて入力を終了", "收起键盘，结束输入")
+                    : row == 0
+                        ? Words("Tap Keyword again to type", "キーワードをもう一度タップして入力", "再次点按关键词，开始输入")
+                        : Words("Tap Keyword to select · Tap arrows to change filters", "キーワードをタップして選択・矢印で条件を変更", "点按选中关键词 · 点按箭头调整筛选")
+                : editingKeyword
+                    ? Words("Enter: finish typing", "Enter：入力を終了", "回车：结束输入")
+                    : row == 0
+                        ? Words("Enter / click Keyword again: start typing", "Enter／キーワードをもう一度クリック：入力を開始", "回车／再次点击关键词：开始输入")
+                        : Words("Don / Tab / ↑↓ Select · Ka Change · Enter Confirm", "ドン / Tab / ↑↓ 選択 · カッ 変更 · Enter 決定", "咚 / Tab / ↑↓ 选择 · 咔 调整 · 回车 确认");
             cursor.gameObject.SetActive(row < 4);
-            if (row < 4) cursor.Center(960, new[] { 400, 541, 682, 813 }[row]);
+            if (row < 4) cursor.anchoredPosition = new Vector2(cursor.anchoredPosition.x, labels[row == 0 ? 3 : row - 1].rectTransform.anchoredPosition.y);
             apply.interactable = !busy && !editingKeyword;
-            clear.interactable = close.interactable = !editingKeyword;
+            close.interactable = !editingKeyword;
             foreach (var button in previous) button.interactable = !editingKeyword;
             foreach (var button in next) button.interactable = !editingKeyword;
-            foreach (var pair in new[] { (apply, 4), (clear, 5), (close, 6) })
-                pair.Item1.targetGraphic.color = row == pair.Item2 ? new Color(1, .85f, .35f) : Color.white;
+            apply.targetGraphic.color = row == 4 ? new Color(1, .82f, .15f) : new Color(1, .92f, .45f);
+            close.targetGraphic.color = row == 5 ? new Color(1, .85f, .35f) : Color.white;
         }
         public void RefreshSummary()
         {

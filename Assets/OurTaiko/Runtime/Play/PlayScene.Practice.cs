@@ -69,6 +69,7 @@ namespace OurTaiko
             Record.Inputs.Clear();
             lastCombo = 0;
             balloonCounter.ResetDisplay(); comboAnnounce.Hide();
+            drumrollCounter.ResetDisplay();
             soulGauge.Initialize(Session.ClearThreshold);
             hitFace.ResetDisplay(); hitRing.ResetDisplay();
             if (noteArcs != null) noteArcs.ResetDisplay();

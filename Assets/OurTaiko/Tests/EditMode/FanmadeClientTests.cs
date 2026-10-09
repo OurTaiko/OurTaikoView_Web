@@ -326,11 +326,16 @@ namespace OurTaiko.Tests
         }
 
         [Test]
-        public void ShiftJisChartsAreConverted()
+        public void DownloadedChartsRequireValidUtf8()
         {
-            var bytes = new byte[] { 0x83, 0x65, 0x83, 0x58, 0x83, 0x67 };  // テスト
-            Assert.That(PlayableTja.ToUtf8(bytes, "shift-jis"), Is.EqualTo("テスト"));
-            Assert.Throws<FanmadeException>(() => PlayableTja.ToUtf8(bytes, "euc-kr"));
+            Assert.That(PlayableTja.ToUtf8(Encoding.UTF8.GetBytes("テスト中文")), Is.EqualTo("テスト中文"));
+            foreach (var bytes in new[] {
+                new byte[] { 0xff }, new byte[] { 0xe3, 0x81 },
+                new byte[] { 0x83, 0x65, 0x83, 0x58, 0x83, 0x67 } })
+            {
+                var error = Assert.Throws<FanmadeException>(() => PlayableTja.ToUtf8(bytes));
+                Assert.That(error.Message, Is.EqualTo("TJA_ENCODING_INVALID"));
+            }
         }
 
         [Test]

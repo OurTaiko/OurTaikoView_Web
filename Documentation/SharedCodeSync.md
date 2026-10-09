@@ -1,3 +1,19 @@
+# 与 OurTaikoPlay 同步（2026-10-09）
+
+来源：OurTaikoPlay `4d15dbb`（共享表现更新到 `3b50b4d`，另包含 UTF-8 下载解析改动）。更新前 Web 基线：`b7ed84a`。
+
+- 补齐 Nijiiro 连打计数扇形面板：小/大连打按单个长音符计数，每次击打重播数字伸缩，停打后保持并淡出，练习重置时清空。
+- 连打与气球共用原始 96×112 高清数字贴图及 mipmap；气球仍按 77×90 和 64 间距显示。
+- 气球移到魂槽上方、暂停控件和菜单下方，保持原坐标。PracticeScene 通过 `SyncPlayPresentation.ApplyCounters()` 修改；原生 SinglePlayScene、Entry、SongSelect 和平台构建配置不加入网页。
+- 同步共享 SongSearchView 的键盘收起处理、关键词编辑交互及布局逻辑；仅同步代码，网页没有新增选曲页。
+- 在线模型和下载解析不再读取 encoding，严格 UTF-8 解码并拒绝损坏字节；已有 BOM 处理保留。
+- 完整对比 Runtime 后，剩余差异均为下文列出的 Web Audio、双时钟、嵌入桥接、无持久化和服务启动边界。原生 iOS 导出及音频导入配置不适用于 Web。
+- 原素材与动画直接复制，删除旧气球专用数字；动态字体缓存不作为本次共享更新。
+
+验证结果见 [WebVerification.md](WebVerification.md)。本次构建保存在 `Builds/Web`；Fanmade 生产 WASM 的安装与发布属于独立前端操作，本次仅推送三个指定仓库并部署后端。
+
+---
+
 # 与 OurTaikoPlay 同步（2026-10-08）
 
 来源：OurTaikoPlay `1183c5c`。更新前 Web 基线：`14ea059`。来源项目未修改。
