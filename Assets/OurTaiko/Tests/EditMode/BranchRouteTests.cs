@@ -12,6 +12,57 @@ namespace OurTaiko.Tests
         const string NoMaster = "#BRANCHSTART p,50,80\n#N\n1000,\n#E\n2020,\n#BRANCHEND";
         const string OnlyNormal = "#BRANCHSTART p,50,80\n#N\n1000,\n#BRANCHEND";
         const string Score = "#BRANCHSTART s,100,200\n#N\n1000,\n#E\n2000,\n#M\n3000,\n#BRANCHEND";
+        const string Master = "#BRANCHSTART p,-1,0\n#N\n1000,\n#E\n2000,\n#M\n3000,\n#BRANCHEND";
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CommonSectionsDisplayNormalWithoutChangingSelectedNotes(bool auto)
+        {
+            var chart = Parse(Master + "\n1111,\n" + Master.Replace("p,-1,0", "p,0,101"));
+            var session = new PlaySession(chart);
+            var first = chart.Branches[0];
+            var second = chart.Branches[1];
+            session.Advance(first.DecisionTime, auto);
+            Assert.That(session.SelectedRoute(0), Is.EqualTo(BranchRoute.Master));
+            Assert.That(session.DisplayBranchAt(first.Time - 1e-6), Is.EqualTo(BranchRoute.Normal),
+                "An early branch decision must not recolour the preceding common measures.");
+            session.Advance(second.DecisionTime, auto);
+            Assert.That(session.DisplayBranchAt(first.Time), Is.EqualTo(BranchRoute.Master));
+            Assert.That(session.DisplayBranchAt(first.EndTime - 1e-6), Is.EqualTo(BranchRoute.Master));
+            Assert.That(session.DisplayBranchAt(first.EndTime), Is.EqualTo(BranchRoute.Normal));
+            Assert.That(session.DisplayBranchAt(second.Time - 1e-6), Is.EqualTo(BranchRoute.Normal));
+            Assert.That(session.DisplayBranchAt(second.Time), Is.EqualTo(BranchRoute.Expert));
+            Assert.That(session.DisplayBranchAt(second.EndTime), Is.EqualTo(BranchRoute.Normal));
+            Assert.That(session.IsActive(chart.Notes.First(n => n.BranchId == 0 && n.Route == BranchRoute.Master)), Is.True,
+                "Changing the lane label must preserve the previous route's remaining notes and judgments.");
+            Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Expert }));
+        }
+
+        [TestCase(BranchRoute.Expert)]
+        [TestCase(BranchRoute.Master)]
+        public void PracticeDisplayFollowsTheSectionWhenSeekingBothWays(BranchRoute route)
+        {
+            var chart = Parse(Master);
+            var branch = chart.Branches[0];
+            var session = PlaySession.PracticeAt(chart, branch.EndTime, forcedBranch: route);
+            Assert.That(session.DisplayBranchAt(branch.EndTime), Is.EqualTo(BranchRoute.Normal));
+            session = PlaySession.PracticeAt(chart, branch.Time, session, route);
+            Assert.That(session.DisplayBranchAt(branch.Time), Is.EqualTo(route));
+            session = PlaySession.PracticeAt(chart, branch.Time - 1e-6, session, route);
+            Assert.That(session.DisplayBranchAt(branch.Time - 1e-6), Is.EqualTo(BranchRoute.Normal));
+        }
+
+        [Test]
+        public void ConsecutiveBranchesSwitchDirectlyWithoutACommonSection()
+        {
+            var chart = Parse(Master + "\n" + Master.Replace("p,-1,0", "p,0,101"));
+            var session = new PlaySession(chart);
+            session.Advance(chart.Duration, true);
+            double boundary = chart.Branches[0].EndTime;
+            Assert.That(chart.Branches[1].Time, Is.EqualTo(boundary));
+            Assert.That(session.DisplayBranchAt(boundary - 1e-6), Is.EqualTo(BranchRoute.Master));
+            Assert.That(session.DisplayBranchAt(boundary), Is.EqualTo(BranchRoute.Expert));
+        }
 
         [Test]
         public void ParserRecordsOmittedRoutesAndScoreConditions()

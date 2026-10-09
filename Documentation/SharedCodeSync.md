@@ -1,3 +1,17 @@
+# 与 OurTaikoPlay 同步（2026-10-09，自动击打与分歧显示）
+
+来源：OurTaikoPlay `c8cddb9`、`d50a506`、`a200fda`；更新前 Web 基线：`c225ec2`。
+
+- 自动演奏从右手起打，每次实际击打后换手，普通音符与 5／6／7／9 号长音符连续交替；练习重置后恢复右手起打。
+- 公共段落显示普通谱与普通底色，到分歧段实际开始时才显示所选路线；提前计算的分歧结果不改变公共段显示。
+- 练习开始时根据倒退两秒后的实际播放位置立即恢复完整路线标签，跳转不重播升降级动画；真正跨越分歧边界时仍播放原动画。
+- `PlaySession.cs`、`BranchLaneView.cs`、`PlayScene.Practice.cs`、`BranchRouteTests.cs` 与来源逐字一致；`PlayScene.cs` 仅合入上述改动，保留 Web Audio 枚举、Bridge 等待／挂接、结束回首小节暂停和卸载音频。
+- 同步分歧逻辑测试，并增加网页 PracticeScene 中的即时标签／透明度／底色检查。来源项目的原生 PlayMode 测试依赖入口与选曲场景，不直接复制到网页。
+- 验证：Unity EditMode `BranchRouteTests` 13/13 通过，报告 `TestResults/20261009-branch-sync/branch-routes.json`；四个共享文件逐字一致，`git diff --check` 通过。`EmbeddedPresentationTests` 尚未完成：编辑器在第一组测试后失去 Pipeline 连接，重启仍未恢复；新增三个场景检查不能视为已通过。
+- 本次为源码同步；没有安装到 Fanmade 前端或发布生产播放器。
+
+---
+
 # 与 OurTaikoPlay 同步（2026-10-09，音符表情）
 
 来源：OurTaikoPlay `9c07e49`（PR #27）；更新前 Web 基线：`ad41632`。

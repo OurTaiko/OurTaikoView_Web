@@ -7,6 +7,27 @@ namespace OurTaiko.Tests
 {
     public sealed class EmbeddedPresentationTests
     {
+        [TestCase(BranchRoute.Normal)]
+        [TestCase(BranchRoute.Expert)]
+        [TestCase(BranchRoute.Master)]
+        public void PracticeLaneSeekSettlesTheLabelBeforeRewinding(BranchRoute route)
+        {
+            WithPlay(play =>
+            {
+                var lane = play.branchLane;
+                lane.Initialize(true);
+                lane.Select(BranchRoute.Master, 30);
+                lane.ShowTime(30.05);
+                lane.SetImmediate(route);
+                lane.ShowTime(10);
+                Assert.That(lane.currentLabel.sprite, Is.SameAs(route == BranchRoute.Normal ? lane.normalLabel
+                    : route == BranchRoute.Expert ? lane.expertLabel : lane.masterLabel));
+                Assert.That(lane.currentLabel.color.a, Is.EqualTo(1).Within(.01));
+                Assert.That(lane.background.enabled, Is.EqualTo(route != BranchRoute.Normal));
+                Assert.That(lane.levelChange.enabled, Is.False);
+            });
+        }
+
         [Test]
         public void AllNoteKindsHaveTheSharedExpressionFrames()
         {

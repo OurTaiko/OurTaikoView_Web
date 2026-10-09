@@ -49,6 +49,16 @@ namespace OurTaiko
             ShowTime(time);
         }
 
+        // A seek restores a settled lane, independent of the previous animation's clock.
+        public void SetImmediate(BranchRoute next)
+        {
+            Select(next, 0);
+            if (!animating) return;
+            sampler ??= GetComponent<ClipSampler>();
+            changedAt = 0;
+            ShowTime(sampler.clip.length);
+        }
+
         public void ShowTime(double time)
         {
             if (!animating) return;

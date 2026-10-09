@@ -97,6 +97,19 @@ namespace OurTaiko
 
         public bool IsActive(ChartNote note) => IsActive(note.BranchId, note.Route);
 
+        // Decisions can happen before the authored branch starts so its notes can load.
+        // The lane label follows the actual section: common measures always show Normal.
+        public BranchRoute DisplayBranchAt(double time)
+        {
+            for (int i = Chart.Branches.Count - 1; i >= 0; i--)
+            {
+                var branch = Chart.Branches[i];
+                if (time < branch.Time || time >= branch.EndTime) continue;
+                return SelectedRoute(branch.Id) ?? branch.ResolveRoute(ForcedBranch ?? BranchRoute.Normal);
+            }
+            return BranchRoute.Normal;
+        }
+
         // Start a fresh practice attempt without replaying judgments, sounds or missed-note penalties.
         // Preserve already chosen branches before the cursor, and recalculate future checkpoints.
         public static PlaySession PracticeAt(TaikoChart chart, double time, PlaySession previous = null, BranchRoute? forcedBranch = null)

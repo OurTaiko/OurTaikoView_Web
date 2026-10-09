@@ -66,7 +66,7 @@ namespace OurTaiko
         double audioOffset, visualOffset, judgeOffset;
         double ChartTime => SongTime - audioOffset;
         SongInfo displayInfo;
-        bool autoPlay, hitKa;
+        bool autoPlay, hitKa, nextAutoRight = true;
         SceneSwitcher switcher;
         double feedbackTime = -10;
         readonly double[] flashedAt = { -10, -10, -10, -10 };
@@ -167,7 +167,6 @@ namespace OurTaiko
                 soulGauge.Initialize(Session.ClearThreshold);
                 foreach (string warning in Session.Chart.Warnings) Debug.LogWarning("Ignored TJA command: " + warning);
                 Session.Judged += OnJudged;
-                Session.BranchSelected += OnBranchSelected;
                 if (branchLane != null) branchLane.Initialize(Session.Chart.Branches.Count > 0);
                 displayInfo = song.ReadDisplayInfo();
                 title.text = displayInfo.Title;
@@ -238,7 +237,7 @@ namespace OurTaiko
             if (Session == null || IsFinished) return;
             double time = ChartTime;
             Session.Advance(time, autoPlay);
-            if (branchLane != null) branchLane.ShowTime(time);
+            UpdateBranchLane(time);
             if (!autoPlay) HitFirstDrumPress();
             UpdatePlayVisuals(time);
             if (time > Session.Chart.Duration + Math.Max(0, judgeOffset) + 1 && SongTime > music.AudioLength() + 1) Finish();
@@ -300,7 +299,12 @@ namespace OurTaiko
         {
             if (result != Judgment.Roll)
                 soulGauge.SetPoints(Session.GaugePoints, ChartTime);
-            if (autoPlay) Feedback(Session.Chart.Notes[index].IsKa, (index & 1) != 0);
+            if (autoPlay)
+            {
+                // Alternate actual strikes, including every hit within the same long note.
+                Feedback(Session.Chart.Notes[index].IsKa, nextAutoRight);
+                nextAutoRight = !nextAutoRight;
+            }
             SpawnArc(index, result);
             var judged = Session.Chart.Notes[index];
             bool big = judged.Kind == NoteKind.BigDon || judged.Kind == NoteKind.BigKa;
@@ -356,9 +360,11 @@ namespace OurTaiko
             }
             lastCombo = Session.Combo;
         }
-        void OnBranchSelected(ChartBranch branch, BranchRoute route)
+        void UpdateBranchLane(double time)
         {
-            if (branchLane != null) branchLane.Select(route, ChartTime);
+            if (branchLane == null) return;
+            branchLane.Select(Session.DisplayBranchAt(time), time);
+            branchLane.ShowTime(time);
         }
         public void TogglePause()
         {
@@ -490,7 +496,7 @@ namespace OurTaiko
         {
             music.StopAudio(); hitAudio.StopAudio();
             if (switcher != null) switcher.SceneChanging -= PrepareToLeave;
-            if (Session != null) { Session.Judged -= OnJudged; Session.BranchSelected -= OnBranchSelected; }
+            if (Session != null) Session.Judged -= OnJudged;
         }
 
         static RectTransform Rect(string name, Transform parent, float width, float height)
