@@ -22,6 +22,7 @@ namespace OurTaiko
         public int BaseScore => scoring.BaseScore;
         public int Combo { get; private set; }
         public int MaxCombo { get; private set; }
+        double expressionEighthStart = double.PositiveInfinity, expressionSixteenthStart = double.PositiveInfinity;
         public int Good { get; private set; }
         public int Ok { get; private set; }
         public int Bad { get; private set; }
@@ -139,6 +140,39 @@ namespace OurTaiko
             }
             return on;
         }
+        // Latest reached tempo on this route. Querying by chart time also supports practice
+        // seeking backwards; neither future notes' BPM nor their SCROLL affects expressions.
+        public double BpmAt(double time, bool preview = false) => TempoAt(time, preview)?.Bpm ?? Chart.Bpm;
+
+        ChartTempo TempoAt(double time, bool preview)
+        {
+            int low = 0, high = Chart.Tempos.Count;
+            while (low < high)
+            {
+                int mid = low + (high - low) / 2;
+                if (Chart.Tempos[mid].Time <= time) low = mid + 1;
+                else high = mid;
+            }
+            for (int i = low - 1; i >= 0; i--)
+            {
+                var tempo = Chart.Tempos[i];
+                if (preview ? IsPracticePreviewActive(tempo.BranchId, tempo.Route) : IsActive(tempo.BranchId, tempo.Route))
+                    return tempo;
+            }
+            return null;
+        }
+
+        // Authored beat anchors preserve phase through OFFSET, tempo changes and delays.
+        public double BeatAt(double time, bool preview = false)
+        {
+            var tempo = TempoAt(time, preview);
+            if (tempo != null) return tempo.Beat + Math.Max(0, time - tempo.ResumeTime) * tempo.Bpm / 60;
+            return (time + Chart.Offset) * Chart.Bpm / 60;
+        }
+
+        public int NoteExpressionFrame(double time, bool preview = false) => NoteExpression.Frame(
+            BeatAt(time, preview), Combo, expressionEighthStart, expressionSixteenthStart);
+
         bool IsActive(int branchId, BranchRoute route) => branchId < 0 || selectedRoutes[branchId] == (int)route;
         public BranchRoute? SelectedRoute(int branchId) => selectedRoutes[branchId] < 0 ? (BranchRoute?)null : (BranchRoute)selectedRoutes[branchId];
 
@@ -302,11 +336,17 @@ namespace OurTaiko
         void Resolve(int i, Judgment result)
         {
             resolved[i] = true; Version++;
-            if (result == Judgment.Bad) { Bad++; Combo = 0; }
+            if (result == Judgment.Bad)
+            {
+                Bad++; Combo = 0;
+                expressionEighthStart = expressionSixteenthStart = double.PositiveInfinity;
+            }
             else
             {
                 if (result == Judgment.Good) Good++; else Ok++;
                 Combo++; MaxCombo = Math.Max(MaxCombo, Combo);
+                if (Combo == 50) expressionEighthStart = NoteExpression.StartBeat(Chart.Notes[i].Beat);
+                if (Combo == 150) expressionSixteenthStart = NoteExpression.StartBeat(Chart.Notes[i].Beat);
             }
             int points = scoring.ApplyJudgment(result);
             gauge.ApplyJudgment(result);

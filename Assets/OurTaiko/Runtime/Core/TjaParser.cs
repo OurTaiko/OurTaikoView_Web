@@ -74,7 +74,7 @@ namespace OurTaiko
 
         sealed class TimingState
         {
-            public double Time, Bpm, Measure = 1, ScrollX = 1, ScrollY;
+            public double Time, Beat, Bpm, Measure = 1, ScrollX = 1, ScrollY;
             public bool Barline = true;
             public int BalloonIndex;
             public TimingState Copy() => (TimingState)MemberwiseClone();
@@ -124,6 +124,8 @@ namespace OurTaiko
                 chart.Bars.Sort((a, b) => a.Time.CompareTo(b.Time));
                 var gogos = chart.Gogos.OrderBy(g => g.Time).ToList(); // stable, unlike List.Sort
                 chart.Gogos.Clear(); chart.Gogos.AddRange(gogos);
+                var tempos = chart.Tempos.OrderBy(t => t.Time).ToList();
+                chart.Tempos.Clear(); chart.Tempos.AddRange(tempos);
                 double previousDecision = double.NegativeInfinity;
                 foreach (var checkpoint in chart.Branches)
                 {
@@ -197,7 +199,7 @@ namespace OurTaiko
             }
 
             ChartNote NewNote() => new ChartNote { Time = state.Time, EndTime = state.Time,
-                Bpm = state.Bpm, ScrollX = state.ScrollX, ScrollY = state.ScrollY,
+                Beat = state.Beat, Bpm = state.Bpm, ScrollX = state.ScrollX, ScrollY = state.ScrollY,
                 BranchId = branch == null ? -1 : branch.Id, Route = route };
 
             void SetGogo(bool on)
@@ -223,14 +225,24 @@ namespace OurTaiko
                 string arg = space < 0 ? "" : command.Substring(space + 1).Trim();
                 switch (key)
                 {
-                    case "#BPMCHANGE": state.Bpm = Number(arg); if (!(state.Bpm > 0) || double.IsInfinity(state.Bpm)) throw new FormatException("Invalid BPMCHANGE."); break;
+                    case "#BPMCHANGE":
+                        state.Bpm = Number(arg);
+                        if (!(state.Bpm > 0) || double.IsInfinity(state.Bpm)) throw new FormatException("Invalid BPMCHANGE.");
+                        chart.Tempos.Add(new ChartTempo { Time = state.Time, ResumeTime = state.Time, Beat = state.Beat, Bpm = state.Bpm,
+                            BranchId = branch == null ? -1 : branch.Id, Route = route });
+                        break;
                     case "#MEASURE": var parts = arg.Split('/'); state.Measure = Number(parts[0]) / Number(parts[1]); if (!(state.Measure > 0) || double.IsInfinity(state.Measure)) throw new FormatException("Invalid MEASURE."); break;
                     case "#SCROLL":
                         var match = Regex.Match(arg, @"^([+-]?[\d.]+)([+-][\d.]+)i$");
                         state.ScrollX = match.Success ? Number(match.Groups[1].Value) : Number(arg);
                         state.ScrollY = match.Success ? Number(match.Groups[2].Value) : 0;
                         break;
-                    case "#DELAY": state.Time += Number(arg); break;
+                    case "#DELAY":
+                        double delay = Number(arg);
+                        chart.Tempos.Add(new ChartTempo { Time = state.Time, ResumeTime = state.Time + delay,
+                            Beat = state.Beat, Bpm = state.Bpm, BranchId = branch == null ? -1 : branch.Id, Route = route });
+                        state.Time += delay;
+                        break;
                     case "#GOGOSTART": SetGogo(true); break;
                     case "#GOGOEND": SetGogo(false); break;
                     case "#BARLINEOFF": state.Barline = false; break;
@@ -282,9 +294,10 @@ namespace OurTaiko
                         if (note.IsLong) longNote = note;
                     }
                     state.Time += 240.0 / state.Bpm * state.Measure / Math.Max(1, slots);
+                    state.Beat += 4.0 * state.Measure / Math.Max(1, slots);
                     index++;
                 }
-                if (index == 0) { AddBar(); state.Time += 240.0 / state.Bpm * state.Measure; }
+                if (index == 0) { AddBar(); state.Time += 240.0 / state.Bpm * state.Measure; state.Beat += 4 * state.Measure; }
                 chart.Duration = Math.Max(chart.Duration, state.Time);
                 pending.Clear();
             }

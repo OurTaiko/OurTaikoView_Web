@@ -8,6 +8,26 @@ namespace OurTaiko.Tests
     public sealed class EmbeddedPresentationTests
     {
         [Test]
+        public void AllNoteKindsHaveTheSharedExpressionFrames()
+        {
+            WithPlay(play =>
+            {
+                Assert.That(play.alternateNoteSprites.Length, Is.EqualTo(play.noteSprites.Length));
+                for (int kind = 1; kind <= 7; kind++)
+                {
+                    var normal = play.noteSprites[kind];
+                    var alternate = play.alternateNoteSprites[kind];
+                    Assert.That(alternate, Is.Not.Null);
+                    Assert.That(alternate.texture, Is.SameAs(normal.texture));
+                    Assert.That(alternate.rect.size, Is.EqualTo(normal.rect.size));
+                    Assert.That(alternate.rect.x, Is.EqualTo(normal.rect.x + normal.rect.width));
+                    Assert.That(alternate.rect.y, Is.EqualTo(normal.rect.y));
+                }
+                Assert.That(play.alternateNoteSprites[9], Is.SameAs(play.noteSprites[9]));
+            });
+        }
+
+        [Test]
         public void CountersShareDigitsAndKeepBalloonAboveGaugeBelowPause()
         {
             WithPlay(play =>

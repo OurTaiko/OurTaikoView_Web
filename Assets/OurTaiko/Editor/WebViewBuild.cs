@@ -13,6 +13,35 @@ namespace OurTaiko.Editor
     {
         const string Scene = "Assets/Scenes/PracticeScene.unity";
         const string AudioRoot = "Assets/OurTaikoWebAudioBuild";
+        static double queuedBuildTime;
+
+        // Return to Pipeline before starting a build, which outlives its request timeout.
+        public static void QueueBuild()
+        {
+            Directory.CreateDirectory("Builds");
+            File.WriteAllText("Builds/sync-build-status.txt", "queued");
+            queuedBuildTime = EditorApplication.timeSinceStartup + 2;
+            EditorApplication.update -= RunQueuedBuild;
+            EditorApplication.update += RunQueuedBuild;
+        }
+
+        static void RunQueuedBuild()
+        {
+            if (EditorApplication.timeSinceStartup < queuedBuildTime || EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+            EditorApplication.update -= RunQueuedBuild;
+            File.WriteAllText("Builds/sync-build-status.txt", "running");
+            try
+            {
+                Build();
+                File.WriteAllText("Builds/sync-build-status.txt", "succeeded");
+            }
+            catch (Exception error)
+            {
+                File.WriteAllText("Builds/sync-build-status.txt", error.ToString());
+                Debug.LogException(error);
+            }
+        }
+
         [MenuItem("OurTaikoView/Build Web")]
         public static void Build()
         {

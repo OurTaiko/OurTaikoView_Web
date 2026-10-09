@@ -10859,6 +10859,17 @@ MonoBehaviour:
   - {fileID: 1023139906, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   - {fileID: 0}
   - {fileID: -1110431548, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  alternateNoteSprites:
+  - {fileID: 0}
+  - {fileID: -420797378, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: -979542325, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: -1868724524, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: -1230025897, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: -1151276617, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: 1752957511, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: 1600525810, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: 0}
+  - {fileID: -1110431548, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   rollBodySprites:
   - {fileID: -391363771, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   - {fileID: 1456176127, guid: 35c88b130e4b742368a255c10449afff, type: 3}

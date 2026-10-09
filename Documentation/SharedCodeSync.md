@@ -1,3 +1,19 @@
+# 与 OurTaikoPlay 同步（2026-10-09，音符表情）
+
+来源：OurTaikoPlay `9c07e49`（PR #27）；更新前 Web 基线：`ad41632`。
+
+- 补齐 `NoteExpression`、`PlaySession`、`TaikoChart`、`TjaParser`，四个共享文件与来源逐字一致。
+- 50–149 连段每八分音符切换嘴巴；达到 150 连段，从整数拍开始每十六分音符切换。阈值音符位于非整数拍时等到下一整数拍，整数拍上的阈值音符当拍开始，断连立即复位。
+- 使用谱面拍数，包含 OFFSET、BPMCHANGE、DELAY 和分支；手动击打时间的早晚不改变起点。
+- `SyncPlayPresentation.ApplyNoteExpressions()` 使用 Editor API 导入来源 atlas 的切片定义、保留 sprite IDs，并只给 PracticeScene 加上表情帧绑定。彩球复用原帧。
+- 全部 Runtime 对比后，剩余差异仅为下方表格所列 Web Audio、双时钟、无持久化、服务启动与嵌入生命周期；桥接协议没有变化。
+- Play 的三个新增未引用字体没有加入 Web；原生平台构建配置、其他场景及动态字体缓存仍保留各自版本。
+- 此次发布同时包含 `ad41632` 已同步、但未安装到 Fanmade 的连打计数／气球层级／UTF-8 解析更新。
+
+验证与发布结果见 [WebVerification.md](WebVerification.md)。
+
+---
+
 # 与 OurTaikoPlay 同步（2026-10-09）
 
 来源：OurTaikoPlay `4d15dbb`（共享表现更新到 `3b50b4d`，另包含 UTF-8 下载解析改动）。更新前 Web 基线：`b7ed84a`。

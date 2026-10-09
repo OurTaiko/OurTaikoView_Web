@@ -1,3 +1,14 @@
+# Web 播放器验证 — 2026-10-09（音符表情发布）
+
+- 来源：OurTaikoPlay `9c07e49`；更新前 Web `ad41632`。完整差异与平台边界见 [SharedCodeSync.md](SharedCodeSync.md)。
+- Unity EditMode：144/144 通过，含 27 项节拍／连段表情逻辑和场景切片绑定检查；报告 `TestResults/note-expression-sync-editmode.json`。
+- WebGL：Succeeded，0 errors，35,489,535 bytes；报告 `Builds/report.json`。通过 `WebViewBuild.QueueBuild()` 独立编辑器回调构建，避免 Pipeline 请求超时或临时回调失效。
+- 已安装完整五文件 bundle 到 Fanmade `public/player/41f1d8cc377391c8/`，清单 `public/player-build.json`；前端构建逐一校验 SHA-256。
+- 本地 Chrome 实际 WASM 回归通过，测试明确断言 iframe 路径等于当前 manifest：自动演奏、手动键盘／鼓面、音量、结束复位、三条固定分支、OGG/WAV、390px 窄屏及卸载。
+- 新增阈值流程实际达到 50 和 150 连段，并保存截图；完整短谱面 151 良、0 不可，包含小／大连打和气球。测试使用业务 API 夹具，无页面错误，无 API POST。它不验证真实成绩上传。
+- 前端 lint、format:check、129 项单元测试（另 1 项按条件跳过）和生产构建通过。浏览器测试文件为 `Fanmade/frontend/e2e/embedded-player.spec.ts`。
+- Safari、Firefox、真实移动设备未验证。生产发布在前端 main 推送后自动执行，实际结果需另核对 Actions 和公网五文件哈希。
+
 # Web 播放器验证 — 2026-10-09（连打与 UTF-8 同步）
 
 - 来源：OurTaikoPlay `4d15dbb`；同步范围及保留差异见 [SharedCodeSync.md](SharedCodeSync.md)。

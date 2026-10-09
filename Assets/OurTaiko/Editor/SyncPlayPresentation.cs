@@ -116,6 +116,33 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        [MenuItem("OurTaikoView/Sync Note Expressions")]
+        public static void ApplyNoteExpressions()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string atlas = "Assets/OurTaiko/Art/game/notes/notes_atlas.png";
+            // Keep the original sprite IDs and crops from the shared source atlas.
+            FileUtil.ReplaceFile(Path.GetFullPath("../OurTaikoPlay/" + atlas + ".meta"), atlas + ".meta");
+            AssetDatabase.ImportAsset(atlas, ImportAssetOptions.ForceSynchronousImport);
+            var sprites = AssetDatabase.LoadAllAssetsAtPath(atlas).OfType<Sprite>().ToDictionary(s => s.name);
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                play.alternateNoteSprites = new Sprite[play.noteSprites.Length];
+                for (int kind = 1; kind <= 7; kind++) play.alternateNoteSprites[kind] = sprites["Note" + kind + "Alternate"];
+                play.alternateNoteSprites[9] = play.noteSprites[9];
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                AssetDatabase.SaveAssets();
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
         static RectTransform CounterRect(string name, Transform parent, Vector2 position, Vector2 size)
         {
             var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();

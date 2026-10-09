@@ -17,6 +17,8 @@ namespace OurTaiko
         public Sprite[] laneDifficultySprites;
         public RectTransform noteLayer, barLayer, mojiLayer;
         public Sprite[] noteSprites;
+        [Tooltip("Alternate Nijiiro mouth frame, indexed by NoteKind; driven by combo thresholds and chart beats.")]
+        public Sprite[] alternateNoteSprites;
         public Sprite[] rollBodySprites, rollTailSprites;
         public Sprite balloonTailSprite;
         public Sprite[] mojiSprites;
@@ -696,6 +698,7 @@ namespace OurTaiko
             rendered = true; renderedSession = Session; renderedVersion = Session.Version;
             renderedBalloon = balloonCounter.NoteIndex; renderedPreview = preview;
             RenderedTime = time;
+            int expression = Session.NoteExpressionFrame(time, preview);
             bool notesEntered = false, mojiEntered = false;
             var chartNotes = Session.Chart.Notes;
             // Outside its interval a note is off the lane, exactly as the full cull would find it.
@@ -726,6 +729,7 @@ namespace OurTaiko
                 }
                 if (view == null) { view = AcquireNote(i, note); notesEntered = true; }
                 else if (!view.Root.gameObject.activeSelf) view.Root.gameObject.SetActive(true);
+                view.Head.sprite = expression == 0 ? noteSprites[(int)note.Kind] : alternateNoteSprites[(int)note.Kind];
                 view.Root.anchoredPosition = pos;
                 if (view.BalloonTail != null) view.BalloonTail.enabled = balloonCounter.NoteIndex != i;
                 if (view.Body != null)
