@@ -6,8 +6,8 @@
       "Effect": "Allow",
       "Action": ["s3:PutObject", "s3:AbortMultipartUpload"],
       "Resource": [
-        "arn:aws:s3:::ourtaiko-play-tokyo/player/*",
-        "arn:aws:s3:::ourtaiko-play-tokyo/player-build.json"
+        "arn:aws:s3:::ourtaiko-public/player/*",
+        "arn:aws:s3:::ourtaiko-public/player-build.json"
       ]
     }
   ]

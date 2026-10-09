@@ -1,6 +1,8 @@
 # S3 / CloudFront 播放器发布
 
-Bucket：`ourtaiko-play-tokyo`。CDN：`https://d2mguycu233w0q.cloudfront.net`。
+Bucket：`ourtaiko-public`。CDN：`https://d2mguycu233w0q.cloudfront.net`。
+
+生产已于 2026-10-09 从 `ourtaiko-play-tokyo` 迁至新桶；现有发布角色通过新桶策略获得相同目录的写权限，旧桶权限暂留回退。详细迁移与验证见 [OurTaikoLogs](../../OurTaikoLogs/FanmadeBackend/docs/2026-10-09-public-bucket-migration.md)。
 
 完整播放器存放在 `player/<内容哈希>/`，根目录的 `player-build.json` 指向当前版本。
 Fanmade 生产配置通过 `VITE_PLAYER_MANIFEST_URL` 在每次打开播放器时读取清单，解析到清单所在 CDN 的版本目录。
@@ -9,9 +11,9 @@ Fanmade 生产配置通过 `VITE_PLAYER_MANIFEST_URL` 在每次打开播放器�
 ## 一次性配置
 
 - 私有 S3，通过 CloudFront OAC 读取。
-- CloudFront `/player-build.json` behavior：`CachingDisabled`，`SimpleCORS`，HTTPS。
+- CloudFront `/player-build.json` behavior：`CachingDisabled`，`OurTaikoPlayerManifestCors`，HTTPS。
 - 默认 behavior 缓存版本目录；不添加阻止 Fanmade iframe 的 `X-Frame-Options`。
-- 音乐由 Fanmade 父页面同源下载，再通过 postMessage 转移 ArrayBuffer 给 CDN iframe，在播放器 JavaScript 内用 Web Audio 解码。谱面直接传文本；播放器不下载谱面或音乐 URL，不需要给后端新增 CloudFront CORS。清单仍需 SimpleCORS。
+- 音乐由 Fanmade 父页面请求同源 audio API，使用 `credentials: omit` 跟随到公开 CDN，再通过 postMessage 转移 ArrayBuffer 给 CDN iframe，在播放器 JavaScript 内用 Web Audio 解码。谱面直接传文本；播放器 iframe 不直接下载谱面或音乐 URL。音频 CDN 和清单均须提供跨域响应头。
 - Bridge 不带协议版本字段，只接受谱面文本和音频字节，不支持音频 URL 或固定播放器地址回退。关闭播放器、重试或切换谱面时取消旧下载。
 - 安装 AWS CLI v2，使用已有身份/命名 profile，上传身份需要此桶 `player/*` 和 `player-build.json` 的 `s3:PutObject`。不把密钥写入脚本或仓库。
 
