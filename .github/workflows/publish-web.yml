@@ -1,0 +1,140 @@
+name: Build and publish Web player
+run-name: Web player ${{ github.ref_name }} (${{ github.sha }})
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Keep publication serialized. Do not interrupt a release halfway through upload.
+concurrency:
+  group: view-web-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: false
+
+      - name: Check configuration
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+        run: |
+          set -euo pipefail
+          for setting in UNITY_LICENSE UNITY_EMAIL UNITY_PASSWORD AWS_ROLE_ARN; do
+            if [[ -z "${!setting}" ]]; then
+              echo "::error::Missing Actions setting: $setting. See Documentation/S3Publishing.md."
+              exit 1
+            fi
+          done
+
+      - name: Test release script
+        run: python3 -m unittest discover -s scripts -p 'test_publish_player.py'
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-WebGL-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'Packages/manifest.json', 'Packages/packages-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            Library-WebGL-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'Packages/manifest.json', 'Packages/packages-lock.json') }}-
+
+      - name: Build Unity WebGL
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: WebGL
+          buildMethod: OurTaiko.Editor.WebViewBuild.Build
+          buildsPath: Builds
+          versioning: None
+
+      - name: Validate build output
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('Builds/report.json').read_text())
+          assert report['result'] == 'Succeeded' and report['errors'] == 0, report
+          PY
+          python3 scripts/publish-player.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-player-${{ github.sha }}
+          path: Builds/Web/
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-build-report-${{ github.sha }}
+          overwrite: true
+          path: |
+            Builds/report.json
+            Logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Skip obsolete builds and reruns
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          if [[ "$latest" == "$GITHUB_SHA" ]]; then
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+            echo 'A newer main commit exists; this build will not replace the live manifest.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/download-artifact@v4
+        if: steps.current.outputs.publish == 'true'
+        with:
+          name: web-player-${{ github.sha }}
+          path: Builds/Web
+
+      - uses: aws-actions/configure-aws-credentials@v6.3.0
+        if: steps.current.outputs.publish == 'true'
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-1
+          role-session-name: viewweb-${{ github.run_id }}
+
+      - name: Upload, verify CloudFront, and switch version
+        if: steps.current.outputs.publish == 'true'
+        run: |
+          set -euo pipefail
+          aws --version
+          python3 scripts/publish-player.py --publish
+          echo 'Published player: https://d2mguycu233w0q.cloudfront.net/player-build.json' >> "$GITHUB_STEP_SUMMARY"

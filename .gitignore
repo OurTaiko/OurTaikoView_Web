@@ -8,6 +8,7 @@
 [Bb]uild/
 TestResults/
 .DS_Store
+__pycache__/
 .vs/
 *.csproj
 *.sln
