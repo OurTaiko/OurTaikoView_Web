@@ -1,25 +1,7 @@
-# OurTaikoView_Web
+# OurTaikoView_Web 工作说明
 
-独立 Unity 6000.3.25f1 Web 播放器。仅 PracticeScene 为构建场景；场景、美术与共享玩法代码复制自相邻 OurTaikoPlay。禁止修改来源项目来修复本项目。
+完整交接摘要、开发／部署文档与验证记录统一保存在相邻私有仓库 `../OurTaikoLogs/OurTaikoView_Web/`。
 
-- Unity 场景/资源修改通过 Editor API；不要手改 YAML 或 GUID。
-- `OurTaiko.Editor.WebViewBuild.Build` 构建 Web，`scripts/publish-player.py` 将产物发布到 S3，Fanmade 仅通过 CloudFront 清单加载。
-- `WebPlayerBridge` 是 postMessage 到 Unity 的协议入口；不含协议版本字段，音频以 ArrayBuffer 从父页面转移，谱面直接传文本；不支持资源 URL 下载或旧协议回退。模式 bool：practice / autoPlay / replay。
-- 首版支持玩家练习与自动观看；回放明确拒绝，不伪装成自动演奏。
-- 两种模式结束均回第一小节并暂停。保留每帧仅最早一次输入以及帧统一判定时刻。
-- 玩家信息和设置使用不落盘的配置；不启动 OnlineManager，不保存或上传成绩。
-- 浏览器音频走 Web Audio 后端（`AudioBackend.WebAudio`，`Web/WebAudio.cs` + jslib），沿用 AudioBus/NativeAudioSample 抽象。`WebViewBuild` 构建期间关闭 Unity 音频（`m_DisableAudio`，构建后恢复），Web 端只有自己的一个 AudioContext、无 Unity 回退；Unity 音频只用于 Editor 播放。内置音效靠构建时生成的 NativeAudioCatalog 提供原始编码字节。音频字节载荷必须传 audioType。
-- 资源许可证和来源归属必须保留。ManagedBass 是复制依赖，Web 不加载原生音频库。
-- 改动协议后同步检查 Fanmade/frontend 的 embedded-player-protocol.ts 和实际 iframe e2e 测试。
-- 2026-10-05 从 OurTaikoPlay `3f93225`、`c3a30c4` 同步音符可见区间（`Core/LaneWindow.cs`）、判定游标与只读判定状态，保留 ForcedBranch 与 Bridge 差异；设计与验证见 OurTaikoPlay AGENTS.md「音符可见区间与判定游标」。本项目无测试程序集，同步时用临时测试对照本项目原 PlaySession（含三种强制分支）23/23 通过后删除。
-- 2026-10-05 解析与分支选择分离（同 OurTaikoPlay「练习分支：固定路线」）：`TjaParser.Parse` 不再接收分支，PlaySession 以固定路线游玩。路线只在游戏内练习菜单选择：load 载荷不再有 `branch`，模板「开始」只关遮罩并停在游戏内菜单，不再发送 start；`start`／`resume` 仍是程序化开始播放的命令。Bridge 用普通譜面固定路线 PlaySession 验证谱面；`getState` 的 `forcedBranch` 为当前路线，新增 `stage`（Branch／Measure／Speed）。
-- 2026-10-06 从 OurTaikoPlay `2834759`（单次加分数字：最终高度横向滑入、平齐一行、淡出上移 15 px，删除 `fanStep`）与 `e754b76`（轨道难度图标按谱面 COURSE 切换，`PlayScene.laneDifficulty`／`laneDifficultySprites`＝`lane_difficulty` 切片 `LaneDifficulty0–4`）同步。`ScoreAdditionView.cs`、`ScoreAddition.anim`、`lane_difficulty.png.meta` 原样复制（本项目原文件与来源父提交逐字相同）；PlayScene 只合入新增字段与 `ShowDifficulty`，保留 Bridge 差异；PracticeScene 绑定经 Editor API 完成，场景差异与来源一致。未构建、未安装到 Fanmade 前端。
-
-- 2026-10-08 同步 OurTaikoPlay `1183c5c`：p/r/s 分支条件、内容哈希缓存、键位配置、曲库/搜索逻辑、50 Combo 提示和语音、判定文字回弹（250ms 内不淡出）。详见 `Documentation/SharedCodeSync.md`。`SyncPlayPresentation.Apply` 通过 Editor API 重建相关场景绑定与动画；首次补齐 50 Combo 音源时读取相邻 OurTaikoPlay。新增 LocalSongLibrary/SongSelectManager 与 OnlineManager 一样不在嵌入启动时初始化。保留 Web Audio、双时钟、无持久化设置和 bridge。共享 EndingView 仅供普通游玩代码编译，PracticeScene 无结束演出资源，网页仍结束回首小节暂停。
-
-- 2026-10-09 同步 OurTaikoPlay `4d15dbb`：UTF-8 下载解析、连打计数扇形面板、共用高清数字、气球魂槽层级修复、共享搜索交互。`SyncPlayPresentation.ApplyCounters()` 只修改 PracticeScene 的连打与气球绑定，保留 Web 差异；详见 Documentation/SharedCodeSync.md。当前有 EditMode 测试程序集，早期“无测试程序集”说明已过时。
-
-
-- 2026-10-10 同步 OurTaikoPlay `099be23`：舞者 arcade rig（五个变体、按 BPM 的共享播放头、随魂槽增减人数）与舞者图集。`SyncPlayPresentation.ApplyDancers()` 给 PracticeScene 建 `Dancers` 组。图集的 WebGL 项为 DXT5，已写回来源（OurTaikoPlay `460a15c`），图集 `.meta` 与来源逐字节相同。`WebViewBuild` 构建裁剪时保留 SpriteAtlas。导入工具 `ProjectBuilder.Dancers.cs` 不在本项目，帧图／剪辑／预制体从来源复制。详见 Documentation/SharedCodeSync.md。未做 Web 构建与浏览器验证；不支持 S3TC 的设备（iPad Safari）上图集会解包为约 48 MB，待实测。
-
-- 2026-10-10 同步 OurTaikoPlay `f012075`：练习开始时用切换小节的 0.2 秒滚动退回准备位置（`PracticeProgress.Rewind`、`PlayScene.practiceRewinding`），准备阶段不显示光标之前的音符（`PlaySession.Skipped`）。PracticeProgress、PlaySession、PlayScene.Practice 与来源逐字相同，PlayScene 合入两行。Web 差异：滚动期间 `getState.paused` 仍为 true，`start` 后约 0.2 秒才变为 false；`EmbeddedPause` 在滚动期间取消本次开始。EditMode 162/162；未做本地 Web 构建与浏览器验证。
+- 操作本项目前先读取 `../OurTaikoLogs/OurTaikoView_Web/AGENTS.md`。
+- 新的开发、发布、验证日志及截图写入该目录，不再写入本源码仓库。
+- 资源来源清单 `Documentation/ImportedAssets.json` 与第三方许可证 `Documentation/ThirdParty/` 继续保留在本仓库。

@@ -45,4 +45,8 @@ iframe URL 的 `parentOrigin` 参数指定允许发送命令的宿主来源，�
 
 ## 与主仓库同步
 
-共享玩法同步基线为 OurTaikoPlay `1183c5c`。同步范围、Web 保留差异及验证记录见 [SharedCodeSync.md](Documentation/SharedCodeSync.md)。
+共享玩法同步基线为 OurTaikoPlay `1183c5c`。同步范围、Web 保留差异及验证记录见 [SharedCodeSync.md](https://github.com/OurTaiko/OurTaikoLogs/blob/main/OurTaikoView_Web/Documentation/SharedCodeSync.md)。
+
+## 开发与发布记录
+
+交接摘要、技术文档、发布日志和验证记录集中保存在私有仓库 [OurTaikoLogs / OurTaikoView_Web](https://github.com/OurTaiko/OurTaikoLogs/tree/main/OurTaikoView_Web)。本地路径为 `../OurTaikoLogs/OurTaikoView_Web/`；访问 GitHub 文档需要该私有仓库权限。

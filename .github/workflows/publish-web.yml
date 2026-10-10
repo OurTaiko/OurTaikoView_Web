@@ -35,7 +35,7 @@ jobs:
           set -euo pipefail
           for setting in UNITY_LICENSE UNITY_EMAIL UNITY_PASSWORD AWS_ROLE_ARN; do
             if [[ -z "${!setting}" ]]; then
-              echo "::error::Missing Actions setting: $setting. See Documentation/S3Publishing.md."
+              echo "::error::Missing Actions setting: $setting. See https://github.com/OurTaiko/OurTaikoLogs/blob/main/OurTaikoView_Web/Documentation/S3Publishing.md."
               exit 1
             fi
           done
