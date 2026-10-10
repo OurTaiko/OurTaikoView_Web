@@ -1,3 +1,19 @@
+# 与 OurTaikoPlay 同步（2026-10-10，舞者 arcade rig）
+
+来源：OurTaikoPlay main `099be23`（`9a25c1b` rig 移植、`b0af6a8` 上移 33.33、PR #32 图集与压缩）；更新前 Web 基线：`fef9938`。完整说明见 OurTaikoLogs `OurTaikoPlay/Documentation/Dancers.md`。
+
+- 舞者由单一变体的 8 fps 顺序循环改为 Nijiiro arcade rig：五个变体随机分到五个站位，全团共用一个按谱面 BPM 推进的播放头（每拍 40 rig 帧）；开场 3 人跳入，魂槽 50% 第 4 人，クリア 第 5 人。
+- 逐字复制：`Core/DancerTroupe.cs`、`Play/DancerTroupeView.cs`、`Play/DancerView.cs`（含 .meta）、`Art/background/dancer/dancer_0` 全部帧图与 .meta（按落点重绘的固定画布，变体 0 的 GUID 不变）、`Generated/Clips/Dancer0_{0..4}.anim`、`Generated/Dancers`（五个预制体与 `Dancer0.spriteatlasv2`）。删除 `Generated/Clips/Dancer.anim`。
+- `PlayScene.cs` 只合入舞者三处改动（`dancers` 类型改为 `DancerTroupeView`、删除 `dancerTime`、`SampleDancers` 传入时间／BPM／魂槽比例／クリア状态），与来源的差异仍只有 Web 的 Bridge 等待与挂接、音频后端枚举、结束回首小节和卸载音频。
+- `SyncPlayPresentation.ApplyDancers()`（菜单 OurTaikoView/Sync Dancers）用 Editor API 给 PracticeScene 建 `Dancers` 组：位于 Footer 之前，带 RectMask2D，anchoredPosition y 33.33，`Slot1–5` 在 960／640／1280／319／1601、y 1005，各放一个变体预制体实例；删除旧 `Dancer1–5`。已有 `Dancers` 的场景不会重建。
+- 没有复制的部分：`ProjectBuilder.Dancers.cs`（导入与烘焙工具）和 rig 数据 `Animations/dancer_0.txt`。帧图、剪辑、预制体以 OurTaikoPlay 生成的结果为准，需要重新生成时在来源项目执行后再复制。
+- **Web 差异：图集格式**。来源的图集只覆盖 Standalone（BC7）与 Android／iOS（ASTC 6×6）。`ApplyDancers()` 给本项目的图集加 WebGL 覆盖：DXT5、质量 100、页上限 2048。3 页 2048×2048，支持 S3TC 的浏览器约 12.6 MB；不支持的（如 iPad Safari）由 Unity 在加载时解包为 RGBA，约 48 MB 并有一次解码开销。同步前本项目是 19 张不压缩帧图，约 12.6 MB。
+- 测试：`DancerTests` 复制后只把场景用例改为 PracticeScene（本项目没有 SinglePlayScene）；`AnimationClipTests` 删除旧 8 fps 用例。
+- 验证：Unity EditMode `OurTaiko.Tests` 162/162（含 `DancerTests` 11 个与 `EmbeddedPresentationTests`）。DXT5 图集页导出后按 1:1 查看，描边与色块未见块状失真。**没有运行 Web 构建，没有在浏览器或 iPad 上验证**：DXT5 在实际浏览器中的画质、不支持 S3TC 时的内存与加载时间都未实测。
+- 本次为源码同步；没有安装到 Fanmade 前端或发布生产播放器。
+
+---
+
 # 与 OurTaikoPlay 同步（2026-10-09，大连打飞行音符）
 
 来源：OurTaikoPlay `79002ce`（修复 OurTaiko/OurTaikoPlay#12）。

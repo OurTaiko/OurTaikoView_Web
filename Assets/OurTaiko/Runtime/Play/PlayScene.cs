@@ -44,8 +44,8 @@ namespace OurTaiko
         public GameObject pausePanel, resultPanel;
         public PauseMenuView pauseMenu;
         public UnityEngine.UI.Button pauseButton, restartButton, backButton, resumeButton, resultRestart, resultBack;
-        [Tooltip("Dancer.anim on each dancer: the 0_loop frames at 8 fps on the song clock.")]
-        public ClipSampler[] dancers;
+        [Tooltip("The backdrop's dancers, on the chart's tempo and the soul gauge.")]
+        public DancerTroupeView dancers;
         public CanvasGroup gogoTint;
         public EndingView ending;
 
@@ -87,7 +87,6 @@ namespace OurTaiko
         PlaySession renderedSession;
         int renderedVersion, renderedBalloon;
         bool renderedPreview, rendered;
-        double dancerTime = double.NaN;
         readonly List<DrumPad> pausedPads = new List<DrumPad>();
         bool closingPauseMenu;
         bool resuming, resumeLostFocus;
@@ -822,15 +821,11 @@ namespace OurTaiko
             return entered;
         }
 
+        void SampleDancers(double time)
+            => dancers.ShowTime(time, Session.BpmAt(time), Session.GaugePoints / SoulGauge.MaximumPoints, Session.IsClear);
+
         // The lane clip mask is the visible area, in Canvas units that follow the
         // window resolution, so cull against its live rect instead of fixed pixels.
-        // Dancer.anim at a time already sampled (a still pause) is left as it is.
-        void SampleDancers(double time)
-        {
-            if (time == dancerTime) return;
-            dancerTime = time;
-            foreach (var dancer in dancers) dancer.SampleLoop(time);
-        }
         bool InLane(float x, Vector2 reach) => LaneCull.InLane(x, reach.x, reach.y, noteLayer.rect.width);
 
         // Horizontal extent of a note's sprites relative to its centre, from the current

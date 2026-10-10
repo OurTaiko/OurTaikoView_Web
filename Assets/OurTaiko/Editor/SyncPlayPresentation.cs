@@ -143,6 +143,60 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        // The arcade dancer troupe: clips, prefabs, frames and atlas are copied from OurTaikoPlay;
+        // this gives PracticeScene the Dancers group that source's ApplyDancers builds, at the
+        // source scene's saved height. A saved group is kept.
+        [MenuItem("OurTaikoView/Sync Dancers")]
+        public static void ApplyDancers()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            // One build serves every browser: DXT5 where the GPU has it, unpacked by Unity elsewhere.
+            const string atlasPath = "Assets/OurTaiko/Generated/Dancers/Dancer0.spriteatlasv2";
+            var importer = (UnityEditor.U2D.SpriteAtlasImporter)AssetImporter.GetAtPath(atlasPath);
+            var web = importer.GetPlatformSettings("WebGL");
+            if (!web.overridden || web.format != TextureImporterFormat.DXT5 || web.maxTextureSize != 2048 || web.compressionQuality != 100)
+            {
+                web.overridden = true; web.format = TextureImporterFormat.DXT5; web.maxTextureSize = 2048; web.compressionQuality = 100;
+                importer.SetPlatformSettings(web);
+                importer.SaveAndReimport();
+            }
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                if (play.dancers != null) return;
+                var footer = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<RectTransform>(true))
+                    .Single(r => r.name == "Footer" && r.parent.name.StartsWith("Viewport"));
+                foreach (var old in footer.parent.Cast<Transform>().Where(t => System.Text.RegularExpressions.Regex.IsMatch(t.name, @"^Dancer\d$")).ToArray())
+                    UnityEngine.Object.DestroyImmediate(old.gameObject);
+                // Hops start below the screen; the group clips them to the design area.
+                var group = CounterRect("Dancers", footer.parent, new Vector2(0, 33.33f), new Vector2(1920, 1080));
+                group.SetSiblingIndex(footer.GetSiblingIndex());
+                group.gameObject.AddComponent<RectMask2D>();
+                var view = group.gameObject.AddComponent<DancerTroupeView>();
+                // dancer_0.lua pos and posy, in spawn order: centre, left, right, far left, far right.
+                int[] x = { 960, 640, 1280, 319, 1601 };
+                view.slots = new RectTransform[x.Length];
+                view.dancers = new DancerView[x.Length];
+                // Far dancers first, so the centre one ends up in front.
+                for (int i = x.Length - 1; i >= 0; i--)
+                {
+                    view.slots[i] = CounterRect("Slot" + (i + 1), group, new Vector2(x[i], -1005), Vector2.zero);
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/OurTaiko/Generated/Dancers/Dancer0_{i}.prefab");
+                    view.dancers[i] = ((GameObject)PrefabUtility.InstantiatePrefab(prefab, view.slots[i])).GetComponent<DancerView>();
+                }
+                play.dancers = view;
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                AssetDatabase.SaveAssets();
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
         static RectTransform CounterRect(string name, Transform parent, Vector2 position, Vector2 size)
         {
             var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();

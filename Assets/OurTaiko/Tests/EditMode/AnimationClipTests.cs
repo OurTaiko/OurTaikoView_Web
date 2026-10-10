@@ -52,21 +52,6 @@ namespace OurTaiko.Tests
         }
 
         [Test]
-        public void DancersLoopTheirNineteenFramesAtEightFps()
-        {
-            var clip = Clip("Dancer");
-            Assert.That(clip.isLooping, Is.True);
-            Assert.That(clip.length, Is.EqualTo(19 / 8f).Within(1e-4));
-            foreach (var (t, frame) in new[] { (0.0, 0), (0.124, 0), (0.125, 1), (1.0, 8), (2.374, 18) })
-                Assert.That(SpriteAt(clip, t).name, Is.EqualTo(frame.ToString()), $"{t} s");
-            WithPlayScene(play =>
-            {
-                Assert.That(play.dancers.Length, Is.EqualTo(5));
-                Assert.That(play.dancers.All(d => d.clip == clip && d.GetComponent<Animator>() != null), Is.True);
-            });
-        }
-
-        [Test]
         public void DrumFlashStaysLitFor120Ms()
         {
             var clip = Clip("DrumFlash");

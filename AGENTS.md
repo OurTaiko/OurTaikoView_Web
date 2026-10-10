@@ -18,3 +18,6 @@
 - 2026-10-08 同步 OurTaikoPlay `1183c5c`：p/r/s 分支条件、内容哈希缓存、键位配置、曲库/搜索逻辑、50 Combo 提示和语音、判定文字回弹（250ms 内不淡出）。详见 `Documentation/SharedCodeSync.md`。`SyncPlayPresentation.Apply` 通过 Editor API 重建相关场景绑定与动画；首次补齐 50 Combo 音源时读取相邻 OurTaikoPlay。新增 LocalSongLibrary/SongSelectManager 与 OnlineManager 一样不在嵌入启动时初始化。保留 Web Audio、双时钟、无持久化设置和 bridge。共享 EndingView 仅供普通游玩代码编译，PracticeScene 无结束演出资源，网页仍结束回首小节暂停。
 
 - 2026-10-09 同步 OurTaikoPlay `4d15dbb`：UTF-8 下载解析、连打计数扇形面板、共用高清数字、气球魂槽层级修复、共享搜索交互。`SyncPlayPresentation.ApplyCounters()` 只修改 PracticeScene 的连打与气球绑定，保留 Web 差异；详见 Documentation/SharedCodeSync.md。当前有 EditMode 测试程序集，早期“无测试程序集”说明已过时。
+
+
+- 2026-10-10 同步 OurTaikoPlay `099be23`：舞者 arcade rig（五个变体、按 BPM 的共享播放头、随魂槽增减人数）与舞者图集。`SyncPlayPresentation.ApplyDancers()` 给 PracticeScene 建 `Dancers` 组并给图集加 WebGL 覆盖（DXT5）；这是 Web 独有差异，来源图集没有 WebGL 项。导入工具 `ProjectBuilder.Dancers.cs` 不在本项目，帧图／剪辑／预制体从来源复制。详见 Documentation/SharedCodeSync.md。未做 Web 构建与浏览器验证；不支持 S3TC 的设备（iPad Safari）上图集会解包为约 48 MB，待实测。
