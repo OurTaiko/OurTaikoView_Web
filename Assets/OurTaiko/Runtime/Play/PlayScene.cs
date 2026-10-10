@@ -328,8 +328,8 @@ namespace OurTaiko
                 drumrollCounter.RecordHit(index, Session.LongHits[index], judgedAt);
             UpdateHud();
         }
-        // note_correct sends good/ok notes 1-4 and a popped balloon; check_drumroll sends one small
-        // note per roll hit, coloured by the drum (autoplay rolls with don). Kusudama never flies.
+        // Good/ok notes 1-4 and popped balloons fly as themselves. Roll hits use the roll's size
+        // and the struck drum's colour (autoplay rolls with don). Kusudama never flies.
         void SpawnArc(int index, Judgment result)
         {
             if (noteArcs == null) return;
@@ -342,6 +342,8 @@ namespace OurTaiko
                 if (Session.LongHits[index] != note.BalloonHits) return;
                 kind = NoteKind.Balloon;
             }
+            else if (note.Kind == NoteKind.BigRoll)
+                kind = hitKa && !autoPlay ? NoteKind.BigKa : NoteKind.BigDon;
             else kind = hitKa && !autoPlay ? NoteKind.Ka : NoteKind.Don;
             // NoteArc's is_big picks the gauge burst's circle: big don/ka and the balloon.
             bool big = kind == NoteKind.BigDon || kind == NoteKind.BigKa || kind == NoteKind.Balloon;

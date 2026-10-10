@@ -1,3 +1,13 @@
+# 与 OurTaikoPlay 同步（2026-10-09，大连打飞行音符）
+
+来源：OurTaikoPlay `79002ce`（修复 OurTaiko/OurTaikoPlay#12）。
+
+- 6 号大连打命中后按击打颜色飞出大咚／大咔，自动演奏使用大咚；5 号保持小音符，到达魂槽时保留对应的大小标记。
+- 仅同步 `PlayScene.SpawnArc`，与来源方法逐字一致；保留 Web Audio 与嵌入生命周期差异。
+- 验证：本地 .NET 编译通过（0 warnings、0 errors，命令参数 `LangVersion=latest` 兼容现有 ManagedBass），`git diff --check` 通过。Unity Pipeline 未连接，未运行场景测试或浏览器验证；构建发布由 main 推送触发的 CI 处理。
+
+---
+
 # 与 OurTaikoPlay 同步（2026-10-09，自动击打与分歧显示）
 
 来源：OurTaikoPlay `c8cddb9`、`d50a506`、`a200fda`；更新前 Web 基线：`c225ec2`。
