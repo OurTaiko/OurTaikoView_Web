@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace OurTaiko
 {
-    // tja.cpp modifier_moji / find_streams / get_note_interval_type: the text under each note.
+    // The text under each note, by the arcade rules (OurTaikoLogs/OurTaikoPlay AGENTS.md, 音符文字).
     // Frames of notes/moji: ドン ド コ カッ カ ドン(大) カッ(大) 連打ー 連打(大)ー ふうせん ーっ!! くすだま.
     public static class NoteMoji
     {
         public const int Don = 0, DonShort = 1, Ko = 2, Ka = 3, KaShort = 4, BigDon = 5, BigKa = 6,
             Roll = 7, BigRoll = 8, Balloon = 9, Tail = 10, Kusudama = 11;
 
-        // Interval values of the original enum, as subdivisions of a 4/4 measure.
-        static readonly int[] StreamIntervals = { 8, 12, 16, 24, 32 };
-        static readonly int[] Divisions = { 8, 16, 12, 24, 32, 4 };
-        const double Tolerance = 0.015;
+        // Gaps in quarter-note beats.
+        const double Eighth = 0.5, TwentyFourth = 1.0 / 6, Tolerance = 1e-3;
+        // コ needs this many small dons: exactly 3, an odd run from 11, or any run from 10 before a long note.
+        const int Triple = 3, LongOddRun = 11, RunBeforeLong = 10;
 
         public static void Assign(TaikoChart chart)
         {
@@ -23,22 +23,56 @@ namespace OurTaiko
         // Each list is processed alone, so streams never join the common part and a branch route.
         public static void Assign(List<ChartEntry> entries)
         {
+            var notes = new List<ChartNote>();
             foreach (var entry in entries)
-                if (!entry.IsBar && !entry.IsTail) entry.Note.Moji = Base(entry.Note.Kind);
-            foreach (int interval in StreamIntervals)
+                if (!entry.IsBar && !entry.IsTail) notes.Add(entry.Note);
+
+            for (int start = 0, end; start < notes.Count; start = end + 1)
             {
-                foreach (var (start, length) in FindStreams(entries, interval))
-                {
-                    for (int i = start; i < start + length - 1; i++)
-                    {
-                        if (IsKind(entries[i], NoteKind.Don)) entries[i].Note.Moji = DonShort;
-                        else if (IsKind(entries[i], NoteKind.Ka)) entries[i].Note.Moji = KaShort;
-                    }
-                    if (length == 3 && IsKind(entries[start], NoteKind.Don) && IsKind(entries[start + 1], NoteKind.Don)
-                        && IsKind(entries[start + 2], NoteKind.Don))
-                        entries[start + 1].Note.Moji = Ko;
-                }
+                // A stream is a run of gaps shorter than an eighth. Notes outside such runs
+                // stand alone, except that consecutive ones exactly an eighth apart form a stream.
+                end = start;
+                while (Joins(notes, end, dense: true)) end++;
+                bool dense = end > start;
+                if (!dense)
+                    while (Joins(notes, end, dense: false)) end++;
+                AssignStream(notes, start, end, dense);
             }
+        }
+
+        // Whether notes[i + 1] continues the stream of notes[i]. A long note may end a stream but never continues one.
+        static bool Joins(List<ChartNote> notes, int i, bool dense)
+        {
+            if (i + 1 >= notes.Count || notes[i].IsLong) return false;
+            double gap = Gap(notes, i);
+            if (dense) return gap < Eighth - Tolerance;
+            // An eighth stream stops before the first note of a dense one.
+            return Math.Abs(gap - Eighth) <= Tolerance && !Joins(notes, i + 1, dense: true);
+        }
+
+        static double Gap(List<ChartNote> notes, int i) => notes[i + 1].Beat - notes[i].Beat;
+
+        static void AssignStream(List<ChartNote> notes, int start, int end, bool dense)
+        {
+            for (int i = start; i <= end; i++)
+            {
+                var note = notes[i];
+                // The last note is ドン／カッ unless it follows within a twenty-fourth.
+                bool full = i == end && (i == start || Gap(notes, i - 1) > TwentyFourth + Tolerance);
+                note.Moji = note.Kind == NoteKind.Don ? (full ? Don : DonShort)
+                    : note.Kind == NoteKind.Ka ? (full ? Ka : KaShort)
+                    : Base(note.Kind);
+            }
+
+            // コ only in dense streams of small dons, optionally ended by a long note.
+            if (!dense) return;
+            bool beforeLong = notes[end].IsLong;
+            int dons = end - start + (beforeLong ? 0 : 1);
+            for (int i = start; i < start + dons; i++)
+                if (notes[i].Kind != NoteKind.Don) return;
+            bool alternate = beforeLong ? dons >= RunBeforeLong : dons == Triple || (dons >= LongOddRun && dons % 2 == 1);
+            if (!alternate) return;
+            for (int i = start + 1; i < start + dons; i += 2) notes[i].Moji = Ko;
         }
 
         static int Base(NoteKind kind) => kind switch
@@ -52,40 +86,5 @@ namespace OurTaiko
             NoteKind.Kusudama => Kusudama,
             _ => Don,
         };
-
-        static bool IsKind(ChartEntry entry, NoteKind kind) => !entry.IsBar && !entry.IsTail && entry.Note.Kind == kind;
-
-        // Long-note heads end a stream; bar lines and tails take part like notes.
-        static bool IsLongHead(ChartEntry entry) => !entry.IsBar && !entry.IsTail && entry.Note.IsLong;
-
-        static List<(int start, int length)> FindStreams(List<ChartEntry> entries, int interval)
-        {
-            var streams = new List<(int, int)>();
-            int i = 0;
-            while (i < entries.Count - 1)
-            {
-                if (IsLongHead(entries[i])) { i++; continue; }
-                int start = i, length = 1;
-                while (i < entries.Count - 1)
-                {
-                    if (IsLongHead(entries[i + 1])) break;
-                    if (Interval(entries[i + 1].Time - entries[i].Time, entries[i].Bpm) != interval) break;
-                    length++; i++;
-                }
-                if (length >= 2) streams.Add((start, length));
-                i++;
-            }
-            return streams;
-        }
-
-        // Classified in the original order; 4 is a quarter note and 0 is unknown.
-        public static int Interval(double seconds, double bpm)
-        {
-            if (bpm == 0) return 0;
-            double measure = 240.0 / bpm;
-            foreach (int division in Divisions)
-                if (Math.Abs(seconds - measure / division) < Tolerance) return division;
-            return 0;
-        }
     }
 }
