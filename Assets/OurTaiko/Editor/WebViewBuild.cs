@@ -66,6 +66,8 @@ namespace OurTaiko.Editor
             var roots = new List<string> { Scene };
             roots.AddRange(AssetDatabase.GetAllAssetPaths().Where(x => x.StartsWith("Assets/") && (x.Contains("/Resources/") || x.StartsWith("Assets/Settings/")) && !AssetDatabase.IsValidFolder(x)));
             var keep = new HashSet<string>(AssetDatabase.GetDependencies(roots.ToArray(), true));
+            // Nothing depends on an atlas: its sprites are drawn from it only because it packs them.
+            keep.UnionWith(AssetDatabase.FindAssets("t:SpriteAtlas", new[] { "Assets/OurTaiko/Generated" }).Select(AssetDatabase.GUIDToAssetPath));
             foreach (var path in AssetDatabase.GetAllAssetPaths().Where(x => x.StartsWith("Assets/Scenes/") && x.EndsWith(".unity") && x != Scene).ToArray()) AssetDatabase.DeleteAsset(path);
             foreach (var path in AssetDatabase.GetAllAssetPaths().Where(x => (x.StartsWith("Assets/OurTaiko/Art/") || x.StartsWith("Assets/OurTaiko/Audio/") || x.StartsWith("Assets/OurTaiko/Generated/") || x.StartsWith("Assets/OurTaiko/Songs/")) && !AssetDatabase.IsValidFolder(x) && !keep.Contains(x)).ToArray()) AssetDatabase.DeleteAsset(path);
             AssetDatabase.SaveAssets();

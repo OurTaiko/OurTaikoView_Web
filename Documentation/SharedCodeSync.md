@@ -9,7 +9,7 @@
 - 没有复制的部分：`ProjectBuilder.Dancers.cs`（导入与烘焙工具）和 rig 数据 `Animations/dancer_0.txt`。帧图、剪辑、预制体以 OurTaikoPlay 生成的结果为准，需要重新生成时在来源项目执行后再复制。
 - **Web 差异：图集格式**。来源的图集只覆盖 Standalone（BC7）与 Android／iOS（ASTC 6×6）。`ApplyDancers()` 给本项目的图集加 WebGL 覆盖：DXT5、质量 100、页上限 2048。3 页 2048×2048，支持 S3TC 的浏览器约 12.6 MB；不支持的（如 iPad Safari）由 Unity 在加载时解包为 RGBA，约 48 MB 并有一次解码开销。同步前本项目是 19 张不压缩帧图，约 12.6 MB。
 - 测试：`DancerTests` 复制后只把场景用例改为 PracticeScene（本项目没有 SinglePlayScene）；`AnimationClipTests` 删除旧 8 fps 用例。
-- 验证：Unity EditMode `OurTaiko.Tests` 162/162（含 `DancerTests` 11 个与 `EmbeddedPresentationTests`）。DXT5 图集页导出后按 1:1 查看，描边与色块未见块状失真。**没有运行 Web 构建，没有在浏览器或 iPad 上验证**：DXT5 在实际浏览器中的画质、不支持 S3TC 时的内存与加载时间都未实测。
+- 验证：Unity EditMode `OurTaiko.Tests` 162/162（含 `DancerTests` 11 个与 `EmbeddedPresentationTests`）。DXT5 图集页导出后按 1:1 查看，描边与色块未见块状失真。随后的本地 Web 构建与 Chromium 实际 WASM 验证见 [WebVerification.md](WebVerification.md)：构建成功，3→5 名舞者按魂槽出现且同步。构建裁剪原先会删掉图集，已在 `WebViewBuild` 中保留。**不支持 S3TC 的浏览器（iPad Safari）仍未实测**：内存与加载时间待验证。
 - 本次为源码同步；没有安装到 Fanmade 前端或发布生产播放器。
 
 ---

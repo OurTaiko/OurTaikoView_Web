@@ -1,3 +1,14 @@
+# Web 播放器验证 — 2026-10-10（舞者 arcade rig 本地构建）
+
+- 来源：OurTaikoPlay `099be23`；同步提交 `cf267b2`。范围与 Web 差异见 [SharedCodeSync.md](SharedCodeSync.md)。
+- Unity EditMode：162/162 通过，含 `DancerTests` 11 项。
+- WebGL：Succeeded，0 errors，37,155,443 bytes（上一次为 35,494,648，增加约 1.66 MB）；`Web.data.unityweb` 21,964,318 bytes。通过 `WebViewBuild.QueueBuild()` 构建，报告 `Builds/report.json`。
+- **构建裁剪修正**：`WebViewBuild.Build` 会删除场景不依赖的美术与生成资产，而没有任何资产依赖图集（Sprite 只是被它打包），所以舞者图集会在构建时被删掉，舞者退回 111 张独立帧图。现在把 `Generated` 下的 SpriteAtlas 加入保留集合。本次构建后工作区没有资产被删除。
+- 本机实际 WASM（应用内置浏览器，Chromium，WebGL 2，支持 `WEBGL_compressed_texture_s3tc`，即 DXT5 直接上传的路径）：临时宿主页以 iframe 加载 `Builds/Web`，按协议发送 `load`（自编 150 BPM 18 小节 Oni 谱面＋40 秒 WAV，autoPlay）。结果：`ready → loading → loaded`；开始后 8 秒 31 良、3 名舞者在台上；30 秒 142 良 0 不可、魂槽过クリア线后 5 名舞者全部在场且动作同步；FPS 计数 119–122；控制台无错误。舞者位于 Footer 之前，脚尖略被台子遮挡，与 OurTaikoPlay 一致。
+- 画质：DXT5 图集页在 Editor 中导出后按 1:1 查看，以及浏览器运行画面，描边与色块均未见块状失真。浏览器截图分辨率只有 800×600，不足以判断全尺寸下的细节。
+- **未验证**：不支持 S3TC 的浏览器（iPad Safari 等）上图集解包为 RGBA 的路径，包括其内存（估算约 48 MB）与加载耗时；Safari、Firefox、真实移动设备；开场跳入与减员退场的画面；Fanmade iframe e2e（`e2e/embedded-player.spec.ts`）没有运行。没有安装到 Fanmade 前端，没有发布。
+- 构建后 `ProjectSettings/AudioManager.asset` 多出 4 个由 Unity 补写的默认字段（与 `m_DisableAudio` 无关），未提交。
+
 # Web 播放器验证 — 2026-10-09（音符表情发布）
 
 - 来源：OurTaikoPlay `9c07e49`；更新前 Web `ad41632`。完整差异与平台边界见 [SharedCodeSync.md](SharedCodeSync.md)。
