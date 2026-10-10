@@ -47,6 +47,13 @@ def make_manifest(source):
     for reference in references:
         if '..' in Path(reference).parts or not (source / reference).is_file():
             raise ValueError(f'Missing or invalid build reference: {reference}')
+    # Software decoders live beside the template, outside Unity's four build files.
+    # Validate their lazy worker imports before switching the public manifest.
+    if 'audio/decode.js' in index.read_text():
+        for name in ('decode.js', 'ogg-worker.js', 'vendor/ogg-vorbis-decoder.min.js',
+                     'vendor/ogg-opus-decoder.min.js'):
+            if not (source / 'audio' / name).is_file():
+                raise ValueError(f'Missing audio decoder asset: audio/{name}')
     files = {}
     for path in sorted(source.rglob('*')):
         if not path.is_file() or path.name == '.DS_Store':

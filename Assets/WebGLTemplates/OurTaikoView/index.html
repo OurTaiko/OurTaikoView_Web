@@ -2,6 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>OurTaikoView</title>
 <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#171717;color:white;font-family:system-ui}canvas{display:block;width:100%;height:100%;touch-action:none}#overlay{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:16px;background:#171717e8}#overlay[hidden]{display:none}button{padding:12px 24px;border:0;border-radius:12px;background:#0071e3;color:white;font:inherit;cursor:pointer}progress{width:min(70vw,360px)}#message{max-width:85vw}</style></head>
 <body><canvas id="unity-canvas" tabindex="0"></canvas><div id="overlay"><strong>OurTaikoView</strong><progress id="progress" max="1" value="0"></progress><div id="message" role="status">Loading player…</div><button id="start" hidden>点击开始 / Start</button></div>
+<script src="audio/decode.js"></script>
 <script src="Build/{{{ LOADER_FILENAME }}}"></script><script>
 const canvas=document.getElementById('unity-canvas'),overlay=document.getElementById('overlay'),message=document.getElementById('message'),progress=document.getElementById('progress'),start=document.getElementById('start');
 const parentOrigin=new URLSearchParams(location.search).get('parentOrigin') || location.origin;

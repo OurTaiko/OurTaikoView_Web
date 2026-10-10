@@ -7,7 +7,7 @@ using UnityEngine;
 namespace OurTaiko
 {
     // The browser validates parent origin/source before delivering JSON here.
-    public sealed class WebPlayerBridge : MonoBehaviour
+    public sealed partial class WebPlayerBridge : MonoBehaviour
     {
         public static WebPlayerBridge Instance { get; private set; }
         public SongDefinition Song { get; private set; }
@@ -25,6 +25,7 @@ namespace OurTaiko
         [Serializable] public sealed class Payload
         {
             public string chartText, audioType, course = "Oni";
+            public string audioDecode = "native";
             public bool practice = true, autoPlay, replay;
             public bool audioTransferred;
             // setDrumVolume: 0-100, the hit-sound (Drum group) volume.
@@ -75,6 +76,8 @@ namespace OurTaiko
                 { Emit("error", new { code = "INVALID_RESOURCE" }, command.requestId); return; }
                 if (value.chartText?.Length > 4 * 1024 * 1024)
                 { Emit("error", new { code = "CHART_TOO_LARGE" }, command.requestId); return; }
+                if (value.audioDecode != null && value.audioDecode != "native" && value.audioDecode != "software")
+                { Emit("error", new { code = "INVALID_AUDIO_DECODE" }, command.requestId); return; }
                 if (SceneSwitcher.EnsureInstance().IsSwitching) { Emit("error", new { code = "BUSY" }, command.requestId); return; }
                 CancelLoading();
                 player?.EmbeddedStop(); player = null; ready = false;
@@ -103,17 +106,10 @@ namespace OurTaiko
                 _ = new PlaySession(TjaParser.Parse(chart, value.course), 0, BranchRoute.Normal);
             }
             catch (Exception error) { Debug.LogException(error); Fail("INVALID_CHART", error.Message); yield break; }
-            Emit("loading", new { stage = "audio" });
-            string format = (value.audioType ?? "").TrimStart('.').ToLowerInvariant();
-            if (format != "ogg" && format != "mp3" && format != "wav") { Fail("AUDIO_TYPE_REQUIRED"); yield break; }
+            yield return DecodeAudio(value);
+            if (ticket != generation || decodingBuffer == 0) yield break;
 #if UNITY_WEBGL && !UNITY_EDITOR
-            // Encoded bytes arrive in the iframe via postMessage, never via a network
-            // request or a JSON/C# byte array. Decoded audio also stays in JavaScript.
-            if (AudioEngine.EnsureInstance().Backend != AudioBackend.WebAudio) { Fail("AUDIO_UNAVAILABLE"); yield break; }
-            int buffer = decodingBuffer = WebAudio.DecodeTransferred(requestId);
-            double decodeDeadline = Time.realtimeSinceStartupAsDouble + 30;
-            while (WebAudio.State(buffer) == 0 && Time.realtimeSinceStartupAsDouble < decodeDeadline) yield return null;
-            if (WebAudio.State(buffer) != 1) { Fail("AUDIO_DECODE_FAILED"); yield break; }
+            int buffer = decodingBuffer;
             decodingBuffer = 0;
             if (ticket != generation) { WebAudio.Release(buffer); yield break; }
             var old = Song;
@@ -149,6 +145,7 @@ namespace OurTaiko
         void Fail(string code, string detail = null)
         {
             loading = null;
+            WebAudio.CancelPendingClips();
             WebAudio.Release(decodingBuffer); decodingBuffer = 0;
             Emit("error", new { code, detail });
         }
@@ -157,6 +154,7 @@ namespace OurTaiko
             generation++;
             if (loading != null) StopCoroutine(loading);
             loading = null;
+            WebAudio.CancelPendingClips();
             WebAudio.Release(decodingBuffer); decodingBuffer = 0;
         }
         static void Release(SongDefinition song)

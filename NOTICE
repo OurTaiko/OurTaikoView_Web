@@ -34,3 +34,8 @@ Assets/Plugins/Un4seen.Bass, separate from the ManagedBass license.
 The pause_circle icon is from Google's Material Symbols Outlined, licensed
 under Apache License 2.0. The original SVG, license, source URL and local
 rasterization details are in Documentation/ThirdParty/MaterialSymbols.
+
+The Web software Ogg decoder uses pinned wasm-audio-decoders distributions by
+Ethan Halsall, together with libopus, libvorbis, libogg, codec-parser, simple-yenc
+and puff. The independently loaded libraries, original source maps, licenses
+and attribution are in Assets/WebGLTemplates/OurTaikoView/audio/vendor.

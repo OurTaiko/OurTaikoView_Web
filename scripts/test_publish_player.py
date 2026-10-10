@@ -53,6 +53,21 @@ class PublishingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Missing'):
             publisher.make_manifest(self.source)
 
+    def test_lazy_audio_decoder_assets_are_required_and_hashed(self):
+        index = self.source / 'index.html'
+        index.write_text(index.read_text() + '<script src="audio/decode.js"></script>')
+        assets = ['decode.js', 'ogg-worker.js', 'vendor/ogg-vorbis-decoder.min.js',
+                  'vendor/ogg-opus-decoder.min.js']
+        for name in assets:
+            with self.assertRaisesRegex(ValueError, 'Missing audio decoder asset'):
+                publisher.make_manifest(self.source)
+            path = self.source / 'audio' / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('// decoder')
+        manifest = publisher.make_manifest(self.source)
+        for name in assets:
+            self.assertIn('audio/' + name, manifest['files'])
+
     def test_content_changes_create_a_new_version(self):
         before = publisher.make_manifest(self.source)
         (self.source / 'Build/Web.loader.js').write_bytes(b'new loader')
