@@ -2,7 +2,7 @@ mergeInto(LibraryManager.library, {
   OurTaikoViewEmit: function(json) {
     if (window.ourTaikoViewEmit) window.ourTaikoViewEmit(UTF8ToString(json));
   },
-  // Low-latency output: one AudioContext, shared decoded buffers and one restartable voice per sample.
+  // Low-latency output: one AudioContext of our own (Unity keeps an idle one), shared decoded buffers and one restartable voice per sample.
   $OurTaikoAudio: { decodeMode: 'native', context: null, buffers: {}, voices: {}, next: 1 },
   $OurTaikoAudioLag__deps: ['$OurTaikoAudio'],
   // Seconds from currentTime (the scheduling horizon) to the speaker, measured where supported; diagnostics only.

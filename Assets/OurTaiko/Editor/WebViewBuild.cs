@@ -73,32 +73,14 @@ namespace OurTaiko.Editor
             AssetDatabase.SaveAssets();
             Directory.CreateDirectory("Builds");
             BuildReport report;
-            // The player outputs only through Web Audio; without Unity audio, no Unity AudioContext is created.
-            // The Editor keeps Unity audio for in-Editor playback.
-            bool unityAudio = SetUnityAudio(false);
             try
             {
                 GenerateAudioCatalog();
                 report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { Scene }, target = BuildTarget.WebGL, locationPathName = "Builds/Web", options = BuildOptions.None });
             }
-            finally
-            {
-                AssetDatabase.DeleteAsset(AudioRoot);
-                SetUnityAudio(unityAudio);
-            }
+            finally { AssetDatabase.DeleteAsset(AudioRoot); }
             File.WriteAllText("Builds/report.json", JsonUtility.ToJson(new Result { result = report.summary.result.ToString(), errors = report.summary.totalErrors, bytes = report.summary.totalSize }, true));
             if (report.summary.result != BuildResult.Succeeded) throw new BuildFailedException("Web build failed");
-        }
-        // Returns whether Unity audio was enabled before the change.
-        static bool SetUnityAudio(bool enabled)
-        {
-            var manager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/AudioManager.asset")[0]);
-            var disabled = manager.FindProperty("m_DisableAudio");
-            bool previous = !disabled.boolValue;
-            disabled.boolValue = !enabled;
-            manager.ApplyModifiedPropertiesWithoutUndo();
-            AssetDatabase.SaveAssets();
-            return previous;
         }
         // Web Audio decodes the original encoded files; scene AudioClips are only lookup keys.
         // Runs after pruning, so only clips the player still references are packaged.
