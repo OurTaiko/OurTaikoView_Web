@@ -9,7 +9,8 @@ namespace OurTaiko
             drumVolume = Mathf.RoundToInt(SettingManager.EnsureInstance().Settings.audio.volume.drum * 100) };
         public void EmbeddedPause()
         {
-            if (Session != null && !IsPaused && !IsFinished) PausePractice(false);
+            // A start that is still scrolling back to its lead-in is cancelled as well.
+            if (Session != null && (!IsPaused || practiceRewinding) && !IsFinished) PausePractice(false);
         }
         public void EmbeddedStart()
         {

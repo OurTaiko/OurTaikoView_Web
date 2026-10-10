@@ -15,8 +15,10 @@ namespace OurTaiko
         public IReadOnlyList<bool> Resolved => resolved;
         // Normal notes judged 不可 because the window passed without a hit.
         public IReadOnlyList<bool> Missed => missed;
+        // Notes that ended before the practice cursor: never judged, and hidden once the attempt starts.
+        public IReadOnlyList<bool> Skipped => skipped;
         public IReadOnlyList<int> LongHits => longHits;
-        readonly bool[] resolved, missed;
+        readonly bool[] resolved, missed, skipped;
         readonly int[] longHits;
         public int Score => scoring.Total;
         public int BaseScore => scoring.BaseScore;
@@ -76,7 +78,7 @@ namespace OurTaiko
                         throw new NotSupportedException("A branch without #E or #M can only be played on a fixed route, as in practice.");
             ForcedBranch = forcedBranch;
             JudgeOffset = judgeOffset;
-            Chart = chart; resolved = new bool[chart.Notes.Count]; missed = new bool[chart.Notes.Count]; longHits = new int[chart.Notes.Count];
+            Chart = chart; resolved = new bool[chart.Notes.Count]; missed = new bool[chart.Notes.Count]; skipped = new bool[chart.Notes.Count]; longHits = new int[chart.Notes.Count];
             var statistics = new ChartStatistics(chart);
             scoring = new ShinuchiScore(statistics);
             gauge = new SoulGauge(statistics.JudgeableNotes, chart.Course, chart.Level);
@@ -129,7 +131,7 @@ namespace OurTaiko
             {
                 var note = chart.Notes[i];
                 bool past = (note.IsLong ? note.EndTime : note.Time) < time - session.JudgeOffset - 1e-7;
-                session.resolved[i] = past;
+                session.resolved[i] = session.skipped[i] = past;
                 // Past notes still scroll out naturally when browsing backwards/forwards.
                 session.missed[i] = past && !note.IsLong;
             }

@@ -21,3 +21,5 @@
 
 
 - 2026-10-10 同步 OurTaikoPlay `099be23`：舞者 arcade rig（五个变体、按 BPM 的共享播放头、随魂槽增减人数）与舞者图集。`SyncPlayPresentation.ApplyDancers()` 给 PracticeScene 建 `Dancers` 组。图集的 WebGL 项为 DXT5，已写回来源（OurTaikoPlay `460a15c`），图集 `.meta` 与来源逐字节相同。`WebViewBuild` 构建裁剪时保留 SpriteAtlas。导入工具 `ProjectBuilder.Dancers.cs` 不在本项目，帧图／剪辑／预制体从来源复制。详见 Documentation/SharedCodeSync.md。未做 Web 构建与浏览器验证；不支持 S3TC 的设备（iPad Safari）上图集会解包为约 48 MB，待实测。
+
+- 2026-10-10 同步 OurTaikoPlay `f012075`：练习开始时用切换小节的 0.2 秒滚动退回准备位置（`PracticeProgress.Rewind`、`PlayScene.practiceRewinding`），准备阶段不显示光标之前的音符（`PlaySession.Skipped`）。PracticeProgress、PlaySession、PlayScene.Practice 与来源逐字相同，PlayScene 合入两行。Web 差异：滚动期间 `getState.paused` 仍为 true，`start` 后约 0.2 秒才变为 false；`EmbeddedPause` 在滚动期间取消本次开始。EditMode 162/162；未做本地 Web 构建与浏览器验证。

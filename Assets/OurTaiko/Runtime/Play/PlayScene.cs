@@ -699,6 +699,8 @@ namespace OurTaiko
         void RenderNotes(double time)
         {
             bool preview = IsPractice && IsPaused;
+            // The preparation lead-in shows only what the attempt can hit; browsing measures keeps past notes.
+            bool hideSkipped = IsPractice && (!IsPaused || practiceRewinding);
             bool rebuilt = EnsureLaneWindows();
             if (!rebuilt && rendered && time == RenderedTime && Session == renderedSession && Session.Version == renderedVersion
                 && balloonCounter.NoteIndex == renderedBalloon && preview == renderedPreview) return;
@@ -726,7 +728,7 @@ namespace OurTaiko
                 // only a hit removes a note: a 5/6 roll resolved at its tail and a note
                 // missed by timeout keep scrolling until they leave the lane.
                 bool rolling = note.IsLong && !note.IsBalloon;
-                bool alive = note.Display && (preview ? Session.IsPracticePreviewActive(note) : Session.IsActive(note)) && (rolling || Session.Missed[i] || !Session.Resolved[i]);
+                bool alive = note.Display && !(hideSkipped && Session.Skipped[i]) && (preview ? Session.IsPracticePreviewActive(note) : Session.IsActive(note)) && (rolling || Session.Missed[i] || !Session.Resolved[i]);
                 bool visible = alive && InLane(pos.x, Reach(note, view, length));
                 if (mojiLayer != null) mojiEntered |= RenderMoji(i, note, pos, length, alive);
                 if (!visible)

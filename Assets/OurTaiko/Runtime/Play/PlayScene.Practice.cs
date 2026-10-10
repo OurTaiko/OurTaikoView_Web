@@ -15,6 +15,8 @@ namespace OurTaiko
         public BranchRoute PracticeBranch => practiceBranch;
         BranchRoute practiceBranch;
         PracticeStage FirstPracticeStage => Session.Chart.Branches.Count > 0 ? PracticeStage.Branch : PracticeStage.Measure;
+        // The lane is scrolling back to the preparation lead-in; playback starts when it arrives.
+        bool practiceRewinding;
         double AudioOffset => audioOffset;
         double VisualOffset => visualOffset;
 
@@ -32,6 +34,7 @@ namespace OurTaiko
         void TogglePracticePause()
         {
             if (!IsPaused) { PausePractice(false); return; }
+            if (practiceRewinding) return;
             if (pausePanel.activeSelf) { Resume(); return; }
             DisableDrumPads();
             pauseButton.interactable = false;
@@ -42,7 +45,7 @@ namespace OurTaiko
         void PausePractice(bool first)
         {
             if (Practice == null) return;
-            songClock.Pause(); IsPaused = true;
+            songClock.Pause(); IsPaused = true; practiceRewinding = false;
             music.StopAudio(); hitAudio.StopAudio();
             PracticeStage = FirstPracticeStage;
             if (first)
@@ -96,6 +99,7 @@ namespace OurTaiko
         }
         void UpdatePracticePause()
         {
+            if (practiceRewinding) { UpdatePracticeRewind(); return; }
             ShowPracticePause();
             foreach (var press in InputManager.PressesThisFrame)
             {
@@ -105,7 +109,7 @@ namespace OurTaiko
                 { ConfirmPractice(); return; }
             }
         }
-        bool CanAdjustPractice => IsPractice && Practice != null && IsPaused && !pausePanel.activeSelf
+        bool CanAdjustPractice => IsPractice && Practice != null && IsPaused && !practiceRewinding && !pausePanel.activeSelf
             && !closingPauseMenu && !switcher.IsInputBlocked && pauseOpenedFrame != Time.frameCount;
         public void MovePractice(int direction)
         {
@@ -126,13 +130,25 @@ namespace OurTaiko
             pauseOpenedFrame = Time.frameCount;
             if (PracticeStage != PracticeStage.Speed) { PracticeStage++; ShowPracticePause(); return; }
             ResetPracticeAttempt(Practice.Target);
+            practiceView.panel.SetActive(false);
+            practiceRewinding = true;
+            // Playback renders ChartTime - VisualOffset, so the scroll ends on the first played frame.
+            Practice.Rewind(Practice.PlaybackStart(AudioOffset, VisualOffset, judgeOffset) - AudioOffset - VisualOffset,
+                GameTimeline.FrameTime);
+        }
+        void UpdatePracticeRewind()
+        {
+            Practice.Update(GameTimeline.FrameTime);
+            RenderNotes(Practice.Position);
+            SampleDancers(Practice.Position);
+            if (Practice.Scrolling) return;
+            practiceRewinding = false;
             music.pitch = (float)Practice.Speed;
             songClock.Seek(Practice.PlaybackStart(AudioOffset, VisualOffset, judgeOffset), Practice.Speed);
             // The preparation lead-in may start in a different section than the practice target.
             ResetPracticeBranchLane(ChartTime);
             songClock.Resume(GameTimeline.AudioNow);
             IsPaused = false;
-            practiceView.panel.SetActive(false);
             resumeFrame = Time.frameCount;
             ScheduleMusic();
         }
