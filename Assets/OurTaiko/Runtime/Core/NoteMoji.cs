@@ -12,7 +12,7 @@ namespace OurTaiko
 
         // Gaps in quarter-note beats.
         const double Eighth = 0.5, TwentyFourth = 1.0 / 6, Tolerance = 1e-3;
-        // コ needs this many small dons: exactly 3, an odd run from 11, or any run from 10 before a long note.
+        // コ needs this many small dons: exactly 3, an odd run from 11, or an even run from 10 before a long note.
         const int Triple = 3, LongOddRun = 11, RunBeforeLong = 10;
 
         public static void Assign(TaikoChart chart)
@@ -50,6 +50,9 @@ namespace OurTaiko
             return Math.Abs(gap - Eighth) <= Tolerance && !Joins(notes, i + 1, dense: true);
         }
 
+        static bool IsEighth(List<ChartNote> notes, int i) =>
+            i >= 0 && i + 1 < notes.Count && Math.Abs(Gap(notes, i) - Eighth) <= Tolerance;
+
         static double Gap(List<ChartNote> notes, int i) => notes[i + 1].Beat - notes[i].Beat;
 
         static void AssignStream(List<ChartNote> notes, int start, int end, bool dense)
@@ -64,13 +67,16 @@ namespace OurTaiko
                     : Base(note.Kind);
             }
 
-            // コ only in dense streams of small dons, optionally ended by a long note.
-            if (!dense) return;
-            bool beforeLong = notes[end].IsLong;
+            // コ only in streams of small dons; a dense one may end on a long note.
+            bool beforeLong = dense && notes[end].IsLong;
             int dons = end - start + (beforeLong ? 0 : 1);
             for (int i = start; i < start + dons; i++)
                 if (notes[i].Kind != NoteKind.Don) return;
-            bool alternate = beforeLong ? dons >= RunBeforeLong : dons == Triple || (dons >= LongOddRun && dons % 2 == 1);
+            bool alternate;
+            // An eighth triple is ドコドン unless it sits an eighth away from both neighbours.
+            if (!dense) alternate = dons == Triple && !(IsEighth(notes, start - 1) && IsEighth(notes, end));
+            else if (beforeLong) alternate = dons >= RunBeforeLong && dons % 2 == 0;
+            else alternate = dons == Triple || (dons >= LongOddRun && dons % 2 == 1);
             if (!alternate) return;
             for (int i = start + 1; i < start + dons; i += 2) notes[i].Moji = Ko;
         }
