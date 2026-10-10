@@ -152,16 +152,6 @@ namespace OurTaiko.Editor
             if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
             for (int i = 0; i < EditorSceneManager.sceneCount; i++)
                 if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
-            // One build serves every browser: DXT5 where the GPU has it, unpacked by Unity elsewhere.
-            const string atlasPath = "Assets/OurTaiko/Generated/Dancers/Dancer0.spriteatlasv2";
-            var importer = (UnityEditor.U2D.SpriteAtlasImporter)AssetImporter.GetAtPath(atlasPath);
-            var web = importer.GetPlatformSettings("WebGL");
-            if (!web.overridden || web.format != TextureImporterFormat.DXT5 || web.maxTextureSize != 2048 || web.compressionQuality != 100)
-            {
-                web.overridden = true; web.format = TextureImporterFormat.DXT5; web.maxTextureSize = 2048; web.compressionQuality = 100;
-                importer.SetPlatformSettings(web);
-                importer.SaveAndReimport();
-            }
             var setup = EditorSceneManager.GetSceneManagerSetup();
             try
             {

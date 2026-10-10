@@ -20,4 +20,4 @@
 - 2026-10-09 同步 OurTaikoPlay `4d15dbb`：UTF-8 下载解析、连打计数扇形面板、共用高清数字、气球魂槽层级修复、共享搜索交互。`SyncPlayPresentation.ApplyCounters()` 只修改 PracticeScene 的连打与气球绑定，保留 Web 差异；详见 Documentation/SharedCodeSync.md。当前有 EditMode 测试程序集，早期“无测试程序集”说明已过时。
 
 
-- 2026-10-10 同步 OurTaikoPlay `099be23`：舞者 arcade rig（五个变体、按 BPM 的共享播放头、随魂槽增减人数）与舞者图集。`SyncPlayPresentation.ApplyDancers()` 给 PracticeScene 建 `Dancers` 组并给图集加 WebGL 覆盖（DXT5）；这是 Web 独有差异，来源图集没有 WebGL 项。导入工具 `ProjectBuilder.Dancers.cs` 不在本项目，帧图／剪辑／预制体从来源复制。详见 Documentation/SharedCodeSync.md。未做 Web 构建与浏览器验证；不支持 S3TC 的设备（iPad Safari）上图集会解包为约 48 MB，待实测。
+- 2026-10-10 同步 OurTaikoPlay `099be23`：舞者 arcade rig（五个变体、按 BPM 的共享播放头、随魂槽增减人数）与舞者图集。`SyncPlayPresentation.ApplyDancers()` 给 PracticeScene 建 `Dancers` 组。图集的 WebGL 项为 DXT5，已写回来源（OurTaikoPlay `460a15c`），图集 `.meta` 与来源逐字节相同。`WebViewBuild` 构建裁剪时保留 SpriteAtlas。导入工具 `ProjectBuilder.Dancers.cs` 不在本项目，帧图／剪辑／预制体从来源复制。详见 Documentation/SharedCodeSync.md。未做 Web 构建与浏览器验证；不支持 S3TC 的设备（iPad Safari）上图集会解包为约 48 MB，待实测。
