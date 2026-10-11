@@ -175,7 +175,7 @@ namespace OurTaiko
             DrawHighScore(now);
             if (view.scoreRank != null)
                 view.scoreRank.Show(Sequence.RankAtMs.HasValue && now >= Sequence.RankAtMs.Value
-                    ? ScoreRank.FromScore(Result.Score) : 0, Result.Difficulty,
+                    ? Result.Rank : 0, Result.Difficulty,
                     Sequence.Skipped ? -1 : (now - Sequence.RankAtMs.GetValueOrDefault()) / 1000);
             DrawCrown(now);
             DrawMessage(now);

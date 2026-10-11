@@ -14,6 +14,7 @@ namespace OurTaiko
         [Tooltip("score_number frames 0-9.")]
         public Sprite[] digits;
         public ScoreAdditionView additionTemplate;
+        public PlayScoreRankView scoreRank;
 
         readonly List<Image> images = new List<Image>();
         readonly List<ScoreAdditionView> additions = new List<ScoreAdditionView>();
@@ -25,8 +26,9 @@ namespace OurTaiko
         public float Stretch { get; private set; }
         public Image Digit(int index) => images[index];
 
-        public void Show(int value)
+        public void Show(int value, int kiwamiThreshold = 1000000)
         {
+            if (scoreRank != null) scoreRank.ShowScore(value, GameTimeline.FrameTime, kiwamiThreshold);
             if (value == score) return;
             int increase = score >= 0 ? value - score : 0;
             if (increase < 0) ClearAdditions();

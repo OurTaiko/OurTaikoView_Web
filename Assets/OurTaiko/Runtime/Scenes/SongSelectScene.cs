@@ -781,12 +781,12 @@ namespace OurTaiko
         {
             var view = board.View.scoreRank;
             if (view == null) return;
-            int rank = 0;
+            ScoreRank rank = ScoreRank.None;
             Difficulty course = Difficulty.Easy;
             // SearchAnyCrown walks upward in difficulty; rank and crown are independent.
             foreach (var info in board.Info.Courses)
             {
-                int candidate = ScoreRank.FromScore(SongScores.Get(board.Song, info.Difficulty)?.score ?? 0);
+                ScoreRank candidate = SongScores.Rank(board.Song, info.Difficulty);
                 if (candidate > 0 && (rank == 0 || info.Difficulty > course)) { rank = candidate; course = info.Difficulty; }
             }
             // While selecting a course, prefer its record if it has an earned rank.
@@ -795,7 +795,7 @@ namespace OurTaiko
                 var selected = Manager.Cursor.Selected;
                 if ((int)selected >= 0 && (int)selected <= 4 && board.Info.Has(selected))
                 {
-                    int candidate = ScoreRank.FromScore(SongScores.Get(board.Song, selected)?.score ?? 0);
+                    ScoreRank candidate = SongScores.Rank(board.Song, selected);
                     if (candidate > 0) { rank = candidate; course = selected; }
                 }
             }
@@ -819,7 +819,7 @@ namespace OurTaiko
             for (int k = 0; k < card.Dots.Length; k++) card.Dots[k].enabled = details && k < Math.Min(10, info.Level);
             if (!details) { card.Rank?.Show(0); return; }
             var record = SongScores.Get(board.Song, difficulty);
-            card.Rank?.Show(ScoreRank.FromScore(record?.score ?? 0), difficulty);
+            card.Rank?.Show(SongScores.Rank(board.Song, difficulty), difficulty);
             card.Crown.sprite = smallCrowns[(int)(record?.crown ?? Crown.None)];
             card.Level.sprite = smallStars[Mathf.Clamp(info.Level, 1, 11)];
         }

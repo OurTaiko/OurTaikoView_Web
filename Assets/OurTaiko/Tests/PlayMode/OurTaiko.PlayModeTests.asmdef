@@ -1,0 +1,7 @@
+{
+  "name": "OurTaiko.PlayModeTests",
+  "references": ["OurTaiko.Runtime", "Unity.ugui"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

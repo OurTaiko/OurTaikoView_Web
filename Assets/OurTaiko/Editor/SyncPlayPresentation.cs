@@ -187,6 +187,59 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        [MenuItem("OurTaikoView/Sync Score Rank")]
+        public static void ApplyScoreRank()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string folder = "Assets/OurTaiko/Generated/ScoreRank/";
+            string[] names = { "1_White", "2_Bronze", "3_Silver", "4_Gold", "5_Sui", "6_Miyabi", "7_Kiwami" };
+            var icons = names.Select(n => AssetDatabase.LoadAssetAtPath<GameObject>(folder + n + ".prefab")).ToArray();
+            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/OurTaiko/Generated/Clips/PlayScoreRank.anim");
+            if (icons.Any(i => i == null) || clip == null) throw new InvalidOperationException("Import the shared rank assets first.");
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var counter = UnityEngine.Object.FindFirstObjectByType<PlayScene>().scoreCounter;
+                var view = counter.scoreRank;
+                if (view == null)
+                {
+                    var root = CounterRect("PlayScoreRank", counter.transform, new Vector2(152, 118), Vector2.zero);
+                    root.pivot = Vector2.one * .5f;
+                    view = root.gameObject.AddComponent<PlayScoreRankView>();
+                    view.GetComponent<ClipSampler>().clip = clip;
+                    var icon = (GameObject)PrefabUtility.InstantiatePrefab(icons[5], root);
+                    icon.name = "ScoreRank";
+                    view.rank = icon.AddComponent<ScoreRankView>();
+                    view.rank.image = icon.GetComponent<UnityEngine.UI.Image>();
+                    var rect = view.rank.image.rectTransform;
+                    rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one * .5f;
+                    rect.anchoredPosition = Vector2.zero;
+                    rect.sizeDelta = Vector2.one * 208;
+                    view.rank.icons = icons;
+                    view.rank.group = icon.AddComponent<CanvasGroup>();
+                    view.rank.group.interactable = view.rank.group.blocksRaycasts = false;
+                    view.rank.Show(ScoreRank.None);
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(icon);
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(rect);
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(view.rank.image);
+                    counter.scoreRank = view;
+                }
+                var canvas = view.GetComponent<Canvas>();
+                if (canvas == null) canvas = view.gameObject.AddComponent<Canvas>();
+                canvas.overrideSorting = true;
+                canvas.sortingOrder = counter.GetComponentInParent<Canvas>().sortingOrder + 2;
+                EditorUtility.SetDirty(counter);
+                EditorUtility.SetDirty(canvas);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                AssetDatabase.SaveAssets();
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
         static RectTransform CounterRect(string name, Transform parent, Vector2 position, Vector2 size)
         {
             var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();

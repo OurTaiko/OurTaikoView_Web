@@ -19,6 +19,8 @@ namespace OurTaiko
         public string ChartKey = "", Title = "", Subtitle = "", Course = "Oni";
         public Difficulty Difficulty = Difficulty.Oni;
         public int Level, Score, Good, Ok, Bad, MaxCombo, Rolls, PreviousBest;
+        public int KiwamiThreshold = 1000000;
+        public ScoreRank Rank => ScoreRankUtil.FromScore(Score, KiwamiThreshold);
         public double GaugePoints;
         public bool IsClear, IsGaugeFull, AutoPlay;
 
@@ -47,7 +49,8 @@ namespace OurTaiko
             {
                 ChartKey = chartKey, Title = chart.Title, Subtitle = chart.Subtitle, Course = chart.Course,
                 Difficulty = SongInfo.DifficultyOf(chart.Course) ?? Difficulty.Oni, Level = chart.Level,
-                Score = session.Score, Good = session.Good, Ok = session.Ok, Bad = session.Bad,
+                Score = session.Score, KiwamiThreshold = session.KiwamiThreshold,
+                Good = session.Good, Ok = session.Ok, Bad = session.Bad,
                 MaxCombo = session.MaxCombo, Rolls = session.Rolls, GaugePoints = session.GaugePoints,
                 IsClear = session.IsClear, IsGaugeFull = session.IsGaugeFull, AutoPlay = autoPlay,
             };

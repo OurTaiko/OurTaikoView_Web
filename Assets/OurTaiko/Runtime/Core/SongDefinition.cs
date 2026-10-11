@@ -22,6 +22,21 @@ namespace OurTaiko
         [Tooltip("Song-select board colour: the Nijiiro genre frame (0 default ... 9).")]
         [Range(0, 9)] public int genre;
         [System.NonSerialized] public Online.FanmadeChart onlineChart;
+        TextAsset rankChart;
+        readonly System.Collections.Generic.Dictionary<string, int> rankThresholds = new System.Collections.Generic.Dictionary<string, int>();
+
+        public int? RankThreshold(Difficulty difficulty)
+        {
+            if (chart == null) return null;
+            if (rankChart != chart) { rankThresholds.Clear(); rankChart = chart; }
+            string requested = ResolveCourse(SongInfo.CourseName(difficulty));
+            if (!rankThresholds.TryGetValue(requested, out int threshold))
+            {
+                threshold = ScoreRankUtil.KiwamiThreshold(Parse(requested));
+                rankThresholds[requested] = threshold;
+            }
+            return threshold;
+        }
         string ResolveCourse(string requested)
         {
             var difficulty = SongInfo.DifficultyOf(requested);

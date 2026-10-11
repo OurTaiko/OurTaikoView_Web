@@ -25,5 +25,18 @@ namespace OurTaiko
         }
 
         static int Clamp(long value) => (int)Math.Clamp(value, 0, int.MaxValue);
+
+        public static ScoreRank Rank(SongDefinition song, Difficulty difficulty)
+        {
+            int score = Get(song, difficulty)?.score ?? 0;
+            if (score < 1000000) return ScoreRankUtil.FromScore(score);
+            int? threshold = song.RankThreshold(difficulty);
+            if (!threshold.HasValue && IsOnline(song))
+            {
+                var manager = Online.OnlineManager.Instance;
+                threshold = manager?.Client.RankThreshold(manager.ChartOf(song), (int)difficulty);
+            }
+            return ScoreRankUtil.FromScore(score, threshold);
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace OurTaiko
     {
         public const double GoodWindow = 0.0250250015258789, OkWindow = 0.0750750045776367, BadWindow = 0.108441665649414;
         public readonly TaikoChart Chart;
+        public int KiwamiThreshold => scoring.CeilingScore;
         public double JudgeOffset { get; }
         public BranchRoute? ForcedBranch { get; }
         // Results are written only here, so every change also moves Version.

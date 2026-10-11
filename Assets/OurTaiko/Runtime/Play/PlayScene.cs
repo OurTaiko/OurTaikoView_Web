@@ -350,7 +350,7 @@ namespace OurTaiko
         }
         void UpdateHud()
         {
-            scoreCounter.Show(Session.Score);
+            scoreCounter.Show(Session.Score, Session.KiwamiThreshold);
             judgeCounter.Show(Session.Good, Session.Ok, Session.Bad, Session.Rolls);
             combo.Show(Session.Combo);
             // Announce at 50, then at each 100th combo, once per combo change.

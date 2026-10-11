@@ -87,6 +87,7 @@ namespace OurTaiko.Online
             uploads = null;
             lock (sync)
             {
+                ResetRankThresholds();
                 foreach (var e in endpoints) e.Dispose();
                 endpoints.Clear(); charts.Clear(); categoryLists.Clear();
                 retryAt = DateTime.MinValue;

@@ -84,7 +84,7 @@ namespace OurTaiko
             {
                 rowDelay = now;
                 CrownAtMs = now + ScoreToCrownMs;
-                if (ScoreRank.FromScore(result.Score) > 0)
+                if (result.Rank > 0)
                 {
                     RankAtMs = CrownAtMs;
                     CrownAtMs += RankDurationMs;

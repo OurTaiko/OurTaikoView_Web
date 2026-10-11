@@ -10,22 +10,22 @@ namespace OurTaiko
         public GameObject[] icons;
         public CanvasGroup group;
         public ScoreRankAnimation animationView;
-        public int DisplayedRank { get; private set; }
+        public ScoreRank DisplayedRank { get; private set; }
         public Difficulty DisplayedDifficulty { get; private set; }
         int selected = -1;
 
-        public void Show(int rank, Difficulty difficulty = Difficulty.Oni, double seconds = -1)
+        public void Show(ScoreRank rank, Difficulty difficulty = Difficulty.Oni, double seconds = -1)
         {
-            rank = Mathf.Clamp(rank, 0, ScoreRank.Count);
-            if (rank != selected)
+            int index = Mathf.Clamp((int)rank, 0, ScoreRankUtil.Count);
+            if (index != selected)
             {
-                selected = rank;
-                image.enabled = rank > 0 && animationView == null;
-                if (rank > 0) image.sprite = icons[rank - 1].GetComponent<UnityEngine.UI.Image>().sprite;
+                selected = index;
+                image.enabled = index > 0 && animationView == null;
+                if (index > 0) image.sprite = icons[index - 1].GetComponent<UnityEngine.UI.Image>().sprite;
             }
-            DisplayedRank = rank;
+            DisplayedRank = (ScoreRank)index;
             DisplayedDifficulty = difficulty;
-            if (animationView != null) animationView.Show(rank, image.sprite, seconds);
+            if (animationView != null) animationView.Show(index, image.sprite, seconds);
         }
     }
 }
