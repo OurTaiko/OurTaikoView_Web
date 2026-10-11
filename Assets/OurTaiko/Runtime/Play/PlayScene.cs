@@ -46,7 +46,7 @@ namespace OurTaiko
         public UnityEngine.UI.Button pauseButton, restartButton, backButton, resumeButton, resultRestart, resultBack;
         [Tooltip("The backdrop's dancers, on the chart's tempo and the soul gauge.")]
         public DancerTroupeView dancers;
-        public CanvasGroup gogoTint;
+        public GogoView gogo;
         public EndingView ending;
 
         public PlaySession Session { get; private set; }
@@ -71,7 +71,7 @@ namespace OurTaiko
         double feedbackTime = -10;
         readonly double[] flashedAt = { -10, -10, -10, -10 };
         ClipSampler[] flashClips;
-        ClipSampler judgmentFade, gogoPulse;
+        ClipSampler judgmentFade;
         NoteView[] shownNotes = new NoteView[0];
         MojiView[] shownMoji = new MojiView[0];
         RectTransform[] shownBars = new RectTransform[0];
@@ -782,14 +782,7 @@ namespace OurTaiko
                 }
                 root.anchoredPosition = pos;
             }
-            // GogoPulse.anim: 0.18 ± 0.05, one period every 2π/12 s of song time.
-            gogoPulse ??= gogoTint.GetComponent<ClipSampler>();
-            if (!Session.IsGogo(time, preview)) gogoTint.alpha = 0;
-            else
-            {
-                double period = gogoPulse.clip.length;
-                gogoPulse.Sample((time % period + period) % period);
-            }
+            gogo.ShowTime(Session, time, preview);
         }
 
         // The text follows its note's lifetime and is culled by its own extent.

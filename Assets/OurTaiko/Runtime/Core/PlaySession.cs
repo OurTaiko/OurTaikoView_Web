@@ -147,14 +147,22 @@ namespace OurTaiko
         // Like handle_gogotime: the latest #GOGOSTART / #GOGOEND reached on the played route,
         // independent of notes, so GOGO starts and ends exactly at its commands.
         public bool IsGogo(double time, bool preview = false)
+            => GogoStateAt(time, preview).Active;
+
+        // Retain the latest start even after END: its half-second fireworks finish independently.
+        // Deriving age from the timeline also makes seeking and paused practice deterministic.
+        public (bool Active, double StartedAt) GogoStateAt(double time, bool preview = false)
         {
             bool on = false;
+            double startedAt = double.NegativeInfinity;
             foreach (var gogo in Chart.Gogos)
             {
                 if (gogo.Time > time) break;
-                if (preview ? IsPracticePreviewActive(gogo.BranchId, gogo.Route) : IsActive(gogo.BranchId, gogo.Route)) on = gogo.On;
+                if (!(preview ? IsPracticePreviewActive(gogo.BranchId, gogo.Route) : IsActive(gogo.BranchId, gogo.Route))) continue;
+                on = gogo.On;
+                if (on) startedAt = gogo.Time;
             }
-            return on;
+            return (on, startedAt);
         }
         // Latest reached tempo on this route. Querying by chart time also supports practice
         // seeking backwards; neither future notes' BPM nor their SCROLL affects expressions.

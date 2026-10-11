@@ -240,6 +240,82 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        // Original GOGO art, importer slices and clips are copied unchanged from OurTaikoPlay.
+        // Rebind only the GOGO subtree; never replace the embedded scene or its bridge/audio setup.
+        [MenuItem("OurTaikoView/Sync GOGO Effects")]
+        public static void ApplyGogo()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string art = "Assets/OurTaiko/Art/game/gogo_time/";
+            const string clips = "Assets/OurTaiko/Generated/Clips/";
+            var fire = AssetDatabase.LoadAllAssetsAtPath(art + "fire.png").OfType<Sprite>().Single(s => s.name == "fire_0");
+            var burst = AssetDatabase.LoadAllAssetsAtPath(art + "explosion.png").OfType<Sprite>().Single(s => s.name == "explosion_0");
+            var laneSprite = AssetDatabase.LoadAssetAtPath<Sprite>(art + "lane_effect.png");
+            var entryClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clips + "GogoEntry.anim");
+            var fireClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clips + "GogoFire.anim");
+            var burstClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clips + "GogoExplosion.anim");
+            if (laneSprite == null || entryClip == null || fireClip == null || burstClip == null)
+                throw new InvalidOperationException("Import all shared GOGO assets first.");
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                var lane = (RectTransform)play.branchLane.transform.parent;
+                var old = lane.Find("GogoTint");
+                if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
+                var root = lane.Find("GogoEffects") as RectTransform ?? CounterRect("GogoEffects", lane, Vector2.zero, Vector2.zero);
+                var view = root.GetComponent<GogoView>() ?? root.gameObject.AddComponent<GogoView>();
+                view.lane = GogoImage(root, "Lane", laneSprite, new Vector2(496,-109.5f), new Vector2(1424,195), new Vector2(0,0.5f));
+                view.lane.color = new Color(1,1,1,0.5f);
+                view.fire = GogoImage(root, "Fire", fire, new Vector2(626,-109), new Vector2(440,440), Vector2.one * 0.5f);
+                view.fire.color = new Color(1,1,1,0.699f);
+                view.entry = GogoSampler(root, entryClip);
+                view.fireLoop = GogoSampler(view.fire.transform, fireClip);
+                var explosion = root.Find("Explosions") as RectTransform ?? CounterRect("Explosions", root, Vector2.zero, Vector2.zero);
+                explosion.anchoredPosition = -lane.anchoredPosition;
+                if (explosion.GetComponent<CanvasGroup>() == null) explosion.gameObject.AddComponent<CanvasGroup>();
+                var positions = new[] { new Vector2(-46,336), new Vector2(276,333), new Vector2(599,333),
+                    new Vector2(921,333), new Vector2(1244,333), new Vector2(1566,336) };
+                view.explosions = new UnityEngine.UI.Image[6];
+                for (int i = 0; i < 6; i++)
+                {
+                    var image = GogoImage(explosion, "Burst" + i, burst,
+                        new Vector2(positions[i].x+196,-positions[i].y-381), new Vector2(392,762), Vector2.one * 0.5f);
+                    image.transform.localScale = new Vector3(i >= 4 ? -1 : 1, 1, 1);
+                    view.explosions[i] = image;
+                }
+                view.explosion = GogoSampler(explosion, burstClip);
+                root.SetSiblingIndex(lane.Find("JudgeCircle").GetSiblingIndex() + 1);
+                view.ResetDisplay();
+                play.gogo = view;
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                AssetDatabase.DeleteAsset(clips + "GogoPulse.anim");
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
+        static UnityEngine.UI.Image GogoImage(Transform parent, string name, Sprite sprite, Vector2 position, Vector2 size, Vector2 pivot)
+        {
+            var rect = parent.Find(name) as RectTransform ?? CounterRect(name, parent, position, size);
+            rect.pivot = pivot; rect.anchoredPosition = position; rect.sizeDelta = size;
+            var image = rect.GetComponent<UnityEngine.UI.Image>() ?? rect.gameObject.AddComponent<UnityEngine.UI.Image>();
+            image.sprite = sprite; image.raycastTarget = false;
+            return image;
+        }
+
+        static ClipSampler GogoSampler(Transform target, AnimationClip clip)
+        {
+            if (target.GetComponent<Animator>() == null) target.gameObject.AddComponent<Animator>();
+            var sampler = target.GetComponent<ClipSampler>() ?? target.gameObject.AddComponent<ClipSampler>();
+            sampler.clip = clip;
+            return sampler;
+        }
+
         static RectTransform CounterRect(string name, Transform parent, Vector2 position, Vector2 size)
         {
             var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();

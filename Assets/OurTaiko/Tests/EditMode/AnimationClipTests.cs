@@ -118,21 +118,6 @@ namespace OurTaiko.Tests
         }
 
         [Test]
-        public void GogoTintPulsesLikeTheSine()
-        {
-            var clip = Clip("GogoPulse");
-            Assert.That(clip.isLooping, Is.True);
-            Assert.That(clip.length, Is.EqualTo(2 * Mathf.PI / 12).Within(1e-4));
-            for (int i = 0; i <= 50; i++)
-            {
-                double t = clip.length * i / 50;
-                Assert.That(Sampled(clip, t, go => go.GetComponent<CanvasGroup>().alpha),
-                    Is.EqualTo(0.18f + Mathf.Sin((float)t * 12) * 0.05f).Within(1e-4), $"{t} s");
-            }
-            WithPlayScene(play => Assert.That(play.gogoTint.GetComponent<ClipSampler>().clip, Is.SameAs(clip)));
-        }
-
-        [Test]
         public void HitFaceFollowsNijiiroAnimation28()
         {
             var clip = Clip("HitFace");
