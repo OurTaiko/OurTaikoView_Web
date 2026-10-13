@@ -239,7 +239,10 @@ namespace OurTaiko
             UpdateBranchLane(time);
             if (!autoPlay) HitFirstDrumPress();
             UpdatePlayVisuals(time);
-            if (time > Session.Chart.Duration + Math.Max(0, judgeOffset) + 1 && SongTime > music.AudioLength() + 1) Finish();
+            // The song ends a second after its audio; charts often stretch their last measure far
+            // past it (a closing measure at a few BPM). Without audio, the chart's length decides.
+            double audio = music.AudioLength();
+            if (audio > 0 ? SongTime > audio + 1 : time > Session.Chart.Duration + Math.Max(0, judgeOffset) + 1) Finish();
         }
 
         // Presentation can keep running after the result is captured, without advancing judgment.
