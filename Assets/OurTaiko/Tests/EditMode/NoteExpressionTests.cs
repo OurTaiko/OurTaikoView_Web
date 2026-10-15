@@ -75,14 +75,16 @@ namespace OurTaiko.Tests
         [Test]
         public void BeatPhaseUsesOffsetTempoAndDelay()
         {
+            // Tempo anchors sit on whole milliseconds, so each beat may be off by up to 1 ms of beats.
+            const double Ms = 0.004;
             var session = new PlaySession(Parse("100\n#BPMCHANGE 180\n1,\n#DELAY 0.3\n1,", 0.37));
-            Assert.That(session.BeatAt(-0.37), Is.EqualTo(0).Within(1e-8));
-            Assert.That(session.BeatAt(1.13), Is.EqualTo(3).Within(1e-8));
+            Assert.That(session.BeatAt(-0.37), Is.EqualTo(0).Within(Ms));
+            Assert.That(session.BeatAt(1.13), Is.EqualTo(3).Within(Ms));
             double end = 1.13 + 1.0 / 3;
-            Assert.That(session.BeatAt(end + 0.1), Is.EqualTo(4).Within(1e-8));
-            Assert.That(session.BeatAt(end + 0.3), Is.EqualTo(4).Within(1e-8));
-            Assert.That(session.BeatAt(end + 0.3 + 1.0 / 6), Is.EqualTo(4.5).Within(1e-8));
-            Assert.That(session.BeatAt(-0.12), Is.EqualTo(0.5).Within(1e-8));
+            Assert.That(session.BeatAt(end + 0.1), Is.EqualTo(4).Within(Ms));
+            Assert.That(session.BeatAt(end + 0.3), Is.EqualTo(4).Within(Ms));
+            Assert.That(session.BeatAt(end + 0.3 + 1.0 / 6), Is.EqualTo(4.5).Within(Ms));
+            Assert.That(session.BeatAt(-0.12), Is.EqualTo(0.5).Within(Ms));
         }
 
         [Test]

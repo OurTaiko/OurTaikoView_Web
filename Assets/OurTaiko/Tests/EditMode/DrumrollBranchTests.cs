@@ -2,9 +2,9 @@ using NUnit.Framework;
 
 namespace OurTaiko.Tests
 {
-    // r branches: drumroll (5/6) hits since the last reset, or all hits on a drumroll still
-    // running at the decision if that is more. At BPM 120 a branch after three lead measures
-    // starts at 6 s and decides at about 3.85 s.
+    // r branches: hits on every roll (drumroll, balloon, kusudama) since the last #SECTION. At BPM 120 a branch after three
+    // lead measures starts at 6 s and decides at the bar line before it (4 s), or when a
+    // drumroll ending in that measure ends.
     public sealed class DrumrollBranchTests
     {
         static TaikoChart Parse(string body, string metadata = "") => TjaParser.Parse(
@@ -42,7 +42,7 @@ namespace OurTaiko.Tests
             Assert.That(session.LastBranchValue, Is.EqualTo(6));
         }
 
-        [Test] public void BalloonAndKusudamaHitsDoNotCount()
+        [Test] public void BalloonAndKusudamaHitsCount()
         {
             // Balloon 0–1.5 s, kusudama 2–3.5 s.
             var session = Session("r,1,3", "7008,\n9008,\n0000,", "BALLOON:3,3");
@@ -50,7 +50,8 @@ namespace OurTaiko.Tests
             for (int i = 0; i < 3; i++) session.Hit(false, 2.1 + i * 0.1);
             Decide(session);
             Assert.That(session.Rolls, Is.EqualTo(6));
-            Assert.That(session.LastBranchValue, Is.Zero);
+            Assert.That(session.LastBranchValue, Is.EqualTo(6));
+            Assert.That(session.CurrentBranch, Is.EqualTo(BranchRoute.Master));
         }
 
         [Test] public void NoteJudgmentsAndHitsOutsideADrumrollDoNotCount()
@@ -63,21 +64,23 @@ namespace OurTaiko.Tests
             Assert.That(session.LastBranchValue, Is.Zero);
         }
 
-        [Test] public void ADrumrollAcrossTheDecisionCountsAllItsHits()
+        [Test] public void ADrumrollEndingInTheLastMeasureDelaysTheDecision()
         {
-            // Drumroll 0–7.5 s across #SECTION at 2 s and the decision at about 5.85 s: two hits
-            // before the reset and two after. The section count is 2 but the drumroll has 4.
+            // Drumroll 0–7.5 s across #SECTION at 2 s: the decision waits from the bar line at
+            // 6 s for its end. Two hits before the reset do not count; five after it do.
             var session = Session("r,3,5", "5000,\n#SECTION\n0000,\n0000,\n0008,");
+            Assert.That(session.Chart.Branches[0].DecisionTime, Is.EqualTo(7.5));
             session.Hit(false, 0.1); session.Hit(false, 0.2);
             session.Hit(false, 3); session.Hit(false, 3.1);
+            for (int i = 0; i < 3; i++) session.Hit(false, 7 + i * 0.1);
             Decide(session);
-            Assert.That(session.LastBranchValue, Is.EqualTo(4));
-            Assert.That(session.CurrentBranch, Is.EqualTo(BranchRoute.Expert));
+            Assert.That(session.LastBranchValue, Is.EqualTo(5));
+            Assert.That(session.CurrentBranch, Is.EqualTo(BranchRoute.Master));
         }
 
         [Test] public void ADrumrollEndedBeforeTheDecisionOnlyCountsSinceTheReset()
         {
-            // Same hits, but the drumroll ends at 3.5 s, before the decision at about 5.85 s.
+            // Same hits, but the drumroll ends at 3.5 s, before the decision at 6 s.
             var session = Session("r,3,5", "5000,\n#SECTION\n0008,\n0000,\n0000,");
             session.Hit(false, 0.1); session.Hit(false, 0.2);
             session.Hit(false, 3); session.Hit(false, 3.1);
@@ -86,10 +89,10 @@ namespace OurTaiko.Tests
             Assert.That(session.CurrentBranch, Is.EqualTo(BranchRoute.Normal));
         }
 
-        [Test] public void HitsAfterADecisionCountForTheNextBranch()
+        [Test] public void HitsOnBothSidesOfADecisionCountForTheNextBranch()
         {
-            // The lead decides 玄人; its drumroll at 6–7.5 s feeds only the second branch,
-            // which decides at about 9.85 s.
+            // The lead decides 玄人; its three hits and the five on 玄人's drumroll at 6–7.5 s
+            // both count for the second branch, which decides at 10 s.
             const string RollRoutes = "\n#N\n5008,\n#E\n5008,\n#M\n5008,\n#BRANCHEND\n";
             var chart = Parse(Roll + "\n#BRANCHSTART r,3,5" + RollRoutes + "0000,\n0000,\n#BRANCHSTART r,3,5" + Routes);
             var session = new PlaySession(chart);
@@ -97,7 +100,7 @@ namespace OurTaiko.Tests
             for (int i = 0; i < 5; i++) session.Hit(false, 6.1 + i * 0.1);
             session.Advance(chart.Branches[1].DecisionTime, false);
             Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Expert, BranchRoute.Master }));
-            Assert.That(session.LastBranchValue, Is.EqualTo(5));
+            Assert.That(session.LastBranchValue, Is.EqualTo(8));
         }
     }
 }

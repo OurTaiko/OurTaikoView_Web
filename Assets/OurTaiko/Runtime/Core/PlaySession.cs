@@ -39,6 +39,8 @@ namespace OurTaiko
         public BranchRoute CurrentBranch { get; private set; } = BranchRoute.Normal;
         public IReadOnlyList<BranchRoute> BranchHistory => branchHistory;
         public double LastBranchValue { get; private set; }
+        // A #LEVELHOLD took effect: every later branch keeps the current route.
+        public bool IsLevelHeld { get; private set; }
         // Changes whenever a note's result or a branch choice changes, so a frame can skip an unchanged redraw.
         public int Version { get; private set; }
         public event Action<int, Judgment> Judged;
@@ -57,7 +59,7 @@ namespace OurTaiko
         int head;
         List<int> pending = new List<int>(), revisit = new List<int>();
         readonly BranchFeed branchFeed = new BranchFeed();
-        readonly IBranchCondition[] conditions;
+        readonly BranchCounter branchCounter;
         double practiceStart = double.NegativeInfinity;
 
         sealed class TimelineEvent
@@ -65,11 +67,13 @@ namespace OurTaiko
             public double Time;
             public ChartBranch Branch;
             public ChartSection Section;
-            public int Priority => Branch != null ? 1 : Section.BranchId < 0 ? 0 : 2;
+            public bool LevelHold;
+            // OpenTaiko's chip order at one time: notes, #LEVELHOLD, the branch judgement, #SECTION.
+            public int Priority => LevelHold ? 0 : Branch != null ? 1 : 2;
         }
 
         // A fixed route (practice) plays every branch on ResolveRoute(route) and evaluates no
-        // condition. Without one, branches are judged by their p, r or s condition; the reference
+        // condition. Without one, branches are judged by their #BRANCHSTART condition; the reference
         // player does not define omitted routes, so such charts are refused, not guessed.
         public PlaySession(TaikoChart chart, double judgeOffset = 0, BranchRoute? forcedBranch = null)
         {
@@ -83,7 +87,7 @@ namespace OurTaiko
             var statistics = new ChartStatistics(chart);
             scoring = new ShinuchiScore(statistics);
             gauge = new SoulGauge(statistics.JudgeableNotes, chart.Course, chart.Level);
-            conditions = BranchConditions.Create(branchFeed, HeldRollHits);
+            branchCounter = new BranchCounter(branchFeed);
             bool easy = chart.Course == "Easy" || chart.Course == "Normal";
             goodWindow = easy ? 0.0417083358764648 : GoodWindow;
             okWindow = easy ? 0.108441665649414 : OkWindow;
@@ -94,11 +98,17 @@ namespace OurTaiko
                 if (double.IsNaN(chart.Notes[i].Time) || i > 0 && chart.Notes[i].Time < chart.Notes[i - 1].Time) timeSorted = false;
             foreach (var branch in chart.Branches) timeline.Add(new TimelineEvent { Time = branch.DecisionTime, Branch = branch });
             foreach (var section in chart.Sections) timeline.Add(new TimelineEvent { Time = section.Time, Section = section });
+            foreach (double hold in chart.LevelHolds) timeline.Add(new TimelineEvent { Time = hold, LevelHold = true });
             // Stable order preserves authored checkpoint order when several become ready together.
             timeline = timeline.OrderBy(e => e.Time).ThenBy(e => e.Priority).ToList();
         }
 
         public bool IsActive(ChartNote note) => IsActive(note.BranchId, note.Route);
+
+        // Drawn in normal play: the active route, and before a branch is judged the route played
+        // so far (Normal at first), which OpenTaiko shows until the judgement swaps it.
+        public bool IsShown(ChartNote note) => note.BranchId < 0 || note.Route == (SelectedRoute(note.BranchId)
+            ?? Chart.Branches[note.BranchId].ResolveRoute(ForcedBranch ?? CurrentBranch));
 
         // Decisions can happen before the authored branch starts so its notes can load.
         // The lane label follows the actual section: common measures always show Normal.
@@ -204,38 +214,36 @@ namespace OurTaiko
         {
             // Split a long frame at each reset/decision. Future hits must not affect an
             // earlier checkpoint, and inactive routes must never enter its statistics.
+            // Notes due at the same time come first, as in OpenTaiko.
             while (nextEvent < timeline.Count && timeline[nextEvent].Time <= time)
             {
                 var item = timeline[nextEvent++];
-                AdvanceNotes(item.Time - 1e-9, auto);
-                if (item.Branch != null) SelectBranch(item.Branch);
-                else if (IsActive(item.Section.BranchId, item.Section.Route)) branchFeed.Clear();
+                AdvanceNotes(item.Time, auto);
+                if (item.LevelHold) IsLevelHeld = true;
+                else if (item.Branch != null) SelectBranch(item.Branch);
+                // Like OpenTaiko, a #SECTION on any route of a branch resets the counts.
+                else branchFeed.Clear();
             }
             AdvanceNotes(time, auto);
         }
 
-        // Hits so far on an active drumroll that spans the decision, for r conditions.
-        int HeldRollHits(ChartBranch branch)
-        {
-            int hits = 0;
-            for (int i = 0; i < Chart.Notes.Count; i++)
-            {
-                var note = Chart.Notes[i];
-                if (IsActive(note) && note.IsLong && !note.IsBalloon && note.Time <= branch.DecisionTime && branch.DecisionTime < note.EndTime)
-                    hits = Math.Max(hits, longHits[i]);
-            }
-            return hits;
-        }
-
         void SelectBranch(ChartBranch branch)
         {
-            double value = ForcedBranch.HasValue ? 0 : conditions[(int)branch.Condition].Value(branch);
-            var chosen = value >= branch.ExpertThreshold && value < branch.MasterThreshold && branch.ExpertThreshold >= 0
+            double value = ForcedBranch.HasValue ? 0 : branchCounter.Value(branch);
+            BranchRoute chosen;
+            // A #LEVELHOLD reached, or an empty or unreadable condition, keeps the route played so
+            // far (Normal at first).
+            if (IsLevelHeld || branch.Condition == BranchCondition.None) chosen = CurrentBranch;
+            // `l`: OpenTaiko's lower bounds — below master → 達人, below expert → 玄人.
+            else if (branch.Less) chosen = value < branch.MasterThreshold ? BranchRoute.Master
+                : value < branch.ExpertThreshold ? BranchRoute.Expert : BranchRoute.Normal;
+            else chosen = value >= branch.ExpertThreshold && value < branch.MasterThreshold && branch.ExpertThreshold >= 0
                 ? BranchRoute.Expert : value >= branch.MasterThreshold ? BranchRoute.Master : BranchRoute.Normal;
             chosen = branch.ResolveRoute(ForcedBranch ?? chosen);
+            if (branch.HoldRoutes[(int)chosen]) IsLevelHeld = true;
             selectedRoutes[branch.Id] = (int)chosen;
+            // Counts carry on into the next branch; only #SECTION resets them (OpenTaiko).
             CurrentBranch = chosen; LastBranchValue = value; branchHistory.Add(chosen); Version++;
-            branchFeed.Clear();
             BranchSelected?.Invoke(branch, chosen);
         }
 
@@ -374,7 +382,7 @@ namespace OurTaiko
             }
             int points = scoring.ApplyJudgment(result);
             gauge.ApplyJudgment(result);
-            branchFeed.Judge(result, points);
+            branchFeed.Judge(Chart.Notes[i], result, points);
             Judged?.Invoke(i, result);
         }
     }

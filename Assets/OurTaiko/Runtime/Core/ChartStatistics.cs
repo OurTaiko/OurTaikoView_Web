@@ -30,7 +30,7 @@ namespace OurTaiko
                     if (note.BranchId != branchId || (branchId >= 0 && note.Route != chart.Branches[branchId].ResolveRoute(BranchRoute.Master))) continue;
                     if (note.Kind >= NoteKind.Don && note.Kind <= NoteKind.BigKa) judgeableNotes++;
                     else if (note.IsBalloon) balloonHitBudget += Math.Min(100, note.BalloonHits);
-                    else if (note.Kind == NoteKind.Roll || note.Kind == NoteKind.BigRoll)
+                    else if (note.IsDrumroll)
                         drumrollMilliseconds += (note.EndTime - note.Time) * 1000;
                 }
             }

@@ -55,30 +55,58 @@ namespace OurTaiko
             if (double.IsNaN(end)) end = double.PositiveInfinity;
         }
 
+        // The same for a BM/HB-scroll note: x = judgeX + (clock - clock(t)) * scroll * travel, so
+        // the note is on the lane while the route's clock is within a range, whose times the clock
+        // timeline gives as one span.
+        public static void ClockInterval(ChartNote note, ScrollClockTimeline clocks, double travelDistance, double judgeX,
+            double width, double extent, out double start, out double end)
+        {
+            double scroll = NoteScroll.ScrollX(note) * travelDistance;
+            start = double.NegativeInfinity; end = double.PositiveInfinity;
+            if (scroll == 0 || double.IsNaN(scroll) || double.IsInfinity(scroll)) return;
+            double enter = note.ScrollClock - (width + extent - judgeX) / scroll, leave = note.ScrollClock + (extent + judgeX) / scroll;
+            clocks.Span(ScrollClockTimeline.RouteOf(note), Math.Min(enter, leave), Math.Max(enter, leave), out start, out end);
+            if (note.IsBalloon) end = double.PositiveInfinity;
+            if (double.IsNaN(start)) start = double.NegativeInfinity;
+            if (double.IsNaN(end)) end = double.PositiveInfinity;
+        }
+
+        static void ObjectInterval(ChartNote note, ScrollClockTimeline clocks, double travel, double judgeX, double width,
+            double extent, bool holdsAtJudge, out double start, out double end)
+        {
+            if (note.ScrollMode == ScrollMode.Normal)
+                Interval(note.Time, note.Bpm, note.ScrollX, travel, judgeX, width, extent, holdsAtJudge, out start, out end);
+            else ClockInterval(note, clocks, travel, judgeX, width, extent, out start, out end);
+            // #SUDDEN: standing on the lane before it moves keeps it a candidate from its appearance.
+            if (double.IsPositiveInfinity(note.SuddenMove)) return;
+            double x = judgeX + NoteScroll.RawDistance(note, note.Time - note.SuddenMove, clocks, travel).X;
+            if (InLane(x, -extent, extent, width)) start = Math.Min(start, note.Time - note.SuddenShow);
+        }
+
         // Candidate windows for the renderer. The extent over-covers every sprite: a balloon with
         // its tail reaches 1.5 notes from its centre, a roll its length plus the tail, its text
         // half the text width plus the length; three of the wider sprite plus the length leaves
         // ample margin. Bar lines are a few pixels wide and keep one sprite of margin.
-        public static LaneWindow ForNotes(IReadOnlyList<ChartNote> notes, double width, double judgeX, double spriteWidth)
+        // `shift` is how far #JPOSSCROLL may move the judge across; it widens every interval.
+        public static LaneWindow ForNotes(IReadOnlyList<ChartNote> notes, ScrollClockTimeline clocks, double width, double judgeX,
+            double spriteWidth, double travel, double shift = 0)
         {
-            double travel = width - judgeX;
             double[] start = new double[notes.Count], end = new double[notes.Count];
             for (int i = 0; i < notes.Count; i++)
             {
                 var note = notes[i];
-                double length = note.IsLong && !note.IsBalloon ? Math.Abs(NoteScroll.RollLength(note, travel)) : 0;
-                Interval(note.Time, note.Bpm, note.ScrollX, travel, judgeX, width, 3 * spriteWidth + length,
-                    note.IsBalloon, out start[i], out end[i]);
+                double length = note.IsDrumroll ? Math.Abs(NoteScroll.RollLength(note, travel)) : 0;
+                ObjectInterval(note, clocks, travel, judgeX, width, 3 * spriteWidth + length + shift, note.IsBalloon, out start[i], out end[i]);
             }
             return new LaneWindow(start, end);
         }
 
-        public static LaneWindow ForBars(IReadOnlyList<ChartNote> bars, double width, double judgeX, double spriteWidth)
+        public static LaneWindow ForBars(IReadOnlyList<ChartNote> bars, ScrollClockTimeline clocks, double width, double judgeX,
+            double spriteWidth, double travel, double shift = 0)
         {
-            double travel = width - judgeX;
             double[] start = new double[bars.Count], end = new double[bars.Count];
             for (int i = 0; i < bars.Count; i++)
-                Interval(bars[i].Time, bars[i].Bpm, bars[i].ScrollX, travel, judgeX, width, spriteWidth, false, out start[i], out end[i]);
+                ObjectInterval(bars[i], clocks, travel, judgeX, width, spriteWidth + shift, false, out start[i], out end[i]);
             return new LaneWindow(start, end);
         }
     }

@@ -150,7 +150,7 @@ namespace OurTaiko
             songClock.Resume(GameTimeline.AudioNow);
             IsPaused = false;
             resumeFrame = Time.frameCount;
-            ScheduleMusic();
+            StartDueMusic();
         }
         // A new route changes the notes and bar lines ahead, so the attempt and the bar list are rebuilt
         // at the same position.

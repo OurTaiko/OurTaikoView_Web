@@ -3,20 +3,19 @@ using NUnit.Framework;
 
 namespace OurTaiko.Tests
 {
-    // p, r and s branches in one chart: every condition counts the same play, each reads its
-    // own statistic, and #SECTION or any decision clears them all.
+    // p, r and s branches in one chart: every condition counts the same play and reads its own
+    // statistic. As in OpenTaiko, counts carry over decisions and #SECTION clears all but s.
     public sealed class MixedBranchTests
     {
         static TaikoChart Parse(string body, string metadata = "") => TjaParser.Parse(
             "TITLE:Mixed Branch\nBPM:120\nCOURSE:Oni\n" + metadata + "\n#START\n" + body + "\n#END");
         const string Routes = "\n#N\n1000,\n#E\n2200,\n#M\n3434,\n#BRANCHEND\n";
 
-        // At BPM 120 each measure is 2 s; a branch decides when its first object loads,
-        // about 2.15 s before it starts, and never before two measures ahead of it.
+        // At BPM 120 each measure is 2 s; a branch decides at the bar line before it.
         //   lead      0–6 s   1111 (notes at 0–1.5 s)
-        //   p,50,75   6–8 s   普通 1000 / 玄人 and 達人 a drumroll 6–7.5 s     decides ≈ 3.85 s
-        //   r,3,5    12–14 s  普通 1000 / 玄人 1100 / 達人 1111                 decides ≈ 9.85 s
-        //   s        18–20 s  1000 / 2000 / 3000                                decides ≈ 15.85 s
+        //   p,50,75   6–8 s   普通 1000 / 玄人 and 達人 a drumroll 6–7.5 s     decides at 4 s
+        //   r,3,5    12–14 s  普通 1000 / 玄人 1100 / 達人 1111                 decides at 10 s
+        //   s        18–20 s  1000 / 2000 / 3000                                decides at 16 s
         static TaikoChart Chain(string score) => Parse(
             "1111,\n0000,\n0000,\n" +
             "#BRANCHSTART p,50,75\n#N\n1000,\n#E\n5008,\n#M\n5008,\n#BRANCHEND\n0000,\n0000,\n" +
@@ -39,13 +38,12 @@ namespace OurTaiko.Tests
             for (int i = 0; i < 3; i++) session.Hit(false, i * 0.5);
             // r: four drumroll hits → 玄人, whose two notes then follow.
             for (int i = 0; i < 4; i++) session.Hit(i % 2 == 1, 6.1 + i * 0.1);
-            // s: both 玄人 notes 良 → two base scores. Drumroll points before the r decision
-            // and the lead notes before the p decision are not part of it.
+            // s: the whole score — three lead 良, four drumroll hits and both 玄人 notes.
             session.Hit(false, 12); session.Hit(false, 12.5);
             session.Advance(chart.Branches[2].DecisionTime, false);
 
-            Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Expert, BranchRoute.Expert }));
-            Assert.That(values, Is.EqualTo(new double[] { 75, 4, 2 * session.BaseScore }));
+            Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Expert, BranchRoute.Master }));
+            Assert.That(values, Is.EqualTo(new double[] { 75, 4, 5 * session.BaseScore + 400 }));
             Assert.That(session.Score, Is.EqualTo(5 * session.BaseScore + 400));
         }
 
@@ -54,14 +52,14 @@ namespace OurTaiko.Tests
             var chart = Chain("s,200000,300000");
             var session = new PlaySession(chart);
             var values = Values(session);
-            // p: 50% → 玄人 (also a drumroll); r: five hits → 達人; s: all four 達人 notes.
+            // p: 50% → 玄人 (also a drumroll); r: five hits → 達人; s: everything so far.
             session.Hit(false, 0); session.Hit(false, 0.5);
             for (int i = 0; i < 5; i++) session.Hit(false, 6.1 + i * 0.1);
             for (int i = 0; i < 4; i++) session.Hit(false, 12 + i * 0.5);
             session.Advance(chart.Branches[2].DecisionTime, false);
 
             Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Expert, BranchRoute.Master, BranchRoute.Master }));
-            Assert.That(values, Is.EqualTo(new double[] { 50, 5, 4 * session.BaseScore }));
+            Assert.That(values, Is.EqualTo(new double[] { 50, 5, 6 * session.BaseScore + 500 }));
         }
 
         [Test] public void AutoPlayReachesMasterOnEveryCondition()
@@ -72,7 +70,7 @@ namespace OurTaiko.Tests
             var values = Values(session);
             session.Advance(chart.Branches[2].DecisionTime, true);
             Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Master, BranchRoute.Master }));
-            Assert.That(values, Is.EqualTo(new double[] { 100, 23, 4 * session.BaseScore }));
+            Assert.That(values, Is.EqualTo(new double[] { 100, 23, session.Score }));
         }
 
         // The same lead play (two 良, then three drumroll hits) seen by each condition.
@@ -94,7 +92,7 @@ namespace OurTaiko.Tests
         [TestCase("p,50,75")]
         [TestCase("r,1,3")]
         [TestCase("s,1,2")]
-        public void SectionClearsEveryCondition(string condition)
+        public void SectionClearsEveryConditionButScore(string condition)
         {
             // Two 良 and three drumroll hits (drumroll 1–2.5 s) all before #SECTION at 2 s.
             string lead = "1150,\n#SECTION\n0800,\n0000,";
@@ -108,6 +106,11 @@ namespace OurTaiko.Tests
             }
             Assert.That(without.LastBranchValue, Is.GreaterThan(0));
             Assert.That(without.CurrentBranch, Is.Not.EqualTo(BranchRoute.Normal));
+            if (condition.StartsWith("s"))
+            {
+                Assert.That(withSection.LastBranchValue, Is.EqualTo(without.LastBranchValue));
+                return;
+            }
             Assert.That(withSection.LastBranchValue, Is.Zero);
             Assert.That(withSection.CurrentBranch, Is.EqualTo(BranchRoute.Normal));
         }

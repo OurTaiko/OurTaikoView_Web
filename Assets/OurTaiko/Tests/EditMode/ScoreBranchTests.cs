@@ -2,9 +2,10 @@ using NUnit.Framework;
 
 namespace OurTaiko.Tests
 {
-    // s branches: Shinuchi points scored since the last reset, from notes, drumrolls and
-    // balloons alike. At BPM 120 a branch after three lead measures starts at 6 s and decides
-    // at about 3.85 s. With four lead notes and four 達人 notes the base score is 125000.
+    // s branches: the Shinuchi score so far, from notes, drumrolls and balloons alike; as in
+    // OpenTaiko neither #SECTION nor a decision resets it. At BPM 120 a branch after three lead
+    // measures starts at 6 s and decides at 4 s. With four lead notes and four 達人 notes the
+    // base score is 125000.
     public sealed class ScoreBranchTests
     {
         static TaikoChart Parse(string body, string metadata = "") => TjaParser.Parse(
@@ -71,38 +72,28 @@ namespace OurTaiko.Tests
             Assert.That(session.CurrentBranch, Is.EqualTo(BranchRoute.Expert));
         }
 
-        [Test] public void SectionStartsANewCount()
+        [Test] public void SectionDoesNotResetTheScore()
         {
             var section = new PlaySession(Parse("1111,\n#SECTION\n1000,\n0000,\n#BRANCHSTART s,1,2" + Routes));
             for (int i = 0; i < 4; i++) section.Hit(false, i * 0.5);
             Decide(section);
-            Assert.That(section.Score, Is.EqualTo(4 * section.BaseScore));
-            Assert.That(section.LastBranchValue, Is.Zero);
-            Assert.That(section.CurrentBranch, Is.EqualTo(BranchRoute.Normal));
+            Assert.That(section.LastBranchValue, Is.EqualTo(4 * section.BaseScore));
+            Assert.That(section.CurrentBranch, Is.EqualTo(BranchRoute.Master));
         }
 
-        [Test] public void EachDecisionStartsANewCount()
+        [TestCase(0, 4)]
+        [TestCase(2, 6)]
+        public void TheScoreCarriesOverEachDecision(int masterHits, int baseScores)
         {
-            // Four 良 at a base of 83340 (12 notes) reach 300000. After the first decision the
-            // 達人 notes at 6–7.5 s are missed, so the second branch (about 9.85 s) sees 0.
-            var chart = Parse("1111,\n0000,\n0000,\n#BRANCHSTART s,1,300000" + Routes + "0000,\n0000,\n#BRANCHSTART s,1,300000" + Routes);
-            var twice = new PlaySession(chart);
-            for (int i = 0; i < 4; i++) twice.Hit(false, i * 0.5);
-            twice.Advance(chart.Branches[1].DecisionTime, false);
-            Assert.That(twice.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Normal }));
-            Assert.That(twice.LastBranchValue, Is.Zero);
-        }
-
-        [Test] public void PointsAfterTheDecisionAreLeftForTheNextBranch()
-        {
-            // The 達人 notes at 6 and 6.5 s are hit after the first decision and before the second.
+            // Four 良 at a base of 83340 (12 notes) reach 300000; the 達人 notes at 6 and 6.5 s
+            // add to that before the second branch decides at 10 s.
             var chart = Parse("1111,\n0000,\n0000,\n#BRANCHSTART s,1,300000" + Routes + "0000,\n0000,\n#BRANCHSTART s,1,300000" + Routes);
             var session = new PlaySession(chart);
             for (int i = 0; i < 4; i++) session.Hit(false, i * 0.5);
-            session.Hit(false, 6); session.Hit(true, 6.5);
+            if (masterHits > 0) { session.Hit(false, 6); session.Hit(true, 6.5); }
             session.Advance(chart.Branches[1].DecisionTime, false);
-            Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Expert }));
-            Assert.That(session.LastBranchValue, Is.EqualTo(2 * session.BaseScore));
+            Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Master }));
+            Assert.That(session.LastBranchValue, Is.EqualTo(baseScores * session.BaseScore));
         }
     }
 }

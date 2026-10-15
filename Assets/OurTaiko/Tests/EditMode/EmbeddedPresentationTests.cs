@@ -107,6 +107,34 @@ namespace OurTaiko.Tests
             });
         }
 
+        // OpenTaiko: lane, soul gauge, GOGO fire, notes, then the drum and HUD; notes are clipped
+        // only at the lane's ends.
+        [Test]
+        public void SoulGaugeDrawsUnderTheNotesAndTheLaneClipsOnlySideways()
+        {
+            WithPlay(play =>
+            {
+                var lane = play.noteLayer.parent.parent;
+                var gauge = play.soulGauge.transform;
+                Vector3 at = gauge.position;
+                var put = typeof(PlayScene).GetMethod("PutSoulGaugeUnderNotes", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                put.Invoke(play, null);
+                put.Invoke(play, null); // A second load keeps it in place.
+                Assert.That(gauge.parent, Is.SameAs(lane));
+                Assert.That(gauge.position, Is.EqualTo(at));
+                Assert.That(gauge.GetSiblingIndex(), Is.GreaterThan(lane.Find("JudgeCircle").GetSiblingIndex()));
+                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(lane.Find("GogoEffects").GetSiblingIndex()));
+                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.noteLayer.parent.GetSiblingIndex()));
+                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.combo.transform.GetSiblingIndex()));
+                foreach (var layer in new[] { play.noteLayer, play.barLayer, play.mojiLayer })
+                {
+                    var padding = layer.GetComponentInParent<UnityEngine.UI.RectMask2D>().padding;
+                    Assert.That(padding.x == 0 && padding.z == 0, Is.True);
+                    Assert.That(padding.y < -10000 && padding.w < -10000, Is.True);
+                }
+            });
+        }
+
         static void WithPlay(System.Action<PlayScene> check)
         {
             var scene = EditorSceneManager.OpenPreviewScene("Assets/Scenes/PracticeScene.unity");

@@ -38,6 +38,21 @@ namespace OurTaiko.Tests
             Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Expert }));
         }
 
+        [Test]
+        public void UndecidedBranchesShowTheRoutePlayedSoFar()
+        {
+            // OpenTaiko draws the current route until the judgement swaps it; such notes cannot be hit.
+            var chart = Parse(Master + "\n1111,\n" + Master.Replace("p,-1,0", "p,0,101"));
+            var session = new PlaySession(chart);
+            bool Shown(int branch, BranchRoute route) => chart.Notes.Where(n => n.BranchId == branch).All(n => session.IsShown(n) == (n.Route == route));
+            Assert.That(Shown(0, BranchRoute.Normal) && Shown(1, BranchRoute.Normal), Is.True);
+            Assert.That(session.IsActive(chart.Notes.First(n => n.BranchId == 0)), Is.False);
+            session.Advance(chart.Branches[0].DecisionTime, true);
+            Assert.That(Shown(0, BranchRoute.Master) && Shown(1, BranchRoute.Master), Is.True);
+            session.Advance(chart.Branches[1].DecisionTime, true);
+            Assert.That(Shown(1, BranchRoute.Expert), Is.True);
+        }
+
         [TestCase(BranchRoute.Expert)]
         [TestCase(BranchRoute.Master)]
         public void PracticeDisplayFollowsTheSectionWhenSeekingBothWays(BranchRoute route)
@@ -73,7 +88,7 @@ namespace OurTaiko.Tests
             Assert.That(score.Condition, Is.EqualTo(BranchCondition.Score));
             Assert.That(score.HasAllRoutes, Is.True);
             Assert.Throws<FormatException>(() => Parse("#BRANCHSTART p,50,80\n#E\n1000,\n#BRANCHEND"), "#N is still required.");
-            Assert.Throws<NotSupportedException>(() => Parse("#BRANCHSTART x,1,2\n#N\n1000,\n#BRANCHEND"));
+            Assert.That(Parse("#BRANCHSTART x,1,2\n#N\n1000,\n#BRANCHEND").Branches[0].Condition, Is.EqualTo(BranchCondition.None));
         }
 
         [TestCase(NoMaster)]

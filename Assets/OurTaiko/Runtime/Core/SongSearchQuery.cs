@@ -45,19 +45,8 @@ namespace OurTaiko
         {
             if (!Matches(song.ReadDisplayInfo())) return false;
             if (Keyword.Length == 0) return true;
-            bool inChart = false;
-            foreach (var raw in song.chart.text.Replace("\r", "").Split('\n'))
-            {
-                string line = raw.Split(new[] { "//" }, StringSplitOptions.None)[0].Trim().TrimStart('\uFEFF');
-                if (line.StartsWith("#START", StringComparison.OrdinalIgnoreCase)) { inChart = true; continue; }
-                if (line.Equals("#END", StringComparison.OrdinalIgnoreCase)) { inChart = false; continue; }
-                if (inChart) continue;
-                int colon = line.IndexOf(':');
-                if (colon < 0) continue;
-                string key = line.Substring(0, colon).Trim().ToUpperInvariant();
-                if ((key.StartsWith("TITLE") || key.StartsWith("SUBTITLE") || key == "MAKER") && MatchesText(line.Substring(colon + 1).Trim())) return true;
-            }
-            return false;
+            return TjaLines.Read(song.chart.text).Any(line => line.Kind == TjaLineKind.Header
+                && (line.Key.StartsWith("TITLE") || line.Key.StartsWith("SUBTITLE") || line.Key == "MAKER") && MatchesText(line.Value));
         }
     }
 }

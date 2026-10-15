@@ -2,9 +2,9 @@ using NUnit.Framework;
 
 namespace OurTaiko.Tests
 {
-    // p branches: truncated percentage of normal notes judged since the last reset,
+    // p branches: truncated percentage of normal notes judged since the last #SECTION,
     // 良 = 1, 可 = 0.5, 不可 and misses = 0. At BPM 120 the branch below starts at 6 s and is
-    // decided when its first object loads (about 3.85 s), after every lead note is settled.
+    // decided at the bar line before it (4 s), after every lead note is settled.
     public sealed class AccuracyBranchTests
     {
         static TaikoChart Parse(string body, string metadata = "") => TjaParser.Parse(
@@ -61,7 +61,7 @@ namespace OurTaiko.Tests
 
         [Test] public void DrumrollAndBalloonHitsDoNotMoveThePercentage()
         {
-            // Drumroll 2–3.5 s, balloon 4–5.5 s; the branch moves to 8 s and decides at about 5.85 s.
+            // Drumroll 2–3.5 s, balloon 4–5.5 s; the branch moves to 8 s and decides at 6 s.
             var session = Session("p,50,75", "1100,\n5008,\n7008,\n0000,", "BALLOON:2");
             session.Hit(false, 0);
             for (int i = 0; i < 8; i++) session.Hit(i % 2 == 0, 2.1 + i * 0.1);
@@ -100,17 +100,18 @@ namespace OurTaiko.Tests
             Assert.That(session.LastBranchValue, Is.EqualTo(100));
         }
 
-        [Test] public void TheNextBranchCountsOnlyThePlayedRoute()
+        [Test] public void TheNextBranchAddsThePlayedRouteToEarlierPlay()
         {
             // The lead chooses 達人 (3434 at 6–7.5 s); half of it is hit before the second
-            // branch decides at about 9.85 s. 普通 (1000) would have had one note.
+            // branch decides at 10 s. Without #SECTION the lead still counts: 6 良 of 8.
             var chart = Parse("1111,\n0000,\n0000,\n#BRANCHSTART p,50,75" + Routes + "0000,\n0000,\n#BRANCHSTART p,50,75" + Routes);
             var session = new PlaySession(chart);
             Play(session, 4, 0);
             session.Hit(false, 6); session.Hit(true, 6.5);
             session.Advance(chart.Branches[1].DecisionTime, false);
-            Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Expert }));
-            Assert.That(session.LastBranchValue, Is.EqualTo(50));
+            Assert.That(chart.Branches[1].DecisionTime, Is.EqualTo(10));
+            Assert.That(session.BranchHistory, Is.EqualTo(new[] { BranchRoute.Master, BranchRoute.Master }));
+            Assert.That(session.LastBranchValue, Is.EqualTo(75));
         }
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace OurTaiko
 {
@@ -23,16 +22,18 @@ namespace OurTaiko
         public double Bpm = 120, DemoStart;
         public readonly List<CourseInfo> Courses = new List<CourseInfo>();
 
-        static readonly string[] CourseNames = { "Easy", "Normal", "Hard", "Oni", "Edit" };
+        // TJA COURSE names of Easy..Ura, as charts, scores and servers spell them.
+        public static readonly System.Collections.ObjectModel.ReadOnlyCollection<string> CourseNames =
+            Array.AsReadOnly(new[] { "Easy", "Normal", "Hard", "Oni", "Edit" });
 
         public static string CourseName(Difficulty difficulty) => CourseNames[(int)difficulty];
 
         public static Difficulty? DifficultyOf(string course)
         {
             string value = course.Trim().Split('_')[0];
-            if (int.TryParse(value, out int n)) return n >= 0 && n < CourseNames.Length ? (Difficulty)n : (Difficulty?)null;
+            if (int.TryParse(value, out int n)) return n >= 0 && n < CourseNames.Count ? (Difficulty)n : (Difficulty?)null;
             if (value.Equals("Ura", StringComparison.OrdinalIgnoreCase)) return Difficulty.Ura;
-            for (int i = 0; i < CourseNames.Length; i++)
+            for (int i = 0; i < CourseNames.Count; i++)
                 if (value.Equals(CourseNames[i], StringComparison.OrdinalIgnoreCase)) return (Difficulty)i;
             return null;
         }
@@ -49,31 +50,28 @@ namespace OurTaiko
             string course = "Oni";
             int level = 0;
             CourseInfo reading = null;
-            foreach (string raw in text.TrimStart('﻿').Replace("\r", "").Split('\n'))
+            foreach (var line in TjaLines.Read(text))
             {
-                string line = raw.Split(new[] { "//" }, StringSplitOptions.None)[0].Trim();
-                if (line.Length == 0) continue;
-                if (line.StartsWith("#START", StringComparison.OrdinalIgnoreCase))
+                if (line.Kind == TjaLineKind.Start)
                 {
                     var difficulty = DifficultyOf(course);
                     reading = difficulty == null ? null : new CourseInfo { Difficulty = difficulty.Value, Course = course, Level = level };
                     continue;
                 }
-                if (line.Equals("#END", StringComparison.OrdinalIgnoreCase))
+                if (line.Kind == TjaLineKind.End)
                 {
-                    // A later block of the same course replaces the earlier one, like the reference parser.
-                    if (reading != null) { info.Courses.RemoveAll(c => c.Difficulty == reading.Difficulty); info.Courses.Add(reading); }
+                    // The first complete block of a difficulty is the one TjaParser plays.
+                    if (reading != null && !info.Has(reading.Difficulty)) info.Courses.Add(reading);
                     reading = null;
                     continue;
                 }
-                if (reading != null)
+                if (line.Kind == TjaLineKind.Body)
                 {
-                    if (line.StartsWith("#BRANCHSTART", StringComparison.OrdinalIgnoreCase)) reading.IsBranching = true;
+                    if (reading != null && line.Text.StartsWith("#BRANCHSTART", StringComparison.OrdinalIgnoreCase)) reading.IsBranching = true;
                     continue;
                 }
-                int colon = line.IndexOf(':');
-                if (colon < 0) continue;
-                string key = line.Substring(0, colon).Trim().ToUpperInvariant(), value = line.Substring(colon + 1).Trim();
+                if (line.Kind != TjaLineKind.Header) continue;
+                string key = line.Key, value = line.Value;
                 switch (key)
                 {
                     case "TITLE": info.Title = value; titles["en"] = value; break;
@@ -115,7 +113,6 @@ namespace OurTaiko
             _ => null,
         };
 
-        static double Number(string value, double fallback)
-            => double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double result) ? result : fallback;
+        static double Number(string value, double fallback) => TjaNumber.TryParse(value, out double result) ? result : fallback;
     }
 }
