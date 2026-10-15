@@ -331,7 +331,10 @@ namespace OurTaiko
             else kind = hitKa && !autoPlay ? NoteKind.Ka : NoteKind.Don;
             // NoteArc's is_big picks the gauge burst's circle; popped balloons fly as big don.
             bool big = kind == NoteKind.BigDon || kind == NoteKind.BigKa;
-            noteArcs.Spawn(noteSprites[(int)kind], big, ChartTime);
+            // The note leaves the judge where #JPOSSCROLL has it now (user request; OpenTaiko's
+            // FlyingNotes start from the fixed skin point).
+            var shift = JudgeShift.At(Session.Chart.JudgeMoves, ChartTime);
+            noteArcs.Spawn(noteSprites[(int)kind], big, ChartTime, shift.X, shift.Y);
         }
         void UpdateHud()
         {
@@ -519,8 +522,8 @@ namespace OurTaiko
         }
 
         // What #JPOSSCROLL moves with the note origin, as OpenTaiko adds GetJPOSCROLLX/Y to them:
-        // the judge frame, judgment text, hit effects, GOGO fire and balloon counter. The lane,
-        // its GOGO tint and the notes flying to the soul gauge stay.
+        // the judge frame, judgment text, hit effects, GOGO fire and balloon counter, and the notes
+        // flying to the soul gauge leave from the moved judge (SpawnArc). The lane and its GOGO tint stay.
         RectTransform[] judgeFollowers;
         Vector2[] judgeHomes;
         void ShiftJudge(double time)

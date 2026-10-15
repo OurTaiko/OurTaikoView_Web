@@ -55,8 +55,10 @@ namespace OurTaiko.Online
                             .Append("\nSTYLE:").Append(string.IsNullOrEmpty(d.Player) ? "Single" : "Double").Append('\n');
                         foreach (string h in globals) if (KeptHeader(h)) output.Append(h).Append('\n');
                         foreach (string h in headers) if (KeptHeader(h)) output.Append(h).Append('\n');
-                        output.Append("#START").Append(string.IsNullOrEmpty(d.Player) ? "" : " " + d.Player).Append('\n')
-                            .Append(body).Append("#END\n");
+                        // The course name (Oni_1p, Oni_2p) already carries the side here, so the block is written
+                        // as a plain #START: TjaParser/SongInfo now pick a course's block by seat (ChartSide),
+                        // and a `#START P2` under Oni_2p would be skipped for the 1P seat.
+                        output.Append("#START\n").Append(body).Append("#END\n");
                         found.Add(block);
                     }
                     inBlock = false;

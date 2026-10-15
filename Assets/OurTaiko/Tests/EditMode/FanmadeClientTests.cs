@@ -289,8 +289,10 @@ namespace OurTaiko.Tests
                 Title = "Pair", Difficulties = new System.Collections.Generic.List<(string, int, string)> { ("Oni", 9, "P1"), ("Oni", 8, "P2") },
             }.ToJson(), "server");
             play = PlayableTja.Build("BPM:150\nCOURSE:Oni\nSTYLE:Double\n#START P1\n3,\n#END\n#START P2\n4,\n#END\n", pair);
-            Assert.That(play, Does.Contain("COURSE:Oni_1p\nLEVEL:9\nSTYLE:Double\nBPM:150\n#START P1\n3,\n#END\n"));
-            Assert.That(play, Does.Contain("COURSE:Oni_2p\nLEVEL:8\nSTYLE:Double\nBPM:150\n#START P2\n4,\n#END\n"));
+            // The course name carries the side; the block is a plain #START so the 1P seat parses either course.
+            Assert.That(play, Does.Contain("COURSE:Oni_1p\nLEVEL:9\nSTYLE:Double\nBPM:150\n#START\n3,\n#END\n"));
+            Assert.That(play, Does.Contain("COURSE:Oni_2p\nLEVEL:8\nSTYLE:Double\nBPM:150\n#START\n4,\n#END\n"));
+            Assert.That(TjaParser.Parse(play, "Oni_2p").Level, Is.EqualTo(8));
         }
 
         [Test]

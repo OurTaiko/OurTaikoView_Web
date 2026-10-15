@@ -11,11 +11,12 @@ namespace OurTaiko
     {
         public Difficulty Difficulty;
         public string Course; // The TJA's own COURSE value, passed back to TjaParser.Parse.
+        public string Side;   // The block's side ("single", "p1", "p2") the seat ("p1"/"p2") reads (ChartSide).
         public int Level;
         public bool IsBranching;
     }
 
-    // Song-select metadata of a TJA file: the header and every course with a complete #START/#END.
+    // Song-select metadata of a TJA file: the header and every course with a block the seat plays.
     public sealed class SongInfo
     {
         public string Title = "Untitled", Subtitle = "", Genre = "", Wave = "";
@@ -41,7 +42,7 @@ namespace OurTaiko
         public CourseInfo Course(Difficulty difficulty) => Courses.Find(c => c.Difficulty == difficulty);
         public bool Has(Difficulty difficulty) => Course(difficulty) != null;
 
-        public static SongInfo Read(string text, string language = null)
+        public static SongInfo Read(string text, string language = null, string seat = "p1")
         {
             if (string.IsNullOrWhiteSpace(text)) throw new FormatException("The TJA chart is empty.");
             var info = new SongInfo();
@@ -50,18 +51,25 @@ namespace OurTaiko
             string course = "Oni";
             int level = 0;
             CourseInfo reading = null;
+            // The first block of each difficulty on each side; the seat then picks the side it plays,
+            // as TjaParser does.
+            var blocks = new Dictionary<Difficulty, Dictionary<string, CourseInfo>>();
             foreach (var line in TjaLines.Read(text))
             {
                 if (line.Kind == TjaLineKind.Start)
                 {
                     var difficulty = DifficultyOf(course);
-                    reading = difficulty == null ? null : new CourseInfo { Difficulty = difficulty.Value, Course = course, Level = level };
+                    reading = difficulty == null ? null
+                        : new CourseInfo { Difficulty = difficulty.Value, Course = course, Side = ChartSide.OfStart(line.Value), Level = level };
                     continue;
                 }
                 if (line.Kind == TjaLineKind.End)
                 {
-                    // The first complete block of a difficulty is the one TjaParser plays.
-                    if (reading != null && !info.Has(reading.Difficulty)) info.Courses.Add(reading);
+                    if (reading != null)
+                    {
+                        if (!blocks.TryGetValue(reading.Difficulty, out var sides)) blocks[reading.Difficulty] = sides = new Dictionary<string, CourseInfo>();
+                        if (!sides.ContainsKey(reading.Side)) sides[reading.Side] = reading;
+                    }
                     reading = null;
                     continue;
                 }
@@ -95,6 +103,11 @@ namespace OurTaiko
             {
                 info.Title = Translated(titles, language, info.Title);
                 info.Subtitle = Translated(subtitles, language, info.Subtitle);
+            }
+            foreach (var sides in blocks.Values)
+            {
+                string side = ChartSide.Pick(seat, sides.Keys);
+                if (side != null) info.Courses.Add(sides[side]);
             }
             info.Courses.Sort((a, b) => a.Difficulty.CompareTo(b.Difficulty));
             return info;

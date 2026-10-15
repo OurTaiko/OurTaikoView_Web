@@ -20,12 +20,14 @@ namespace OurTaiko
             public UnityEngine.UI.Image Image;
             public double Start;
             public bool Big;
+            // Where the judge was when the note was hit, relative to its home (lane-local, y down).
+            public double StartDx, StartDy;
         }
 
         public int ActiveCount => active.Count;
         public RectTransform ArcRoot(int index) => active[index].Root;
 
-        public void Spawn(Sprite sprite, bool big, double time)
+        public void Spawn(Sprite sprite, bool big, double time, double startDx = 0, double startDy = 0)
         {
             Arc arc;
             if (pool.Count > 0) { arc = pool[pool.Count - 1]; pool.RemoveAt(pool.Count - 1); }
@@ -43,6 +45,7 @@ namespace OurTaiko
             arc.Image.sprite = sprite;
             arc.Start = time;
             arc.Big = big;
+            arc.StartDx = startDx; arc.StartDy = startDy;
             arc.Root.SetAsLastSibling();
             arc.Root.gameObject.SetActive(true);
             active.Add(arc);
@@ -72,7 +75,7 @@ namespace OurTaiko
 
         void Place(Arc arc, double progress)
         {
-            NoteArcPath.Position(progress, out double x, out double y);
+            NoteArcPath.Position(progress, arc.StartDx, arc.StartDy, out double x, out double y);
             arc.Root.anchoredPosition = LaneToLocal(lane, (RectTransform)transform, x, y);
         }
 

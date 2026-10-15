@@ -43,5 +43,14 @@ namespace OurTaiko
             x = PivotX + Radius * Math.Cos(angle);
             y = PivotY + Radius * Math.Sin(angle);
         }
+
+        // The same sweep from a judge #JPOSSCROLL has moved by (startDx, startDy): the arc leaves
+        // the moved judge and still lands on the badge, the displacement fading out along the way.
+        public static void Position(double progress, double startDx, double startDy, out double x, out double y)
+        {
+            Position(progress, out x, out y);
+            x += startDx * (1 - progress);
+            y += startDy * (1 - progress);
+        }
     }
 }
