@@ -27,7 +27,14 @@ namespace OurTaiko
             new Binding(InputKey.Pause, Key.Space), new Binding(InputKey.Restart, Key.F1),
             new Binding(InputKey.MenuLeft, Key.LeftArrow), new Binding(InputKey.MenuRight, Key.RightArrow),
             new Binding(InputKey.MenuUp, Key.UpArrow), new Binding(InputKey.MenuDown, Key.DownArrow),
+            // YataiDON keys_2p.
+            new Binding(InputKey.P2LeftDon, Key.X), new Binding(InputKey.P2RightDon, Key.C),
+            new Binding(InputKey.P2LeftKa, Key.Z), new Binding(InputKey.P2RightKa, Key.V),
         };
+
+        // The settings list: 1P drum, then 2P drum, then the menu keys.
+        public static IEnumerable<InputKey> SettingsOrder => Enum.GetValues(typeof(InputKey)).Cast<InputKey>()
+            .OrderBy(k => k.IsDrum() ? k.Seat() : InputKeyExtensions.Seats).ThenBy(k => k);
 
         public static Key[] DefaultKeys(InputKey action) => Defaults().First(b => b.action == action).keys;
         public static Key[] Clean(IEnumerable<Key> keys) => (keys ?? Array.Empty<Key>())
@@ -70,6 +77,8 @@ namespace OurTaiko
         {
             InputKey.LeftDon => "1P Left Don", InputKey.RightDon => "1P Right Don",
             InputKey.LeftKa => "1P Left Ka", InputKey.RightKa => "1P Right Ka",
+            InputKey.P2LeftDon => "2P Left Don", InputKey.P2RightDon => "2P Right Don",
+            InputKey.P2LeftKa => "2P Left Ka", InputKey.P2RightKa => "2P Right Ka",
             InputKey.MenuLeft => "Menu Left", InputKey.MenuRight => "Menu Right",
             InputKey.MenuUp => "Menu Up", InputKey.MenuDown => "Menu Down",
             _ => action.ToString(),

@@ -21,6 +21,9 @@ namespace OurTaiko
         public IReadOnlyList<int> LongHits => longHits;
         readonly bool[] resolved, missed, skipped;
         readonly int[] longHits;
+        // Each kusudama note's ball: its own, or shared with the other seat (Kusudama.Share).
+        readonly Kusudama[] kusudamas;
+        public Kusudama KusudamaOf(int index) => kusudamas[index];
         public int Score => scoring.Total;
         public int BaseScore => scoring.BaseScore;
         public int Combo { get; private set; }
@@ -84,6 +87,9 @@ namespace OurTaiko
             ForcedBranch = forcedBranch;
             JudgeOffset = judgeOffset;
             Chart = chart; resolved = new bool[chart.Notes.Count]; missed = new bool[chart.Notes.Count]; skipped = new bool[chart.Notes.Count]; longHits = new int[chart.Notes.Count];
+            kusudamas = new Kusudama[chart.Notes.Count];
+            for (int i = 0; i < chart.Notes.Count; i++)
+                if (chart.Notes[i].Kind == NoteKind.Kusudama) kusudamas[i] = new Kusudama(this, i);
             var statistics = new ChartStatistics(chart);
             scoring = new ShinuchiScore(statistics);
             gauge = new SoulGauge(statistics.JudgeableNotes, chart.Course, chart.Level);
@@ -237,8 +243,10 @@ namespace OurTaiko
             // `l`: OpenTaiko's lower bounds — below master → 達人, below expert → 玄人.
             else if (branch.Less) chosen = value < branch.MasterThreshold ? BranchRoute.Master
                 : value < branch.ExpertThreshold ? BranchRoute.Expert : BranchRoute.Normal;
-            else chosen = value >= branch.ExpertThreshold && value < branch.MasterThreshold && branch.ExpertThreshold >= 0
-                ? BranchRoute.Expert : value >= branch.MasterThreshold ? BranchRoute.Master : BranchRoute.Normal;
+            // OpenTaiko tBranchJudge: master first, then expert; a negative threshold is reachable
+            // with no notes played (`p,-1,101` always picks 玄人).
+            else chosen = value >= branch.MasterThreshold ? BranchRoute.Master
+                : value >= branch.ExpertThreshold ? BranchRoute.Expert : BranchRoute.Normal;
             chosen = branch.ResolveRoute(ForcedBranch ?? chosen);
             if (branch.HoldRoutes[(int)chosen]) IsLevelHeld = true;
             selectedRoutes[branch.Id] = (int)chosen;
@@ -277,7 +285,7 @@ namespace OurTaiko
                 if (auto && time >= practiceStart)
                 {
                     int expected = (int)(Math.Max(0, Math.Min(time, note.EndTime) - Math.Max(note.Time, practiceStart)) * 15) + 1;
-                    while (!resolved[i] && longHits[i] < expected) HitLong(i);
+                    while (!resolved[i] && longHits[i] < expected) HitLong(i, time);
                 }
                 if (time > note.EndTime && !resolved[i]) { resolved[i] = true; Version++; }
             }
@@ -310,7 +318,7 @@ namespace OurTaiko
                 }
             }
             int roll = HittableLong(ka, time);
-            if (roll >= 0) { HitLong(roll); return Judgment.Roll; }
+            if (roll >= 0) { HitLong(roll, time + JudgeOffset); return Judgment.Roll; }
             return Judgment.None;
         }
 
@@ -357,13 +365,25 @@ namespace OurTaiko
             return false;
         }
 
-        void HitLong(int i)
+        // `time`: the chart time of the press (autoplay strikes on the unshifted clock).
+        void HitLong(int i, double time)
         {
             var n = Chart.Notes[i]; longHits[i]++; Rolls++; Version++;
             branchFeed.Hit(n, scoring.AddLongHit());
-            if (n.IsBalloon && longHits[i] == n.BalloonHits) resolved[i] = true;
+            if (kusudamas[i] != null) kusudamas[i].Hit(this, time);
+            else if (n.IsBalloon && longHits[i] == n.BalloonHits) resolved[i] = true;
             Judged?.Invoke(i, Judgment.Roll);
         }
+
+        internal void SetKusudama(int index, Kusudama ball) => kusudamas[index] = ball;
+        // The ball broke: the member still in play is done (a route not played stays as it is).
+        internal void Break(int index)
+        {
+            if (!Pending(index)) return;
+            resolved[index] = true; Version++;
+        }
+        // Another seat hit a ball shared with this session.
+        internal void Touch() => Version++;
 
         void Resolve(int i, Judgment result)
         {

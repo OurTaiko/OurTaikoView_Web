@@ -48,11 +48,7 @@ namespace OurTaiko
             songClock.Pause(); IsPaused = true; practiceRewinding = false;
             music.StopAudio(); hitAudio.StopAudio();
             PracticeStage = FirstPracticeStage;
-            if (first)
-            {
-                Session.Judged -= OnJudged;
-                Session = new PlaySession(Session.Chart, judgeOffset, practiceBranch);
-            }
+            if (first) Session = new PlaySession(Session.Chart, judgeOffset, practiceBranch);
             RefreshPracticeBars();
             // The cursor is visual chart time, so a bar aligns exactly even with configured offsets.
             double position = first ? Practice.First : SongTime - AudioOffset - VisualOffset;
@@ -66,29 +62,9 @@ namespace OurTaiko
         void ResetPracticeAttempt(double position)
         {
             var previous = Session;
-            previous.Judged -= OnJudged;
             Session = PlaySession.PracticeAt(previous.Chart, position + VisualOffset, previous, practiceBranch);
-            Session.Judged += OnJudged;
-            Record.Inputs.Clear();
-            nextAutoRight = true;
-            lastCombo = 0;
-            balloonCounter.ResetDisplay(); comboAnnounce.Hide();
-            drumrollCounter.ResetDisplay();
-            soulGauge.Initialize(Session.ClearThreshold);
-            hitFace.ResetDisplay(); hitRing.ResetDisplay();
-            if (noteArcs != null) noteArcs.ResetDisplay();
-            feedbackTime = double.NegativeInfinity;
-            judgmentFade ??= judgment.GetComponent<ClipSampler>();
-            judgmentFade.Sample(judgmentFade.clip.length);
-            for (int i = 0; i < flashedAt.Length; i++) { flashedAt[i] = double.NegativeInfinity; ShowFlash(i); }
-            ResetPracticeBranchLane(position + VisualOffset);
-            UpdateHud();
-        }
-        void ResetPracticeBranchLane(double time)
-        {
-            if (branchLane == null) return;
-            branchLane.Initialize(Session.Chart.Branches.Count > 0);
-            branchLane.SetImmediate(Session.DisplayBranchAt(time));
+            Lane1.ResetBranchLane(position + VisualOffset);
+            Lane1.ResetAttempt();
         }
         void ShowPracticePause()
         {
@@ -103,6 +79,7 @@ namespace OurTaiko
             ShowPracticePause();
             foreach (var press in InputManager.PressesThisFrame)
             {
+                // Practice is single-player: the 2P drum does not reach its menu.
                 if (press.Key == InputKey.LeftKa) { MovePractice(-1); return; }
                 if (press.Key == InputKey.RightKa) { MovePractice(1); return; }
                 if (press.Key == InputKey.LeftDon || press.Key == InputKey.RightDon || press.Key == InputKey.Confirm)
@@ -146,7 +123,7 @@ namespace OurTaiko
             music.pitch = (float)Practice.Speed;
             songClock.Seek(Practice.PlaybackStart(AudioOffset, VisualOffset, judgeOffset), Practice.Speed);
             // The preparation lead-in may start in a different section than the practice target.
-            ResetPracticeBranchLane(ChartTime);
+            Lane1.ResetBranchLane(ChartTime);
             songClock.Resume(GameTimeline.AudioNow);
             IsPaused = false;
             resumeFrame = Time.frameCount;

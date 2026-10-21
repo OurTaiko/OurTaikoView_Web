@@ -250,8 +250,10 @@ namespace OurTaiko
             for (int i = 0; i < shownNotes.Length; i++) { if (shownNotes[i] != null) ReleaseNote(i); if (shownMoji[i] != null) ReleaseMoji(i); }
             for (int i = 0; i < shownBars.Length; i++) if (shownBars[i] != null) ReleaseBar(i);
             windowWidth = width;
-            noteWindow = LaneCull.ForNotes(Session.Chart.Notes, clocks, width, JudgeLocalX, Math.Max(NoteSize, MojiWidth), TravelDistance, judgeTravel);
-            barWindow = LaneCull.ForBars(Session.Chart.Bars, clocks, width, JudgeLocalX, NoteSize, TravelDistance, judgeTravel);
+            // Measured from the screen's left edge: OpenTaiko draws a chip until it has left the screen.
+            leftMargin = LeftMargin();
+            noteWindow = LaneCull.ForNotes(Session.Chart.Notes, clocks, width + leftMargin, JudgeLocalX + leftMargin, Math.Max(NoteSize, MojiWidth), TravelDistance, judgeTravel);
+            barWindow = LaneCull.ForBars(Session.Chart.Bars, clocks, width + leftMargin, JudgeLocalX + leftMargin, NoteSize, TravelDistance, judgeTravel);
             return true;
         }
 
@@ -315,7 +317,8 @@ namespace OurTaiko
                 // missed by timeout keep scrolling until they leave the lane.
                 bool rolling = note.IsDrumroll;
                 // #SUDDEN hides a note and its text until it appears; it is still judged.
-                bool alive = note.Display && NoteScroll.Appeared(note, time) && !(hideSkipped && Session.Skipped[i]) && (preview ? Session.IsPracticePreviewActive(note) : Session.IsShown(note)) && (rolling || Session.Missed[i] || !Session.Resolved[i]);
+                bool alive = note.Display && NoteScroll.Appeared(note, time) && !(hideSkipped && Session.Skipped[i]) && (preview ? Session.IsPracticePreviewActive(note) : Session.IsShown(note)) && (rolling || Session.Missed[i] || !Session.Resolved[i])
+                    && !Struck(i);
                 bool visible = alive && InLane(pos.x, Reach(note, view, length));
                 if (mojiLayer != null) mojiEntered |= RenderMoji(i, note, pos, length, alive);
                 if (!visible)
@@ -378,6 +381,9 @@ namespace OurTaiko
             return true;
         }
 
+        // skip_note: a kusudama whose ball is up (hit by either seat) draws neither the note nor its text.
+        bool Struck(int index) => Session.KusudamaOf(index) is Kusudama ball && ball.Hits > 0;
+
         // The text follows its note's lifetime and is culled by its own extent.
         // Returns whether a pooled view was taken for it this frame.
         bool RenderMoji(int index, ChartNote note, Vector2 pos, float length, bool alive)
@@ -411,7 +417,20 @@ namespace OurTaiko
 
         // The lane clip mask is the visible area, in Canvas units that follow the
         // window resolution, so cull against its live rect instead of fixed pixels.
-        bool InLane(float x, Vector2 reach) => LaneCull.InLane(x, reach.x, reach.y, noteLayer.rect.width);
+        // A note is drawn from the screen's left edge to the lane's right edge (CStage演奏ドラム画面
+        // t進行描画_チップ_Taiko: x > -note size and x < the resolution); left of the lane it is under the cover.
+        bool InLane(float x, Vector2 reach) => LaneCull.InLane(x + leftMargin, reach.x, reach.y, noteLayer.rect.width + leftMargin);
+        float leftMargin;
+        // How far the note layer's left edge is from the lane's (the screen's) left edge, in lane
+        // units: summed down the hierarchy, so it holds before the canvas has been scaled.
+        float LeftMargin()
+        {
+            var lane = noteLayer.parent != null ? noteLayer.parent.parent as RectTransform : null;
+            if (lane == null) return 0;
+            float x = noteLayer.rect.xMin;
+            for (var t = (Transform)noteLayer; t != lane && t != null; t = t.parent) x += t.localPosition.x;
+            return Math.Max(0, x - lane.rect.xMin);
+        }
 
         // Horizontal extent of a note's sprites relative to its centre, from the current
         // size of its view, or the design size while it has none.

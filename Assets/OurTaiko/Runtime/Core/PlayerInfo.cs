@@ -29,6 +29,10 @@ namespace OurTaiko
 
         public PlayerInfo Clone() => (PlayerInfo)MemberwiseClone();
 
+        // 2P has no account or player file yet (user decision, 2026-10-20): named 2P with the default
+        // title, so it wears the plain coin plate like a fresh 1P.
+        public static PlayerInfo SecondPlayer => new PlayerInfo { name = "2P" };
+
         public static PlayerInfo FromJson(string json)
         {
             var info = new PlayerInfo();

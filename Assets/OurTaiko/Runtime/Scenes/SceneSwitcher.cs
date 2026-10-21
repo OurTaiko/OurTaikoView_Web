@@ -16,8 +16,14 @@ namespace OurTaiko
     {
         public const string GameScene = "SinglePlayScene";
         public const string PracticeScene = "PracticeScene";
+        // Both seats play here once 2P has joined (issue #5).
+        public const string DoublePlayScene = "DoublePlayScene";
         public bool PracticeMode { get; set; }
-        public string SelectedPlayScene => PracticeMode ? PracticeScene : GameScene;
+        // 2P joined with a don on Entry or SongSelect. Practice is single-player and ignores it.
+        public bool TwoPlayers { get; set; }
+        public bool PlaysTwo => TwoPlayers && !PracticeMode;
+        public string SelectedPlayScene => PracticeMode ? PracticeScene : TwoPlayers ? DoublePlayScene : GameScene;
+        public static bool IsPlayScene(string scene) => scene == GameScene || scene == PracticeScene || scene == DoublePlayScene;
         public const string SongSelectScene = "SongSelect", ResultScene = "Result", EntryScene = "Entry";
         // The first scene and where Back falls back to.
         public const string MenuScene = EntryScene;
@@ -41,14 +47,22 @@ namespace OurTaiko
         // TJA COURSE value chosen on the song list; null plays the SongDefinition's own course.
         public string SelectedCourse { get; private set; }
         public bool AutoPlay { get; private set; }
+        // 2P's own course and オート on the same song (DoublePlayScene).
+        public string SelectedCourse2P { get; private set; }
+        public bool AutoPlay2P { get; private set; }
+        public string CourseOf(int seat) => seat == 1 ? SelectedCourse2P : SelectedCourse;
+        public bool AutoPlayOf(int seat) => seat == 1 ? AutoPlay2P : AutoPlay;
         // Scene that started the current song; Back and the result screen return there.
         public string ReturnScene { get; private set; } = MenuScene;
         public PlayResult LastResult { get; private set; }
+        // 2P's result of the last two-player play; null after a single-player one.
+        public PlayResult LastResult2P { get; private set; }
         // Consumed once by ResultScene; reopening a result must not save or upload it again.
         SongDefinition completedSong;
-        Online.PlayRecord completedRecord;
+        Online.PlayRecord completedRecord, completedRecord2P;
         // global_data.last_difficulty / songs_played for the single local player.
         public int LastDifficulty { get; set; } = -1;
+        public int LastDifficulty2P { get; set; } = -1;
         public int SongsPlayed { get; private set; }
         public bool IsSwitching { get; private set; }
         public bool IsCovered => IsCurtainClosed || (transition != null && transition.alpha >= 0.999f);
@@ -59,10 +73,10 @@ namespace OurTaiko
 
         Task switchTask, transitionTask;
         CancellationTokenSource transitionCancellation;
-        // Chart parsed by SongLoadingScene for the next SinglePlayScene, taken once.
-        TaikoChart preparedChart;
-        SongDefinition preparedSong;
-        string preparedCourse;
+        // Charts parsed by SongLoadingScene for the next play scene, one per seat, taken once.
+        readonly TaikoChart[] preparedCharts = new TaikoChart[2];
+        readonly SongDefinition[] preparedSongs = new SongDefinition[2];
+        readonly string[] preparedCourses = new string[2];
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
@@ -122,13 +136,13 @@ namespace OurTaiko
         }
 
         public void Play(SongDefinition song, bool autoPlay = false) => Play(song, null, autoPlay);
-        public void Play(SongDefinition song, string course, bool autoPlay)
+        public void Play(SongDefinition song, string course, bool autoPlay, string course2P = null, bool autoPlay2P = false)
         {
             if (IsInputBlocked || song == null) return;
-            Select(song, course, autoPlay);
-            completedSong = null; completedRecord = null;
-            preparedChart = null;
-            if (CurrentScene != GameScene && CurrentScene != PracticeScene && CurrentScene != ResultScene && CurrentScene != SongLoadingScene && !string.IsNullOrEmpty(CurrentScene))
+            Select(song, course, autoPlay, course2P, autoPlay2P);
+            completedSong = null; completedRecord = completedRecord2P = null;
+            Array.Clear(preparedCharts, 0, preparedCharts.Length);
+            if (!IsPlayScene(CurrentScene) && CurrentScene != ResultScene && CurrentScene != SongLoadingScene && !string.IsNullOrEmpty(CurrentScene))
                 ReturnScene = CurrentScene;
             // song_select.cpp select_song: the rainbow curtain closes, SongLoadingScene loads under it.
             if (songTransition == null || !Application.CanStreamedLevelBeLoaded(SongLoadingScene)) { SwitchScene(SelectedPlayScene); return; }
@@ -137,9 +151,10 @@ namespace OurTaiko
         }
 
         // The song the play scenes load next; Play() sets it before switching.
-        public void Select(SongDefinition song, string course = null, bool autoPlay = false)
+        public void Select(SongDefinition song, string course = null, bool autoPlay = false, string course2P = null, bool autoPlay2P = false)
         {
             SelectedSong = song; SelectedCourse = course; AutoPlay = autoPlay;
+            SelectedCourse2P = course2P ?? course; AutoPlay2P = autoPlay2P;
         }
 
         public void ShowSongOnCurtain(SongDefinition song)
@@ -161,15 +176,15 @@ namespace OurTaiko
             songTransition.Park();
         }
 
-        public void SetPreparedChart(SongDefinition song, string course, TaikoChart chart)
+        public void SetPreparedChart(SongDefinition song, string course, TaikoChart chart, int seat = 0)
         {
-            preparedSong = song; preparedCourse = course; preparedChart = chart;
+            preparedSongs[seat] = song; preparedCourses[seat] = course; preparedCharts[seat] = chart;
         }
 
-        public TaikoChart TakePreparedChart(SongDefinition song, string course)
+        public TaikoChart TakePreparedChart(SongDefinition song, string course, int seat = 0)
         {
-            var chart = preparedSong == song && preparedCourse == course ? preparedChart : null;
-            preparedChart = null; preparedSong = null; preparedCourse = null;
+            var chart = preparedSongs[seat] == song && preparedCourses[seat] == course ? preparedCharts[seat] : null;
+            preparedCharts[seat] = null; preparedSongs[seat] = null; preparedCourses[seat] = null;
             return chart;
         }
         public void ConfigureEmbedded(SongDefinition song, string course, bool autoPlay)
@@ -177,19 +192,24 @@ namespace OurTaiko
 
         public void Restart() => SwitchScene(SelectedPlayScene);
         public void ReturnToMenu() => SwitchScene(Application.CanStreamedLevelBeLoaded(ReturnScene) ? ReturnScene : MenuScene);
-        public void ShowResult(PlayResult result, SongDefinition song = null, Online.PlayRecord record = null)
+        public void ShowResult(PlayResult result, SongDefinition song = null, Online.PlayRecord record = null,
+            PlayResult result2P = null, Online.PlayRecord record2P = null)
         {
             if (result == null || IsSwitching) return;
-            LastResult = result;
-            completedSong = song; completedRecord = record;
+            LastResult = result; LastResult2P = result2P;
+            completedSong = song; completedRecord = record; completedRecord2P = record2P;
             SongsPlayed++;
             SwitchScene(ResultScene);
         }
 
         internal bool TakeCompletedPlay(out SongDefinition song, out Online.PlayRecord record)
+            => TakeCompletedPlay(out song, out record, out _);
+
+        // record2P is null after a single-player play.
+        internal bool TakeCompletedPlay(out SongDefinition song, out Online.PlayRecord record, out Online.PlayRecord record2P)
         {
-            song = completedSong; record = completedRecord;
-            completedSong = null; completedRecord = null;
+            song = completedSong; record = completedRecord; record2P = completedRecord2P;
+            completedSong = null; completedRecord = completedRecord2P = null;
             return song != null;
         }
 

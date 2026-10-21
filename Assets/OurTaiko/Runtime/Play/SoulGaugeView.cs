@@ -20,6 +20,11 @@ namespace OurTaiko
         [Tooltip("The Rainbow group holding RainbowA and RainbowB.")]
         public ClipSampler rainbowSampler;
         public Sprite redFade, capFade, goldFade, clearLit, clearDark, soulLit, soulDark;
+        [Tooltip("The クリア label's y: gauge/clear_ja index 0 (74) for 1P, index 3 (68) for 2P.")]
+        public float clearLabelY = 74;
+        [Tooltip("The y the code places the clear cap, gold top / bottom and the fading cell (red, gold) at: "
+            + "texture.json index 0 for 1P; 2P's mirrored gauge under its lane saves its own.")]
+        public float clearCapY = 63, goldTopY = 60, goldBottomY = 26, redFadeY = 27, goldFadeY = 60;
 
         public const int Cells = 50, CellWidth = 21;
         // The rainbow clip: a 0.6 s intro (the 450 ms fade-in over the 75 ms crossfades), then a
@@ -41,7 +46,7 @@ namespace OurTaiko
             empty.sprite = style.empty;
             grid.sprite = style.grid;
             rainbowSampler.clip = style.rainbow;
-            clearLabel.rectTransform.anchoredPosition = new Vector2(style.clearLabelX, 74);
+            clearLabel.rectTransform.anchoredPosition = new Vector2(style.clearLabelX, clearLabelY);
             points = previousPoints = 0;
             cellChangedAt = double.NegativeInfinity;
             rainbowStartedAt = double.NaN;
@@ -76,12 +81,12 @@ namespace OurTaiko
             // Same 50-cell grid and rounded first gold cell as Gauge::draw().
             Width(red, Math.Min(solid, clearCell - 1) * CellWidth);
             clearCap.enabled = IsClear && !(pending && length == clearCell);
-            clearCap.rectTransform.anchoredPosition = new Vector2(738 + (clearCell - 1) * CellWidth, 63);
+            clearCap.rectTransform.anchoredPosition = new Vector2(738 + (clearCell - 1) * CellWidth, clearCapY);
             int goldWidth = Math.Max(0, solid - clearCell) * CellWidth;
             Width(goldTop, goldWidth);
             Width(goldBottom, goldWidth);
-            goldTop.rectTransform.anchoredPosition = new Vector2(738 + clearCell * CellWidth, 60);
-            goldBottom.rectTransform.anchoredPosition = new Vector2(738 + clearCell * CellWidth, 26);
+            goldTop.rectTransform.anchoredPosition = new Vector2(738 + clearCell * CellWidth, goldTopY);
+            goldBottom.rectTransform.anchoredPosition = new Vector2(738 + clearCell * CellWidth, goldBottomY);
 
             rainbowA.enabled = rainbowB.enabled = IsFull;
             if (IsFull)
@@ -96,7 +101,7 @@ namespace OurTaiko
             if (pending)
             {
                 cellFade.sprite = length == clearCell ? capFade : length > clearCell ? goldFade : redFade;
-                cellFade.rectTransform.anchoredPosition = new Vector2(738 + (length - 1) * CellWidth, length >= clearCell ? 60 : 27);
+                cellFade.rectTransform.anchoredPosition = new Vector2(738 + (length - 1) * CellWidth, length >= clearCell ? goldFadeY : redFadeY);
                 cellFade.rectTransform.sizeDelta = cellFade.sprite.rect.size;
                 cellFadeClip.Sample(Math.Max(0, cellElapsed));
             }

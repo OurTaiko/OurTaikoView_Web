@@ -121,7 +121,7 @@ namespace OurTaiko
                     GeneralSettings.LanguageNames,
                     s => Array.IndexOf(GeneralSettings.Languages, s.general.Language),
                     (s, choice) => s.general.language = GeneralSettings.Languages[choice]),
-            }.Concat(Enum.GetValues(typeof(InputKey)).Cast<InputKey>().Select(SettingItem.Keyboard)).ToArray()),
+            }.Concat(KeyboardBindings.SettingsOrder.Select(SettingItem.Keyboard)).ToArray()),
             new SettingType("Play", new[]
             {
                 SettingItem.Toggle("Enable Drumpad for Single Player Mode",

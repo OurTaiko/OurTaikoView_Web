@@ -10,6 +10,8 @@ namespace OurTaiko
         public RectTransform lane;
         // Takes over each note as it reaches the badge.
         public GaugeHitEffectView gaugeHitEffect;
+        [Tooltip("0 = 1P (the gauge above the lane), 1 = 2P (below it).")]
+        public int seat;
 
         const float NoteSize = 192;
         readonly List<Arc> active = new List<Arc>(), pool = new List<Arc>();
@@ -75,7 +77,7 @@ namespace OurTaiko
 
         void Place(Arc arc, double progress)
         {
-            NoteArcPath.Position(progress, arc.StartDx, arc.StartDy, out double x, out double y);
+            NoteArcPath.Position(progress, arc.StartDx, arc.StartDy, seat, out double x, out double y);
             arc.Root.anchoredPosition = LaneToLocal(lane, (RectTransform)transform, x, y);
         }
 

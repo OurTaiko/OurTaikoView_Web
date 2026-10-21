@@ -78,6 +78,15 @@ namespace OurTaiko
             return false;
         }
 
+        // song_select_2p: when one player flips the Oni/Ura column the other follows, so both see the same cards.
+        public void SyncUra(bool ura)
+        {
+            if (IsUra == ura || !courses.Contains(Difficulty.Oni) || !courses.Contains(Difficulty.Ura)) return;
+            uraToggle = 0;
+            IsUra = ura;
+            if (Selected == Difficulty.Oni || Selected == Difficulty.Ura) Selected = ura ? Difficulty.Ura : Difficulty.Oni;
+        }
+
         public bool TryToggleUra()
         {
             if (!courses.Contains(Difficulty.Oni) || !courses.Contains(Difficulty.Ura)) return false;

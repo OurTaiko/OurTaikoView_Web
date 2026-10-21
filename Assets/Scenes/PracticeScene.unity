@@ -595,6 +595,78 @@ MonoBehaviour:
   m_EditorClassIdentifier: OurTaiko.Runtime::OurTaiko.NoteArcView
   lane: {fileID: 1010394549}
   gaugeHitEffect: {fileID: 234923431}
+  seat: 0
+--- !u!1 &83792464
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 83792466}
+  - component: {fileID: 83792465}
+  m_Layer: 0
+  m_Name: Kusudama
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &83792465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 83792464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b54955b3e1742c7a4eda5857584a4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OurTaiko.Runtime::OurTaiko.KusudamaView
+  ballFrames:
+  - {fileID: 21300000, guid: 7e699014a3556454ca0982371aa79b78, type: 3}
+  - {fileID: 21300000, guid: edd3e95d6e24b43adadabd9686da4184, type: 3}
+  - {fileID: 21300000, guid: fffd3593b56424edd9043e373c3e3a95, type: 3}
+  - {fileID: 21300000, guid: 52117cee133e64f218a05952f743def1, type: 3}
+  - {fileID: 21300000, guid: 17e911e298a694831bfd9540e5ef675f, type: 3}
+  digits:
+  - {fileID: 1597541134376614478, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: -1961971729589866610, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: 5285729207675460230, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: -3811242177468795801, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: -2938122109389158813, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: -33860516004105240, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: -8162037011943489124, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: 8043815313904278885, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: 6822849958660586888, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  - {fileID: -6984117084478388876, guid: 00988b43265584fb8abb97023e2528cc, type: 3}
+  ball: {fileID: 1863057955}
+  renda: {fileID: 1095390533}
+  number: {fileID: 1940295196}
+--- !u!224 &83792466
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 83792464}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1863057953}
+  - {fileID: 1095390531}
+  - {fileID: 1940295196}
+  m_Father: {fileID: 493316313}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
+  m_Pivot: {x: 0, y: 1}
 --- !u!1 &87008131
 GameObject:
   m_ObjectHideFlags: 0
@@ -2005,6 +2077,7 @@ MonoBehaviour:
   lane: {fileID: 1010394549}
   burst: {fileID: 1818211073}
   note: {fileID: 405228000}
+  seat: 0
 --- !u!114 &234923432
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4292,6 +4365,7 @@ RectTransform:
   - {fileID: 1983080206}
   - {fileID: 393679046}
   - {fileID: 608617522}
+  - {fileID: 83792466}
   - {fileID: 87008132}
   - {fileID: 615905267}
   - {fileID: 1894955778}
@@ -5946,6 +6020,12 @@ MonoBehaviour:
   clearDark: {fileID: 21300000, guid: efa949947f90d48968c2338fab80c020, type: 3}
   soulLit: {fileID: 21300000, guid: 23a9030b06ec94d308648462ca8fc08d, type: 3}
   soulDark: {fileID: 21300000, guid: 90ac4b03a536a446fb0c042a85249783, type: 3}
+  clearLabelY: 74
+  clearCapY: 63
+  goldTopY: 60
+  goldBottomY: 26
+  redFadeY: 27
+  goldFadeY: 60
 --- !u!1 &691710485
 GameObject:
   m_ObjectHideFlags: 0
@@ -7967,6 +8047,8 @@ MonoBehaviour:
   abekobe: {fileID: 21300000, guid: 0735834a446124e9e87ffe6378ff935e, type: 3}
   kimagure: {fileID: 21300000, guid: 31f6e337fb1ee4547bd1c9bb553df598, type: 3}
   detarame: {fileID: 21300000, guid: 5f1ba10da3f9a45cb8c4f227c06a1e4b, type: 3}
+  flipped: 0
+  flipSum: 0
 --- !u!1 &963080781
 GameObject:
   m_ObjectHideFlags: 0
@@ -8940,6 +9022,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1090971765}
   m_CullTransparentMesh: 1
+--- !u!1 &1095390530
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1095390531}
+  - component: {fileID: 1095390532}
+  - component: {fileID: 1095390533}
+  m_Layer: 0
+  m_Name: Renda
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1095390531
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095390530}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 83792466}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 360, y: 144}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1095390532
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095390530}
+  m_CullTransparentMesh: 1
+--- !u!114 &1095390533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095390530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 888e5502fbe16458eb71f0ec07bbeb43, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1096017918
 GameObject:
   m_ObjectHideFlags: 0
@@ -11219,24 +11376,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa950c0b127584ae6a0959f42896b42d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: OurTaiko.Runtime::OurTaiko.PlayScene
+  laneDifficulty: {fileID: 114656370}
+  modifierBadges: {fileID: 961300034}
+  noteLayer: {fileID: 2060243652}
+  barLayer: {fileID: 1809151790}
+  mojiLayer: {fileID: 199355009}
+  balloonCounter: {fileID: 608617524}
+  drumrollCounter: {fileID: 1505448795}
+  judgment: {fileID: 1017079119}
+  hitFace: {fileID: 631012317}
+  hitRing: {fileID: 1731969881}
+  soulGauge: {fileID: 671817434}
+  noteArcs: {fileID: 76178598}
+  drumFlashes:
+  - {fileID: 398013031}
+  - {fileID: 1683452662}
+  - {fileID: 220707643}
+  - {fileID: 702618698}
+  scoreCounter: {fileID: 2020266786}
+  combo: {fileID: 1270598235}
+  comboAnnounce: {fileID: 1983080210}
+  judgeCounter: {fileID: 393679049}
+  branchLane: {fileID: 861875410}
+  gogo: {fileID: 555807776}
+  ending: {fileID: 0}
   practiceView: {fileID: 208061732}
   music: {fileID: 976959716}
   hitAudio: {fileID: 549007535}
   don: {fileID: 8300000, guid: 9a0f28655cff14d18b91e1f38cf50211, type: 3}
   ka: {fileID: 8300000, guid: b5d46904052a14efdbf9361bde1e09ae, type: 3}
   balloonPop: {fileID: 8300000, guid: 44b1297bb1bd74b4ab8ac5ed9f62c148, type: 3}
+  kusudamaPop: {fileID: 8300000, guid: e7df7d936a436464a94bfa6e9c9b284d, type: 3}
   hitSounds: {fileID: 11400000, guid: 5515db8dbe20b4e3796637e25e79846f, type: 2}
-  modifierBadges: {fileID: 961300034}
-  laneDifficulty: {fileID: 114656370}
   laneDifficultySprites:
   - {fileID: -455977207, guid: afc21b14a938040be93225af4c3983cf, type: 3}
   - {fileID: -1335733205, guid: afc21b14a938040be93225af4c3983cf, type: 3}
   - {fileID: -834173487, guid: afc21b14a938040be93225af4c3983cf, type: 3}
   - {fileID: 1702319767, guid: afc21b14a938040be93225af4c3983cf, type: 3}
   - {fileID: 1511858840, guid: afc21b14a938040be93225af4c3983cf, type: 3}
-  noteLayer: {fileID: 2060243652}
-  barLayer: {fileID: 1809151790}
-  mojiLayer: {fileID: 199355009}
   noteSprites:
   - {fileID: 0}
   - {fileID: -760195060, guid: 35c88b130e4b742368a255c10449afff, type: 3}
@@ -11280,31 +11457,15 @@ MonoBehaviour:
   - {fileID: 475634943, guid: 7fa1318e8839646ec97be9227b136cc2, type: 3}
   - {fileID: 163934189, guid: 7fa1318e8839646ec97be9227b136cc2, type: 3}
   mojiRollSprite: {fileID: 21300000, guid: 3e54d678dcbf44f76a37ad176b3e47cd, type: 3}
-  balloonCounter: {fileID: 608617524}
-  drumrollCounter: {fileID: 1505448795}
   judgmentSprites:
   - {fileID: 21300000, guid: bbace4a2462f0474baaa4c4f81b73e61, type: 3}
   - {fileID: 21300000, guid: fd54fd7b1ecbd4d10aa17deda202c010, type: 3}
   - {fileID: 21300000, guid: b3ae8d7d1bef640d6a6d141425d7c455, type: 3}
-  judgment: {fileID: 1017079119}
-  hitFace: {fileID: 631012317}
-  hitRing: {fileID: 1731969881}
-  soulGauge: {fileID: 671817434}
-  noteArcs: {fileID: 76178598}
-  drumFlashes:
-  - {fileID: 398013031}
-  - {fileID: 1683452662}
-  - {fileID: 220707643}
-  - {fileID: 702618698}
-  scoreCounter: {fileID: 2020266786}
-  combo: {fileID: 1270598235}
-  comboAnnounce: {fileID: 1983080210}
-  judgeCounter: {fileID: 393679049}
   drumPad: {fileID: 615905268}
   title: {fileID: 1640940736}
   subtitle: {fileID: 849856370}
   resultText: {fileID: 901035398}
-  branchLane: {fileID: 861875410}
+  secondLane: {fileID: 0}
   pausePanel: {fileID: 1901229528}
   resultPanel: {fileID: 1894955777}
   pauseMenu: {fileID: 1901229532}
@@ -11315,8 +11476,7 @@ MonoBehaviour:
   resultRestart: {fileID: 2145013472}
   resultBack: {fileID: 1428418808}
   dancers: {fileID: 1103963899}
-  gogo: {fileID: 555807776}
-  ending: {fileID: 0}
+  kusudama: {fileID: 83792465}
 --- !u!4 &1415223208
 Transform:
   m_ObjectHideFlags: 0
@@ -15709,6 +15869,81 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &1863057952
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1863057953}
+  - component: {fileID: 1863057954}
+  - component: {fileID: 1863057955}
+  m_Layer: 0
+  m_Name: Ball
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1863057953
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863057952}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 83792466}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 2040, y: 1872}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1863057954
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863057952}
+  m_CullTransparentMesh: 1
+--- !u!114 &1863057955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863057952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 7e699014a3556454ca0982371aa79b78, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &1867849034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15944,6 +16179,41 @@ RectTransform:
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 640, y: -1005}
   m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 1}
+--- !u!1 &1940295195
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1940295196}
+  m_Layer: 0
+  m_Name: Number
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1940295196
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940295195}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 83792466}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1971729650
 GameObject:

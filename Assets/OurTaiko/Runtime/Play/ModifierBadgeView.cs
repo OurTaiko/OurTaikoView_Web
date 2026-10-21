@@ -17,6 +17,10 @@ namespace OurTaiko
         [Tooltip("mod_speed_x1_1 .. mod_speed_x4, in PlayOptions.SpeedBadgeValues order.")]
         public Sprite[] speed;
         public Sprite auto, doron, abekobe, kimagure, detarame;
+        [Tooltip("2P (Player::draw_modifiers with is_2p): the grid is flipped inside the mirrored score cover, rows stacking upward.")]
+        public bool flipped;
+        [Tooltip("When flipped, a badge's top is this minus its 1P top and its height (both score covers' tops plus the cover height, from this view's top).")]
+        public float flipSum;
 
         readonly List<Image> badges = new List<Image>();
 
@@ -42,7 +46,9 @@ namespace OurTaiko
                 if (!shown) continue;
                 badges[i].sprite = sprites[i];
                 badges[i].rectTransform.sizeDelta = sprites[i].rect.size;
-                badges[i].rectTransform.TopLeft(GridX + i % Columns * Cell, GridY + i / Columns * Cell);
+                float top = GridY + i / Columns * Cell;
+                if (flipped) top = flipSum - top - sprites[i].rect.height;
+                badges[i].rectTransform.TopLeft(GridX + i % Columns * Cell, top);
             }
         }
     }

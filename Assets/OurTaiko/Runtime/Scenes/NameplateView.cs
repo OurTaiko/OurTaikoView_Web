@@ -4,9 +4,10 @@ using UnityEngine.UI;
 
 namespace OurTaiko
 {
-    // Nijiiro Scripts/global/nameplate.lua for the local 1P player, on the 408x96 plate canvas. The
-    // children are drawn in the original's order: plate, title band, band outline, dan chip, 1P badge,
-    // title, name. It follows PlayerInfoController, so an info change updates every plate on screen.
+    // Nijiiro Scripts/global/nameplate.lua on the 408x96 plate canvas. The children are drawn in the
+    // original's order: plate, title band, band outline, dan chip, 1P/2P badge, title, name. The 1P
+    // plate follows PlayerInfoController, so an info change updates every plate on screen; the 2P
+    // plate shows PlayerInfo.SecondPlayer with the 2p badge.
     [RequireComponent(typeof(RectTransform), typeof(ClipSampler))]
     public sealed class NameplateView : MonoBehaviour
     {
@@ -16,6 +17,10 @@ namespace OurTaiko
         public Sprite[] titleBackgrounds;
         [Tooltip("dan_emblem / dan_emblem_gold: 初級 .. 達人.")]
         public Sprite[] danEmblems, goldDanEmblems;
+        [Tooltip("0 = 1P, 1 = 2P.")]
+        public int seat;
+        [Tooltip("global/nameplate/2p: the badge of a 2P plate.")]
+        public Sprite secondBadge;
 
         public PlayerInfo Info { get; private set; }
         public int RainbowFrame { get; private set; }
@@ -28,11 +33,11 @@ namespace OurTaiko
         void OnEnable()
         {
             controller = PlayerInfoController.EnsureInstance();
-            controller.Changed += Show;
+            if (seat == 0) controller.Changed += Show;
             rainbowStart = GameTimeline.FrameTime;
             renderedCanvasScale = float.NaN;
             Canvas.willRenderCanvases += RefreshCanvasScale;
-            Show(controller.Info);
+            Show(seat == 0 ? controller.Info : PlayerInfo.SecondPlayer);
         }
 
         void OnDisable()
@@ -80,6 +85,7 @@ namespace OurTaiko
             danBackground.enabled = dan.enabled = hasDan;
             if (hasDan) dan.sprite = (info.gold ? goldDanEmblems : danEmblems)[info.dan];
             badge.enabled = true;
+            if (seat == 1 && secondBadge != null) badge.sprite = secondBadge;
 
             // Np_coin clears the title outright.
             title.gameObject.SetActive(hasBand && info.HasTitle);

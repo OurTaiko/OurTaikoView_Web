@@ -43,7 +43,8 @@ namespace OurTaiko
             return onlineChart != null && difficulty.HasValue ? onlineChart.Difficulties[(int)difficulty.Value]?.Course ?? requested : requested;
         }
         public TaikoChart Parse() => TjaParser.Parse(chart.text, ResolveCourse(course));
-        public TaikoChart Parse(string requestedCourse) => TjaParser.Parse(chart.text, ResolveCourse(string.IsNullOrEmpty(requestedCourse) ? course : requestedCourse));
+        // seat is the player's position (ChartSide.Seats): 2P reads p2, then single, then p1 blocks.
+        public TaikoChart Parse(string requestedCourse, string seat = "p1") => TjaParser.Parse(chart.text, ResolveCourse(string.IsNullOrEmpty(requestedCourse) ? course : requestedCourse), seat);
         public SongInfo ReadInfo() => SongInfo.Read(chart.text);
         // Display metadata is separate from the parsed chart and score identity. Online songs take it
         // from the server's metadata: their chart is only set once SongLoadingScene downloads it.

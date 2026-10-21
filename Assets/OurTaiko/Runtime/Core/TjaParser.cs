@@ -488,7 +488,8 @@ namespace OurTaiko
                         Entries.Add(new ChartEntry(longNote, true));
                         longNote = null;
                     }
-                    else if (type != 0)
+                    // OpenTaiko: a roll head while a roll is open is a blank (TaikoJiro's 9…9…8 kusudama).
+                    else if (type != 0 && !(longNote != null && type >= 5))
                     {
                         if (longNote != null) throw new FormatException("Overlapping long notes are not supported.");
                         var note = NewNote(); note.Kind = (NoteKind)type;

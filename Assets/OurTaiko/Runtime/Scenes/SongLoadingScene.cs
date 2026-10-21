@@ -59,8 +59,14 @@ namespace OurTaiko
             }
 
             // GameScreen::init_tja, moved behind the curtain: the parse and Player::reset_chart's options.
-            try { switcher.SetPreparedChart(song, course, PlayScene.PrepareChart(song, course)); }
-            catch (Exception error) { Debug.LogException(error, this); }  // SinglePlayScene parses again and shows it.
+            try
+            {
+                switcher.SetPreparedChart(song, course, PlayScene.PrepareChart(song, course));
+                // 2P reads its own block of its own course with its own options.
+                if (switcher.PlaysTwo)
+                    switcher.SetPreparedChart(song, switcher.SelectedCourse2P, PlayScene.PrepareChart(song, switcher.SelectedCourse2P, 1), 1);
+            }
+            catch (Exception error) { Debug.LogException(error, this); }  // The play scene parses again and shows it.
             var engine = AudioEngine.EnsureInstance();
             if (engine.Native && song != null && (song.music != null || !string.IsNullOrEmpty(song.audioPath)))
             {

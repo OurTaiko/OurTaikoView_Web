@@ -20,6 +20,8 @@ namespace OurTaiko
     public sealed class SongInfo
     {
         public string Title = "Untitled", Subtitle = "", Genre = "", Wave = "";
+        // MAKER header: the chart author, shown in turn with the subtitle while playing.
+        public string Maker = "";
         public double Bpm = 120, DemoStart;
         public readonly List<CourseInfo> Courses = new List<CourseInfo>();
 
@@ -85,6 +87,7 @@ namespace OurTaiko
                     case "TITLE": info.Title = value; titles["en"] = value; break;
                     case "SUBTITLE": info.Subtitle = value.TrimStart('-', '+'); subtitles["en"] = info.Subtitle; break;
                     case "GENRE": info.Genre = value; break;
+                    case "MAKER": info.Maker = value.Trim(); break;
                     case "WAVE": info.Wave = value; break;
                     case "BPM": info.Bpm = Number(value, info.Bpm); break;
                     case "DEMOSTART": info.DemoStart = Number(value, 0); break;

@@ -187,6 +187,60 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        // The kusudama ball: art, slices and kusudama_pop are copied from OurTaikoPlay. Source scenes put
+        // it under the Viewport on a canvas sorted above the HUD and below the pause panel; the web
+        // scene draws one canvas in hierarchy order, so it goes after the last HUD piece instead.
+        [MenuItem("OurTaikoView/Sync Kusudama")]
+        public static void ApplyKusudama()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string art = "Assets/OurTaiko/Art/game/kusudama/";
+            var frames = Enumerable.Range(0, 5).Select(i => AssetDatabase.LoadAssetAtPath<Sprite>($"{art}kusudama/{i}.png")).ToArray();
+            var digits = AssetDatabase.LoadAllAssetsAtPath(art + "counter.png").OfType<Sprite>()
+                .Where(s => s.name.StartsWith("KusudamaDigit", StringComparison.Ordinal)).OrderBy(s => s.name).ToArray();
+            var renda = AssetDatabase.LoadAssetAtPath<Sprite>(art + "renda.png");
+            var pop = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/OurTaiko/Audio/kusudama_pop.ogg");
+            if (frames.Any(f => f == null) || digits.Length != 10 || renda == null || pop == null)
+                throw new InvalidOperationException("Import the shared kusudama assets first.");
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                var after = (RectTransform)play.balloonCounter.transform;
+                var root = play.kusudama != null ? (RectTransform)play.kusudama.transform
+                    : CounterRect("Kusudama", after.parent, Vector2.zero, new Vector2(1920, 1080));
+                root.SetSiblingIndex(after.GetSiblingIndex() + 1);
+                var view = root.GetComponent<KusudamaView>() ?? root.gameObject.AddComponent<KusudamaView>();
+                view.ballFrames = frames;
+                view.digits = digits;
+                view.ball = KusudamaImage(root, "Ball", frames[0], new Vector2(2040, 1872));
+                view.renda = KusudamaImage(root, "Renda", renda, new Vector2(360, 144));
+                view.number = root.Find("Number") as RectTransform ?? CounterRect("Number", root, Vector2.zero, new Vector2(1920, 1080));
+                root.gameObject.SetActive(false);
+                play.kusudama = view;
+                play.kusudamaPop = pop;
+                EditorUtility.SetDirty(view);
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
+        static Image KusudamaImage(RectTransform root, string name, Sprite sprite, Vector2 size)
+        {
+            var rect = root.Find(name) as RectTransform ?? CounterRect(name, root, Vector2.zero, size);
+            rect.pivot = Vector2.one * .5f;
+            rect.sizeDelta = size;
+            var image = rect.GetComponent<Image>() ?? rect.gameObject.AddComponent<Image>();
+            image.sprite = sprite;
+            image.raycastTarget = false;
+            return image;
+        }
+
         [MenuItem("OurTaikoView/Sync Score Rank")]
         public static void ApplyScoreRank()
         {

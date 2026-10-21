@@ -9,6 +9,8 @@ namespace OurTaiko
     {
         public RectTransform lane;
         public UnityEngine.UI.Image burst, note;
+        [Tooltip("0 = 1P, 1 = 2P (the badge under the 2P lane).")]
+        public int seat;
 
         public bool IsPlaying { get; private set; }
         public bool IsBig { get; private set; }
@@ -37,7 +39,7 @@ namespace OurTaiko
                 burst.enabled = note.enabled = false;
                 return;
             }
-            var centre = NoteArcView.LaneToLocal(lane, (RectTransform)transform, GaugeHitEffectLayout.CentreX, GaugeHitEffectLayout.CentreY);
+            var centre = NoteArcView.LaneToLocal(lane, (RectTransform)transform, GaugeHitEffectLayout.CentreX, GaugeHitEffectLayout.CentreYOf(seat));
             burst.rectTransform.anchoredPosition = centre;
             note.rectTransform.anchoredPosition = centre;
             sampler.Sample(System.Math.Max(0, t));

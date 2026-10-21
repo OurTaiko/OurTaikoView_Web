@@ -117,9 +117,10 @@ namespace OurTaiko.Tests
                 var lane = play.noteLayer.parent.parent;
                 var gauge = play.soulGauge.transform;
                 Vector3 at = gauge.position;
-                var put = typeof(PlayScene).GetMethod("PutSoulGaugeUnderNotes", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                put.Invoke(play, null);
-                put.Invoke(play, null); // A second load keeps it in place.
+                var player = new PlayerLane(play, 0, play, new PlayOptions(), false, new Online.PlayRecord());
+                var put = typeof(PlayerLane).GetMethod("PutSoulGaugeUnderNotes", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                put.Invoke(player, null);
+                put.Invoke(player, null); // A second load keeps it in place.
                 Assert.That(gauge.parent, Is.SameAs(lane));
                 Assert.That(gauge.position, Is.EqualTo(at));
                 Assert.That(gauge.GetSiblingIndex(), Is.GreaterThan(lane.Find("JudgeCircle").GetSiblingIndex()));
@@ -132,6 +133,29 @@ namespace OurTaiko.Tests
                     Assert.That(padding.x == 0 && padding.z == 0, Is.True);
                     Assert.That(padding.y < -10000 && padding.w < -10000, Is.True);
                 }
+            });
+        }
+
+        // The kusudama is drawn over the HUD and under the pause button and practice controls, which
+        // in the single web canvas means its place in the hierarchy.
+        [Test]
+        public void KusudamaIsBoundAndDrawnOverTheHud()
+        {
+            WithPlay(play =>
+            {
+                var view = play.kusudama;
+                Assert.That(view, Is.Not.Null);
+                Assert.That(play.kusudamaPop, Is.Not.Null);
+                Assert.That(view.ballFrames, Has.Length.EqualTo(5).And.All.Not.Null);
+                Assert.That(view.digits.Select(d => d.name), Is.EqualTo(Enumerable.Range(0, 10).Select(i => "KusudamaDigit" + i)));
+                Assert.That(view.ball.raycastTarget || view.renda.raycastTarget, Is.False);
+                Assert.That(view.gameObject.activeSelf, Is.False);
+                var parent = view.transform.parent;
+                Assert.That(play.balloonCounter.transform.parent, Is.SameAs(parent));
+                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.balloonCounter.transform.GetSiblingIndex()));
+                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.comboAnnounce.transform.GetSiblingIndex()));
+                Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.pauseButton.transform.GetSiblingIndex()));
+                Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.practiceView.transform.GetSiblingIndex()));
             });
         }
 

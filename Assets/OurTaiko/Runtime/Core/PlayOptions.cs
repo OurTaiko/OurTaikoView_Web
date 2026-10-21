@@ -23,7 +23,7 @@ namespace OurTaiko
         public int neiro;                // hit-sound set; Mute (-1) = 無音
 
         [NonSerialized] string path;
-        static PlayOptions shared;
+        static PlayOptions shared, second;
 
         // Tests replace it with an unsaved instance so they never touch the player's options.
         public static PlayOptions Shared
@@ -31,6 +31,13 @@ namespace OurTaiko
             get => shared ??= Load(System.IO.Path.Combine(Application.persistentDataPath, "options.json"));
             set => shared = value;
         }
+        // 2P's own options (the same panel, opened by 2P), kept apart from 1P's.
+        public static PlayOptions Second
+        {
+            get => second ??= Load(System.IO.Path.Combine(Application.persistentDataPath, "options_2p.json"));
+            set => second = value;
+        }
+        public static PlayOptions ForSeat(int seat) => seat == 1 ? Second : Shared;
 
         public static PlayOptions Load(string path)
         {
