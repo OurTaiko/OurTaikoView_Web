@@ -117,7 +117,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path(__file__).resolve().parents[1] / 'Builds/Web')
     parser.add_argument('--bucket', default='ourtaiko-public')
-    parser.add_argument('--cdn-url', default='https://d2mguycu233w0q.cloudfront.net')
+    parser.add_argument('--cdn-url', default='https://distrib.ourtaiko.org')
     parser.add_argument('--profile', help='Existing AWS CLI profile')
     parser.add_argument('--publish', action='store_true', help='Upload files and switch the live manifest')
     args = parser.parse_args()

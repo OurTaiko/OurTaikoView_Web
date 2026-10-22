@@ -137,4 +137,4 @@ jobs:
           set -euo pipefail
           aws --version
           python3 scripts/publish-player.py --publish
-          echo 'Published player: https://d2mguycu233w0q.cloudfront.net/player-build.json' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Published player: https://distrib.ourtaiko.org/player-build.json' >> "$GITHUB_STEP_SUMMARY"
