@@ -87,7 +87,11 @@ namespace OurTaiko.Tests
             var score = Parse(Score).Branches[0];
             Assert.That(score.Condition, Is.EqualTo(BranchCondition.Score));
             Assert.That(score.HasAllRoutes, Is.True);
-            Assert.Throws<FormatException>(() => Parse("#BRANCHSTART p,50,80\n#E\n1000,\n#BRANCHEND"), "#N is still required.");
+            // OpenTaiko: a branch without #N plays an empty normal route (warned about).
+            var noNormal = Parse("#BRANCHSTART p,50,80\n#E\n1000,\n#BRANCHEND");
+            Assert.That(noNormal.Branches[0].Routes, Is.EqualTo(new[] { BranchRoute.Normal, BranchRoute.Expert, BranchRoute.Expert }));
+            Assert.That(noNormal.NoteLists[1], Is.Empty);
+            Assert.That(noNormal.Warnings, Has.Some.Contains("has no #N"));
             Assert.That(Parse("#BRANCHSTART x,1,2\n#N\n1000,\n#BRANCHEND").Branches[0].Condition, Is.EqualTo(BranchCondition.None));
         }
 

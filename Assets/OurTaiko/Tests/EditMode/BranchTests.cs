@@ -258,8 +258,19 @@ namespace OurTaiko.Tests
 
         [TestCase("#N\n1000,")]
         [TestCase("#BRANCHSTART p,50,80\n#N\n1000,\n#N\n1000,")]
-        [TestCase("#BRANCHSTART p,50,80\n#N\n5000,\n#E\n0008,")]
         [TestCase("10\n#BRANCHSTART p,50,80")]
         public void MalformedBranchIsRejected(string body) => Assert.Throws<FormatException>(() => Parse(body));
+
+        // OpenTaiko keeps the open roll per route: the normal route's roll is not ended by the expert
+        // route's 8 (a stray one there, a blank) and runs to #END, with warnings for both.
+        [Test] public void ARollStaysOnItsRouteAcrossTheOthers()
+        {
+            var chart = Parse("#BRANCHSTART p,50,80\n#N\n5000,\n#E\n0008,");
+            var roll = chart.Notes.Single(n => n.Kind == NoteKind.Roll);
+            Assert.That(roll.Route, Is.EqualTo(BranchRoute.Normal));
+            Assert.That(roll.EndTime, Is.EqualTo(chart.Duration));
+            Assert.That(chart.Warnings, Has.Some.StartsWith("A stray 8"));
+            Assert.That(chart.Warnings, Has.Some.EqualTo("An unended roll is ended by #END"));
+        }
     }
 }
