@@ -69,7 +69,7 @@ namespace OurTaiko
             {
                 string text = ReadText(File.ReadAllBytes(file));
                 var info = SongInfo.Read(text);
-                if (info.Courses.Count == 0) return;
+                if (info.Blocks.Count == 0) return;
                 string audio = string.IsNullOrWhiteSpace(info.Wave) ? null : Path.Combine(Path.GetDirectoryName(file), info.Wave.Trim());
                 string relative = Relative(root, file);
                 list.Add(new LocalChart

@@ -134,7 +134,7 @@ namespace OurTaiko
             song.audioPath = chart.AudioPath;
             song.genre = genre;
             var oni = chart.Info.Course(Difficulty.Oni);
-            song.course = (oni ?? chart.Info.Courses[chart.Info.Courses.Count - 1]).Course;
+            song.course = (oni ?? chart.Info.Courses().Last()).Course;
             return song;
         }
 

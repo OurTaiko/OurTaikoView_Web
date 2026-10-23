@@ -24,8 +24,8 @@ namespace OurTaiko
                 throw new ArgumentOutOfRangeException(nameof(difficulty));
             keywordPattern = CreatePattern();
         }
-        public bool Matches(CourseInfo course) => (!Difficulty.HasValue || course.Difficulty == Difficulty) && (Level == 0 || course.Level == Level);
-        public bool Matches(SongInfo info) => info.Courses.Any(Matches);
+        public bool Matches(TjaBlock course) => (!Difficulty.HasValue || course.Difficulty == Difficulty) && (Level == 0 || course.Level == Level);
+        public bool Matches(SongInfo info) => info.Courses().Any(Matches);
 
         // Match the API's ILIKE substring semantics, including % and _ wildcards and backslash escapes.
         public bool MatchesText(string text) => keywordPattern.IsMatch(text ?? "");

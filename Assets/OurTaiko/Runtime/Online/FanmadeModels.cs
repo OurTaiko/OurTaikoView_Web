@@ -108,19 +108,22 @@ namespace OurTaiko.Online
         public SongInfo ToSongInfo(string language)
         {
             language = language == "zh-Hans" ? "zh" : language ?? "en";
-            var info = new SongInfo
-            {
-                Title = SongInfo.Translated(Titles, language, Title) + (SelectedPlayer.Length > 0 ? " " + SelectedPlayer : ""),
-                Subtitle = SongInfo.Translated(Subtitles, language, Subtitle).TrimStart('-', '+'),
-                Genre = Genre, Bpm = Bpm, DemoStart = DemoStart,
-            };
+            // The server hands over the whole title dictionaries; the game picks by language (SongInfo).
+            var info = new SongInfo { Language = language, Genre = Genre, Bpm = Bpm, DemoStart = DemoStart, Maker = (Maker ?? "").Trim() };
+            info.Titles["origin"] = Title + (SelectedPlayer.Length > 0 ? " " + SelectedPlayer : "");
+            info.Subtitles["origin"] = Subtitle;
+            foreach (var pair in Titles) if (!string.IsNullOrWhiteSpace(pair.Value)) info.Titles[pair.Key] = pair.Value + (SelectedPlayer.Length > 0 ? " " + SelectedPlayer : "");
+            foreach (var pair in Subtitles) if (!string.IsNullOrWhiteSpace(pair.Value)) info.Subtitles[pair.Key] = pair.Value;
             for (int i = 0; i < Difficulties.Length; i++)
                 if (Difficulties[i] != null)
-                    info.Courses.Add(new CourseInfo
+                {
+                    var block = new TjaBlock
                     {
                         Difficulty = (Difficulty)i, Course = Difficulties[i].Course, Level = Difficulties[i].Level,
                         IsBranching = Difficulties[i].Branching,
-                    });
+                    };
+                    info.Blocks.Add(block);
+                }
             return info;
         }
 

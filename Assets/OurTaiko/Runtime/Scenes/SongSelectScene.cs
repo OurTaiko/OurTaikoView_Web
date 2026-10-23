@@ -704,7 +704,7 @@ namespace OurTaiko
         void DrawCrown(Board board, float p, float fade)
         {
             Crown best = Crown.None; Difficulty course = Difficulty.Easy;
-            foreach (var info in board.Info.Courses)
+            foreach (var info in board.Info.Courses())
             {
                 var record = SongScores.Get(board.Song, info.Difficulty);
                 if (record != null && record.crown != Crown.None) { best = record.crown; course = info.Difficulty; }
@@ -784,7 +784,7 @@ namespace OurTaiko
             ScoreRank rank = ScoreRank.None;
             Difficulty course = Difficulty.Easy;
             // SearchAnyCrown walks upward in difficulty; rank and crown are independent.
-            foreach (var info in board.Info.Courses)
+            foreach (var info in board.Info.Courses())
             {
                 ScoreRank candidate = SongScores.Rank(board.Song, info.Difficulty);
                 if (candidate > 0 && (rank == 0 || info.Difficulty > course)) { rank = candidate; course = info.Difficulty; }

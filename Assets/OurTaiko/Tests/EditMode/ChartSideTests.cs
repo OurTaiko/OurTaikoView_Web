@@ -22,7 +22,7 @@ namespace OurTaiko.Tests
         // What a seat plays: the side SongInfo picks, then that block parsed.
         static TaikoChart Play(string text, Difficulty difficulty, string seat)
         {
-            var block = SongInfo.Read(text).Block(difficulty, seat);
+            var block = SongInfo.Read(text).PlayedBlock(difficulty, seat);
             if (block == null) throw new FormatException($"No block for the {seat} seat.");
             return TjaParser.Parse(text, block.Course, block.Side);
         }
@@ -40,11 +40,12 @@ namespace OurTaiko.Tests
 
         [Test] public void SongInfoListsEveryBlock()
         {
+            // Blocks are the file's #START blocks in file order.
             Assert.That(SongInfo.Read(ThreeSides).Blocks.Select(c => (c.Difficulty, c.Side, c.Level)),
-                Is.EqualTo(new[] { (Difficulty.Oni, "single", 9), (Difficulty.Oni, "p1", 7), (Difficulty.Oni, "p2", 8) }));
-            // A repeated side keeps its first block.
+                Is.EqualTo(new[] { (Difficulty.Oni, "p1", 7), (Difficulty.Oni, "p2", 8), (Difficulty.Oni, "single", 9) }));
+            // A repeated difficulty and side is an error, for the game as for the servers.
             string twice = Header + Block("Oni", 7, "P1", "1,") + Block("Oni", 6, "P1", "1,");
-            Assert.That(SongInfo.Read(twice).Blocks.Select(c => c.Level), Is.EqualTo(new[] { 7 }));
+            Assert.Throws<FormatException>(() => SongInfo.Read(twice));
         }
 
         [Test] public void EachSeatReadsItsOwnSideFirst()
@@ -52,7 +53,7 @@ namespace OurTaiko.Tests
             Assert.That(Play(ThreeSides, Difficulty.Oni, "p1").Level, Is.EqualTo(7));
             Assert.That(Play(ThreeSides, Difficulty.Oni, "p2").Level, Is.EqualTo(8));
             Assert.That(SongInfo.Read(ThreeSides).Course(Difficulty.Oni).Side, Is.EqualTo("p1"), "the default seat is 1P");
-            Assert.That(SongInfo.Read(ThreeSides, seat: "p2").Course(Difficulty.Oni).Level, Is.EqualTo(8));
+            Assert.That(SongInfo.Read(ThreeSides).Course(Difficulty.Oni, "p2").Level, Is.EqualTo(8));
         }
 
         [Test] public void SeatsFallBackToSingleThenTheOtherSide()
@@ -65,15 +66,15 @@ namespace OurTaiko.Tests
             string onlyP1 = Header + Block("Oni", 7, "P1", "1,");
             Assert.That(Play(onlyP1, Difficulty.Oni, "p2").Level, Is.EqualTo(7), "p2 → single → p1");
             string onlyP2 = Header + Block("Oni", 8, "P2", "11,");
-            Assert.That(SongInfo.Read(onlyP2).Block(Difficulty.Oni, "p1"), Is.Null, "p1 never falls back to p2");
+            Assert.That(SongInfo.Read(onlyP2).PlayedBlock(Difficulty.Oni, "p1"), Is.Null, "p1 never falls back to p2");
             Assert.That(Play(onlyP2, Difficulty.Oni, "p2").Level, Is.EqualTo(8));
         }
 
         [Test] public void ACourseWithOnlyA2PBlockIsNotListedForThe1PSeat()
         {
             string text = Header + Block("Hard", 5, "", "1,") + Block("Oni", 8, "P2", "11,");
-            Assert.That(SongInfo.Read(text).Courses.Select(c => c.Difficulty), Is.EqualTo(new[] { Difficulty.Hard }));
-            Assert.That(SongInfo.Read(text, seat: "p2").Courses.Select(c => (c.Difficulty, c.Level, c.Side)),
+            Assert.That(SongInfo.Read(text).Courses().Select(c => c.Difficulty), Is.EqualTo(new[] { Difficulty.Hard }));
+            Assert.That(SongInfo.Read(text).Courses("p2").Select(c => (c.Difficulty, c.Level, c.Side)),
                 Is.EqualTo(new[] { (Difficulty.Hard, 5, "single"), (Difficulty.Oni, 8, "p2") }));
         }
 
@@ -92,12 +93,12 @@ namespace OurTaiko.Tests
 
         [Test] public void OnlineAndLocalShareTheReadOrder()
         {
-            Assert.That(ChartSide.Seats, Is.EqualTo(new[] { "p1", "p2" }));
-            Assert.That(ChartSide.Reads("p1"), Is.EqualTo(new[] { "p1", "single" }));
-            Assert.That(ChartSide.Reads("p2"), Is.EqualTo(new[] { "p2", "single", "p1" }));
+            Assert.That(SeatBlocks.Seats, Is.EqualTo(new[] { "p1", "p2" }));
+            Assert.That(SeatBlocks.Reads("p1"), Is.EqualTo(new[] { "p1", "single" }));
+            Assert.That(SeatBlocks.Reads("p2"), Is.EqualTo(new[] { "p2", "single", "p1" }));
             Assert.That(ChartSide.OfStart("P2"), Is.EqualTo("p2"));
             Assert.That(ChartSide.OfStart(""), Is.EqualTo("single"));
-            Assert.Throws<ArgumentException>(() => ChartSide.Reads("single"), "single is a side, not a seat");
+            Assert.Throws<ArgumentException>(() => SeatBlocks.Reads("single"), "single is a side, not a seat");
         }
     }
 }

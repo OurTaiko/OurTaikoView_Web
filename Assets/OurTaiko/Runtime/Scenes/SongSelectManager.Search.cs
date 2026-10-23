@@ -46,7 +46,7 @@ namespace OurTaiko
                     foreach (var player in chart.IsSingle ? new[] { chart } : new[] { chart.ForPlayer("P1"), chart.ForPlayer("P2") })
                         if (player.IsPlayable && query.Matches(player.ToSongInfo(null))) found.Add(online.SearchSong(player));
             bool NeedsClear(SongDefinition song) => song.onlineChart != null ? online.Client.SearchNeedsClear(song.onlineChart, query)
-                : query.Order != SongSearchOrder.Default && song.ReadDisplayInfo().Courses.Where(query.Matches)
+                : query.Order != SongSearchOrder.Default && song.ReadDisplayInfo().Courses().Where(query.Matches)
                     .Any(c => (int)(SongScores.Get(song, c.Difficulty)?.crown ?? Crown.None) < (query.Order == SongSearchOrder.UnFullCombo ? 2 : 3));
             searchSongs.Clear();
             searchSongs.AddRange(found.Distinct().OrderByDescending(NeedsClear));
@@ -67,7 +67,10 @@ namespace OurTaiko
             {
                 var item = SongItem(song, -1);
                 string source = song.onlineChart == null ? "Local" : OnlineManager.Instance.Client.Endpoint(song.onlineChart.Server)?.Config.DisplayName ?? "Online";
-                item.Info.Subtitle = string.IsNullOrEmpty(item.Info.Subtitle) ? source : item.Info.Subtitle + " · " + source;
+                // The subtitle shown gets the source appended; Subtitle is read from the dictionaries, so set the origin.
+                string shown = item.Info.Subtitle;
+                item.Info.Subtitles.Clear();
+                item.Info.Subtitles["origin"] = string.IsNullOrEmpty(shown) ? source : shown + " · " + source;
                 items.Add(item);
             }
             items.Add(NewSearchItem());

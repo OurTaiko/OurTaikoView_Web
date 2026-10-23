@@ -62,7 +62,7 @@ namespace OurTaiko.Online
             {
                 var e = endpoints.Find(x => x.Id == chart.Server);
                 if (e == null || !e.IsAuthenticated) return false;
-                return chart.ToSongInfo(null).Courses.Where(query.Matches).Any(course =>
+                return chart.ToSongInfo(null).Courses().Where(query.Matches).Any(course =>
                     !e.Scores.Any(s => s.Song == chart.Id && s.Difficulty == course.Course && s.Bad == 0 && (s.Good > 0 || s.Ok > 0)
                         && (query.Order == SongSearchOrder.UnFullCombo || s.Ok == 0)));
             }

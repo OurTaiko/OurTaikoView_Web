@@ -196,7 +196,7 @@ namespace OurTaiko
         // Player::reset_chart: the play options change the chart before load times are taken.
         public static TaikoChart PrepareChart(SongDefinition song, string course, int seat = 0)
         {
-            var chart = song.Parse(course, ChartSide.Seats[seat]);
+            var chart = song.Parse(course, SeatBlocks.Seats[seat]);
             ChartModifiers.Apply(chart, PlayOptions.ForSeat(seat), new System.Random());
             return chart;
         }

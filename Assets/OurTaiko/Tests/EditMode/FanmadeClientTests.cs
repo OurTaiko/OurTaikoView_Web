@@ -307,9 +307,9 @@ namespace OurTaiko.Tests
             json["difficulties"][1]["branching"] = true;
             var info = FanmadeChart.From(json, "server").ToSongInfo("ja");
             Assert.That((info.Title, info.Subtitle, info.Bpm, info.DemoStart), Is.EqualTo(("Meta JA", "副題", 180.0, 12.5)));
-            Assert.That(info.Courses.Select(c => (c.Difficulty, c.Course, c.Level)),
+            Assert.That(info.Courses().Select(c => (c.Difficulty, c.Course, c.Level)),
                 Is.EqualTo(new[] { (Difficulty.Hard, "Hard", 4), (Difficulty.Ura, "Edit", 10) }));
-            Assert.That(info.Courses.Select(c => c.IsBranching), Is.EqualTo(new[] { false, true }));
+            Assert.That(info.Courses().Select(c => c.IsBranching), Is.EqualTo(new[] { false, true }));
             ((JObject)json["difficulties"][0]).Remove("branching");
             Assert.That(Assert.Throws<FanmadeException>(() => FanmadeChart.From(json, "server")).Message, Is.EqualTo("API_DIFFICULTY_INVALID"), "branching is required.");
             json["difficulties"][0]["branching"] = false;
@@ -323,7 +323,7 @@ namespace OurTaiko.Tests
                 new JObject { ["course"] = "Oni_2p", ["level"] = 8, ["maker"] = "", ["branching"] = true });
             var p2 = FanmadeChart.From(keyed, "server").ForPlayer("P2").ToSongInfo("en");
             Assert.That(p2.Title, Is.EqualTo("Double P2"));
-            Assert.That(p2.Courses.Select(c => (c.Difficulty, c.Course, c.Level, c.IsBranching)), Is.EqualTo(new[] { (Difficulty.Oni, "Oni_2p", 8, true) }));
+            Assert.That(p2.Courses().Select(c => (c.Difficulty, c.Course, c.Level, c.IsBranching)), Is.EqualTo(new[] { (Difficulty.Oni, "Oni_2p", 8, true) }));
             Assert.That(FanmadeChart.From(keyed, "server").ForPlayer("P1").ToSongInfo("en").Course(Difficulty.Oni).IsBranching, Is.False);
         }
 

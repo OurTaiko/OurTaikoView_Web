@@ -393,11 +393,11 @@ namespace OurTaiko
 
         void EnterCourseSelect()
         {
-            var courses = items[Focused].Info.Courses.Select(c => c.Difficulty).ToList();
+            var courses = items[Focused].Info.Courses().Select(c => c.Difficulty).ToList();
             int preferred = Switcher.LastDifficulty;
             if (SearchActive)
             {
-                var matching = items[Focused].Info.Courses.Where(SearchQuery.Matches).Select(c => c.Difficulty).ToList();
+                var matching = items[Focused].Info.Courses().Where(SearchQuery.Matches).Select(c => c.Difficulty).ToList();
                 if (matching.Count > 0 && !matching.Contains((Difficulty)preferred)) preferred = (int)matching[0];
             }
             Cursor = new DifficultyCursor(courses, SearchActive ? preferred == (int)Difficulty.Ura : Cursor != null && Cursor.IsUra, preferred);
