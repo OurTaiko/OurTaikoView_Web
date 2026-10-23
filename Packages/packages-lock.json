@@ -311,6 +311,13 @@
       },
       "url": "https://packages.unity.com"
     },
+    "org.ourtaiko.tjaparser": {
+      "version": "https://github.com/OurTaiko/TJAParser.git#v0.1.1",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "5a995f33f21fb34c74c76fdc191af2bde896d27e"
+    },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
       "depth": 0,

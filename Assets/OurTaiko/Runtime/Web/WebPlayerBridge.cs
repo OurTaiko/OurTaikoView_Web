@@ -102,8 +102,11 @@ namespace OurTaiko
             string chart = value.chartText;
             try
             {
-                // Validate exactly as practice plays it: on a fixed route, which is chosen in its menu.
-                _ = new PlaySession(TjaParser.Parse(chart, value.course), 0, BranchRoute.Normal);
+                // Validate exactly as practice plays it: on a fixed route, which is chosen in its menu,
+                // reading the block the 1P seat plays (SongDefinition.Parse resolves it the same way).
+                var difficulty = SongInfo.DifficultyOf(value.course ?? "");
+                var block = difficulty.HasValue ? SongInfo.Read(chart).Block(difficulty.Value, "p1") : null;
+                _ = new PlaySession(TjaParser.Parse(chart, block?.Course ?? value.course, block?.Side ?? "single"), 0, BranchRoute.Normal);
             }
             catch (Exception error) { Debug.LogException(error); Fail("INVALID_CHART", error.Message); yield break; }
             yield return DecodeAudio(value);

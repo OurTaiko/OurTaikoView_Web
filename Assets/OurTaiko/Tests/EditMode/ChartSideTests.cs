@@ -6,7 +6,8 @@ namespace OurTaiko.Tests
 {
     // Local TJA files pick a course's block by seat the way online charts do (ChartSide; user rule
     // R036 in OurTaikoLogs taiko-official-schema-requirements.txt). A player always sits at 1P or
-    // 2P: 1P reads p1 → single, 2P reads p2 → single → p1; "single" is a side, never a seat.
+    // 2P: 1P reads p1 → single, 2P reads p2 → single → p1; "single" is a side, never a seat. The
+    // parser itself takes a side, chosen beforehand from SongInfo (or the online block list).
     public sealed class ChartSideTests
     {
         const string Header = "TITLE:Sides\nBPM:120\n";
@@ -18,33 +19,59 @@ namespace OurTaiko.Tests
             + "STYLE:Double\n" + Block("Oni", 7, "P1", "1,") + Block("Oni", 8, "P2", "11,")
             + "STYLE:Single\n" + Block("Oni", 9, "", "111,");
 
-        [Test] public void EachSeatReadsItsOwnSideFirst()
+        // What a seat plays: the side SongInfo picks, then that block parsed.
+        static TaikoChart Play(string text, Difficulty difficulty, string seat)
         {
-            Assert.That(TjaParser.Parse(ThreeSides, "Oni").Level, Is.EqualTo(7), "the default seat is 1P");
+            var block = SongInfo.Read(text).Block(difficulty, seat);
+            if (block == null) throw new FormatException($"No block for the {seat} seat.");
+            return TjaParser.Parse(text, block.Course, block.Side);
+        }
+
+        [Test] public void TheParserReadsTheSideItIsAskedFor()
+        {
+            Assert.That(TjaParser.Parse(ThreeSides, "Oni").Level, Is.EqualTo(9), "the default side is single");
+            Assert.That(TjaParser.Parse(ThreeSides, "Oni", "single").Level, Is.EqualTo(9), "single is reachable beside p1");
             Assert.That(TjaParser.Parse(ThreeSides, "Oni", "p1").Level, Is.EqualTo(7));
             Assert.That(TjaParser.Parse(ThreeSides, "Oni", "p2").Level, Is.EqualTo(8));
-            Assert.That(SongInfo.Read(ThreeSides).Course(Difficulty.Oni).Side, Is.EqualTo("p1"));
+            string onlySingle = Header + Block("Oni", 9, "", "111,");
+            Assert.Throws<FormatException>(() => TjaParser.Parse(onlySingle, "Oni", "p1"), "the parser does not fall back");
+            Assert.Throws<ArgumentException>(() => TjaParser.Parse(onlySingle, "Oni", "1p"));
+        }
+
+        [Test] public void SongInfoListsEveryBlock()
+        {
+            Assert.That(SongInfo.Read(ThreeSides).Blocks.Select(c => (c.Difficulty, c.Side, c.Level)),
+                Is.EqualTo(new[] { (Difficulty.Oni, "single", 9), (Difficulty.Oni, "p1", 7), (Difficulty.Oni, "p2", 8) }));
+            // A repeated side keeps its first block.
+            string twice = Header + Block("Oni", 7, "P1", "1,") + Block("Oni", 6, "P1", "1,");
+            Assert.That(SongInfo.Read(twice).Blocks.Select(c => c.Level), Is.EqualTo(new[] { 7 }));
+        }
+
+        [Test] public void EachSeatReadsItsOwnSideFirst()
+        {
+            Assert.That(Play(ThreeSides, Difficulty.Oni, "p1").Level, Is.EqualTo(7));
+            Assert.That(Play(ThreeSides, Difficulty.Oni, "p2").Level, Is.EqualTo(8));
+            Assert.That(SongInfo.Read(ThreeSides).Course(Difficulty.Oni).Side, Is.EqualTo("p1"), "the default seat is 1P");
             Assert.That(SongInfo.Read(ThreeSides, seat: "p2").Course(Difficulty.Oni).Level, Is.EqualTo(8));
         }
 
         [Test] public void SeatsFallBackToSingleThenTheOtherSide()
         {
             string onlySingle = Header + Block("Oni", 9, "", "111,");
-            Assert.That(TjaParser.Parse(onlySingle, "Oni", "p1").Level, Is.EqualTo(9), "p1 → single");
-            Assert.That(TjaParser.Parse(onlySingle, "Oni", "p2").Level, Is.EqualTo(9), "p2 → single");
+            Assert.That(Play(onlySingle, Difficulty.Oni, "p1").Level, Is.EqualTo(9), "p1 → single");
+            Assert.That(Play(onlySingle, Difficulty.Oni, "p2").Level, Is.EqualTo(9), "p2 → single");
             string noP2 = Header + Block("Oni", 7, "P1", "1,") + Block("Oni", 9, "", "111,");
-            Assert.That(TjaParser.Parse(noP2, "Oni", "p2").Level, Is.EqualTo(9), "p2 → single before p1");
+            Assert.That(Play(noP2, Difficulty.Oni, "p2").Level, Is.EqualTo(9), "p2 → single before p1");
             string onlyP1 = Header + Block("Oni", 7, "P1", "1,");
-            Assert.That(TjaParser.Parse(onlyP1, "Oni", "p2").Level, Is.EqualTo(7), "p2 → single → p1");
+            Assert.That(Play(onlyP1, Difficulty.Oni, "p2").Level, Is.EqualTo(7), "p2 → single → p1");
             string onlyP2 = Header + Block("Oni", 8, "P2", "11,");
-            Assert.Throws<FormatException>(() => TjaParser.Parse(onlyP2, "Oni", "p1"), "p1 never falls back to p2");
-            Assert.That(TjaParser.Parse(onlyP2, "Oni", "p2").Level, Is.EqualTo(8));
+            Assert.That(SongInfo.Read(onlyP2).Block(Difficulty.Oni, "p1"), Is.Null, "p1 never falls back to p2");
+            Assert.That(Play(onlyP2, Difficulty.Oni, "p2").Level, Is.EqualTo(8));
         }
 
         [Test] public void ACourseWithOnlyA2PBlockIsNotListedForThe1PSeat()
         {
             string text = Header + Block("Hard", 5, "", "1,") + Block("Oni", 8, "P2", "11,");
-            Assert.Throws<FormatException>(() => TjaParser.Parse(text, "Oni"));
             Assert.That(SongInfo.Read(text).Courses.Select(c => c.Difficulty), Is.EqualTo(new[] { Difficulty.Hard }));
             Assert.That(SongInfo.Read(text, seat: "p2").Courses.Select(c => (c.Difficulty, c.Level, c.Side)),
                 Is.EqualTo(new[] { (Difficulty.Hard, 5, "single"), (Difficulty.Oni, 8, "p2") }));
@@ -54,11 +81,11 @@ namespace OurTaiko.Tests
         {
             // Headers of the played block (BALLOON, a scroll mode) apply even when it comes last.
             string text = Header + "BALLOON:2\n" + Block("Oni", 7, "", "7,8,") + "COURSE:Oni\nLEVEL:9\nBALLOON:4\n#BMSCROLL\n#START P1\n7,8,\n#END\n";
-            var chart = TjaParser.Parse(text, "Oni");
+            var chart = Play(text, Difficulty.Oni, "p1");
             var info = SongInfo.Read(text).Course(Difficulty.Oni);
             Assert.That((chart.Level, info.Level, info.Side), Is.EqualTo((9, 9, "p1")));
             Assert.That(chart.Notes.First(n => n.Kind == NoteKind.Balloon).BalloonHits, Is.EqualTo(4));
-            var p2 = TjaParser.Parse(text, "Oni", "p2");
+            var p2 = Play(text, Difficulty.Oni, "p2");
             Assert.That(p2.Level, Is.EqualTo(7));
             Assert.That(p2.Notes.First(n => n.Kind == NoteKind.Balloon).BalloonHits, Is.EqualTo(2));
         }

@@ -29,7 +29,7 @@ namespace OurTaiko
         {
             if (chart == null) return null;
             if (rankChart != chart) { rankThresholds.Clear(); rankChart = chart; }
-            string requested = ResolveCourse(SongInfo.CourseName(difficulty));
+            string requested = SongInfo.CourseName(difficulty);
             if (!rankThresholds.TryGetValue(requested, out int threshold))
             {
                 threshold = ScoreRankUtil.KiwamiThreshold(Parse(requested));
@@ -37,14 +37,24 @@ namespace OurTaiko
             }
             return threshold;
         }
-        string ResolveCourse(string requested)
+        // The block a seat plays on a course (ChartSide): its COURSE as written and its side. Online
+        // the playable copy PlayableTja builds names each block after the API (Oni_1p, Oni_2p) under
+        // a plain #START, so it is read on the single side; offline the file's own blocks decide.
+        (string course, string side) ResolveBlock(string requested, string seat)
         {
             var difficulty = SongInfo.DifficultyOf(requested);
-            return onlineChart != null && difficulty.HasValue ? onlineChart.Difficulties[(int)difficulty.Value]?.Course ?? requested : requested;
+            if (!difficulty.HasValue) return (requested, "single");
+            if (onlineChart != null) return (onlineChart.Difficulties[(int)difficulty.Value]?.Course ?? requested, "single");
+            var block = SongInfo.Read(chart.text).Block(difficulty.Value, seat);
+            return block != null ? (block.Course, block.Side) : (requested, ChartSide.Reads(seat)[0]);
         }
-        public TaikoChart Parse() => TjaParser.Parse(chart.text, ResolveCourse(course));
+        public TaikoChart Parse() => Parse(course);
         // seat is the player's position (ChartSide.Seats): 2P reads p2, then single, then p1 blocks.
-        public TaikoChart Parse(string requestedCourse, string seat = "p1") => TjaParser.Parse(chart.text, ResolveCourse(string.IsNullOrEmpty(requestedCourse) ? course : requestedCourse), seat);
+        public TaikoChart Parse(string requestedCourse, string seat = "p1")
+        {
+            var (blockCourse, side) = ResolveBlock(string.IsNullOrEmpty(requestedCourse) ? course : requestedCourse, seat);
+            return TjaParser.Parse(chart.text, blockCourse, side);
+        }
         public SongInfo ReadInfo() => SongInfo.Read(chart.text);
         // Display metadata is separate from the parsed chart and score identity. Online songs take it
         // from the server's metadata: their chart is only set once SongLoadingScene downloads it.
