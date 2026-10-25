@@ -70,6 +70,8 @@ namespace OurTaiko
         public bool AutoPlay => PlayOptions.Shared.auto;
         // The view: whether the course panel has faded in (it ignores input until then).
         public Func<bool> CourseReady { get; set; }
+        // The view: whether the wheel is still sliding from the last move (arrows are not read then).
+        public Func<bool> WheelScrolling { get; set; }
 
         public event Action<Sound> SoundRequested;
         public event Action<Voice> VoiceRequested;
@@ -167,16 +169,40 @@ namespace OurTaiko
         // ---------------------------------------------------------------- input
 
         // Reads this frame's keys (the view calls it first in its Update).
-        public void HandleInput()
+        // CStageSongSelect's ctキー反復用: browsing, a held arrow keeps moving the wheel (at once, after
+        // 200 ms, then every 30 ms), but is not read at all while the wheel is still sliding, so a
+        // held key steps once per slide. Choosing a course, the arrows act on the press only.
+        readonly KeyRepeat repeatLeft = new KeyRepeat(), repeatRight = new KeyRepeat();
+
+        public void HandleInput() => HandleInput(GameTimeline.FrameTime * 1000);
+
+        public void HandleInput(double nowMs)
         {
             if (Switcher.IsInputBlocked || SearchDialogOpen) return;
             // song_select.cpp: the back key leaves for Entry from any state (an open option panel closes first).
             if (InputManager.GetKeyDown(InputKey.Back)) { Back(); return; }
-            bool leftKa = InputManager.GetKeyDown(InputKey.LeftKa) || InputManager.GetKeyDown(InputKey.MenuLeft);
-            bool rightKa = InputManager.GetKeyDown(InputKey.RightKa) || InputManager.GetKeyDown(InputKey.MenuRight);
+            bool leftKa = InputManager.GetKeyDown(InputKey.LeftKa), rightKa = InputManager.GetKeyDown(InputKey.RightKa);
             bool donHit = InputManager.GetKeyDown(InputKey.LeftDon) || InputManager.GetKeyDown(InputKey.RightDon) || InputManager.GetKeyDown(InputKey.Confirm);
-            if (leftKa) Left();
-            else if (rightKa) Right();
+            bool left, right;
+            if (Phase == State.Browsing)
+            {
+                if (WheelScrolling?.Invoke() == true) left = right = false;
+                else
+                {
+                    left = repeatLeft.Tick(InputManager.GetKey(InputKey.MenuLeft), nowMs);
+                    right = repeatRight.Tick(InputManager.GetKey(InputKey.MenuRight), nowMs);
+                }
+            }
+            else
+            {
+                repeatLeft.Reset(); repeatRight.Reset();
+                left = InputManager.GetKeyDown(InputKey.MenuLeft);
+                right = InputManager.GetKeyDown(InputKey.MenuRight);
+            }
+            if (leftKa || left) Left();
+            else if (rightKa || right) Right();
+            else if (InputManager.GetKeyDown(InputKey.MenuUp)) MoveOptionRow(-1);
+            else if (InputManager.GetKeyDown(InputKey.MenuDown)) MoveOptionRow(+1);
             else if (donHit) Confirm();
         }
 
@@ -430,6 +456,13 @@ namespace OurTaiko
             if (OptionMenu == null) return;
             OptionMenu = null;
             PlayOptions.Shared.Save();
+        }
+
+        // CActPlayOption: the up/down arrows walk the option rows, wrapping; the drum only walks forward.
+        public void MoveOptionRow(int direction)
+        {
+            if (!AcceptsInput() || !IsOptionPanelOpen || !OptionMenu.Move(direction)) return;
+            Play(Sound.Ka);
         }
 
         void ChangeOption(int direction)

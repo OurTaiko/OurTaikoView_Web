@@ -50,6 +50,14 @@ namespace OurTaiko
             if (!IsConfirmed && row >= 0 && row < Rows.Length) Index = row;
         }
 
+        // Up/down arrows: the previous or next row, wrapping (CActPlayOption's NowCount modulo).
+        public bool Move(int direction)
+        {
+            if (IsConfirmed) return false;
+            Index = ((Index + direction) % Rows.Length + Rows.Length) % Rows.Length;
+            return true;
+        }
+
         // Returns whether the value changed (greyed rows and a closed panel ignore it).
         public bool Left() => Change(-1);
         public bool Right() => Change(+1);

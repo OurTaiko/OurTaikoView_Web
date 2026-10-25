@@ -146,7 +146,8 @@ namespace OurTaiko
         OptionPanel optionPanel;
         Vector2 framePosition, glowPosition, balloonPosition;
         Vector2[] backgroundPositions;
-        Func<bool> courseReady;
+        Func<bool> courseReady, wheelScrolling;
+        double scrolledAt = double.NegativeInfinity;
 
         double Now => GameTimeline.FrameTime * 1000 - startedAt;
         static double Clamp01(double v) => v < 0 ? 0 : v > 1 ? 1 : v;
@@ -167,6 +168,7 @@ namespace OurTaiko
             Manager = SongSelectManager.EnsureInstance();
             Manager.Load(optionArt.hitSounds != null ? optionArt.hitSounds.Count : 0);
             Manager.CourseReady = courseReady = () => CourseFade >= 1;
+            Manager.WheelScrolling = wheelScrolling = () => Now - scrolledAt < MoveMs;
             Manager.SoundRequested += OnSound;
             Manager.VoiceRequested += OnVoice;
             Manager.FolderChanged += OnFolderChanged;
@@ -228,6 +230,7 @@ namespace OurTaiko
             Manager.OptionsClosing -= OnOptionsClosing;
             // A newer song select may already have bound itself.
             if (Manager.CourseReady == courseReady) Manager.CourseReady = null;
+            if (Manager.WheelScrolling == wheelScrolling) Manager.WheelScrolling = null;
         }
 
         void OnSceneChanging(string scene)
@@ -307,6 +310,7 @@ namespace OurTaiko
 
         void OnFocusChanged(WheelItem previous, SongSelectManager.FocusReason reason)
         {
+            if (reason == SongSelectManager.FocusReason.Navigate) scrolledAt = Now;
             if (reason == SongSelectManager.FocusReason.Navigate && visuals.TryGetValue(previous, out var left) && left.OpenStart >= 0)
             {
                 left.CloseStart = Now; left.OpenStart = -1;
