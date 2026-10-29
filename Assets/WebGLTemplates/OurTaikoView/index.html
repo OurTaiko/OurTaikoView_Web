@@ -6,7 +6,7 @@
 <script src="Build/{{{ LOADER_FILENAME }}}"></script><script>
 const canvas=document.getElementById('unity-canvas'),overlay=document.getElementById('overlay'),message=document.getElementById('message'),progress=document.getElementById('progress'),start=document.getElementById('start');
 const parentOrigin=new URLSearchParams(location.search).get('parentOrigin') || location.origin;
-let instance=null,loaded=false,activeRequest='';
+let instance=null,loaded=false,activeRequest='',movieUrl=null;
 function post(data){ if(window.parent!==window) window.parent.postMessage(data,parentOrigin); }
 function command(type){if(instance)instance.SendMessage('WebPlayerBridge','Receive',JSON.stringify({channel:'ourtaiko-view',type,requestId:activeRequest}));}
 window.ourTaikoViewEmit=json=>{const data=JSON.parse(json);if((data.type==='error'&&window.ourTaikoPendingAudio?.requestId===data.requestId)||data.type==='exit')window.ourTaikoPendingAudio=null;if(data.type==='ready'&&!instance)return;post(data);if(data.type==='loading'){overlay.hidden=false;start.hidden=true;progress.hidden=true;message.textContent='正在加载谱面与音乐… / Loading…';}if(data.type==='loaded'){loaded=true;overlay.hidden=false;progress.hidden=true;message.textContent='点击开始以启用声音和键盘 / Click to enable audio and keyboard';start.hidden=false;}if(data.type==='error'){overlay.hidden=false;message.textContent='加载失败 / Load failed: '+data.payload.code;start.hidden=true;}if(data.type==='exit'){loaded=false;overlay.hidden=false;start.hidden=true;message.textContent='请选择练习或观看模式 / Select a mode';}};
@@ -22,12 +22,20 @@ window.addEventListener('message',event=>{
       post({channel:'ourtaiko-view',type:'error',requestId:data.requestId,payload:{code:'INVALID_AUDIO_TRANSFER'}});
       return;
     }
+    const movie=payload?.movieBytes;
+    if(movie!==undefined&&(!(movie instanceof ArrayBuffer)||movie.byteLength===0||movie.byteLength>128*1024*1024)){
+      post({channel:'ourtaiko-view',type:'error',requestId:data.requestId,payload:{code:'INVALID_MOVIE_TRANSFER'}});
+      return;
+    }
     window.ourTaikoPendingAudio={requestId:data.requestId,bytes};
+    // The background movie becomes a blob: URL the player's <video> reads; the previous one is freed.
+    if(movieUrl)URL.revokeObjectURL(movieUrl);
+    movieUrl=movie?URL.createObjectURL(new Blob([movie],{type:'video/mp4'})):null;
     // Only metadata crosses SendMessage/JSON. Encoded audio stays in this iframe's JS heap.
-    if(payload){const {audioBytes,...metadata}=payload;command={...data,payload:{...metadata,audioTransferred:true}};}
+    if(payload){const {audioBytes,movieBytes,...metadata}=payload;command={...data,payload:{...metadata,audioTransferred:true,movieUrl:movieUrl||''}};}
     activeRequest=data.requestId;loaded=false;
   }
-  if(data.type==='unload')window.ourTaikoPendingAudio=null;
+  if(data.type==='unload'){window.ourTaikoPendingAudio=null;if(movieUrl){URL.revokeObjectURL(movieUrl);movieUrl=null;}}
   instance.SendMessage('WebPlayerBridge','Receive',JSON.stringify(command));
 });
 start.addEventListener('click',()=>{canvas.focus();overlay.hidden=true;});

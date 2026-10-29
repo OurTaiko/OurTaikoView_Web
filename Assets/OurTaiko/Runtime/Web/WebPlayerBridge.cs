@@ -28,6 +28,8 @@ namespace OurTaiko
             public string audioDecode = "native";
             public bool practice = true, autoPlay, replay;
             public bool audioTransferred;
+            // The background movie: a blob: URL the page made from the transferred movieBytes (optional).
+            public string movieUrl;
             // setDrumVolume: 0-100, the hit-sound (Drum group) volume.
             public float? volume;
         }
@@ -76,6 +78,8 @@ namespace OurTaiko
                 { Emit("error", new { code = "INVALID_RESOURCE" }, command.requestId); return; }
                 if (value.chartText?.Length > 4 * 1024 * 1024)
                 { Emit("error", new { code = "CHART_TOO_LARGE" }, command.requestId); return; }
+                if (!string.IsNullOrEmpty(value.movieUrl) && !value.movieUrl.StartsWith("blob:", StringComparison.Ordinal))
+                { Emit("error", new { code = "INVALID_MOVIE" }, command.requestId); return; }
                 if (value.audioDecode != null && value.audioDecode != "native" && value.audioDecode != "software")
                 { Emit("error", new { code = "INVALID_AUDIO_DECODE" }, command.requestId); return; }
                 if (SceneSwitcher.EnsureInstance().IsSwitching) { Emit("error", new { code = "BUSY" }, command.requestId); return; }
@@ -119,6 +123,7 @@ namespace OurTaiko
             Song = ScriptableObject.CreateInstance<SongDefinition>();
             Song.name = "Embedded chart";
             Song.chart = new TextAsset(chart); Song.music = null; Song.webAudioBuffer = buffer; Song.course = value.course;
+            Song.moviePath = string.IsNullOrEmpty(value.movieUrl) ? null : value.movieUrl;
             var switcher = SceneSwitcher.EnsureInstance();
             while (switcher.IsSwitching) yield return null;
             switcher.ConfigureEmbedded(Song, value.course, value.autoPlay);

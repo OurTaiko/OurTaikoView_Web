@@ -8,6 +8,9 @@ namespace OurTaiko
         public TextAsset chart;
         public AudioClip music;
         [System.NonSerialized] public string audioPath;
+        // The background movie (BGMOVIE): in the web player the blob URL of the bytes the parent
+        // page transferred. null when the chart has none.
+        [System.NonSerialized] public string moviePath;
         // Browser-decoded Web Audio buffer for the embedded song; released with the song.
         [System.NonSerialized] public int webAudioBuffer;
         NativeAudioSample preparedAudio;
@@ -56,6 +59,9 @@ namespace OurTaiko
             return TjaParser.Parse(chart.text, blockCourse, side);
         }
         public SongInfo ReadInfo() => SongInfo.Read(chart.text);
+        // MOVIEOFFSET: how many seconds after the music starts the movie does (negative: before).
+        // The embedded chart is the stored TJA, which keeps the header.
+        public double MovieOffset() => chart != null ? ReadInfo().MovieOffset : 0;
         // Display metadata is separate from the parsed chart and score identity. Online songs take it
         // from the server's metadata: their chart is only set once SongLoadingScene downloads it.
         public SongInfo ReadDisplayInfo()

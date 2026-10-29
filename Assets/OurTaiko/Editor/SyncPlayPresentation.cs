@@ -396,6 +396,80 @@ namespace OurTaiko.Editor
             AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", type, property), curve);
         }
 
+        // OurTaikoPlay's BackgroundMovie (BGMOVIE behind the lanes), on Unity's VideoPlayer: a black
+        // backdrop and the movie between the stage art and the title, the stage art and the lane
+        // backgrounds each under a CanvasGroup that BackgroundMovieView fades.
+        [MenuItem("OurTaikoView/Sync Background Movie")]
+        public static void ApplyBackgroundMovie()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                var viewport = play.title.transform.parent;
+                var root = viewport.Find("BackgroundMovie") as RectTransform;
+                if (root == null)
+                {
+                    root = new GameObject("BackgroundMovie", typeof(RectTransform)).GetComponent<RectTransform>();
+                    root.SetParent(viewport, false);
+                    root.SetSiblingIndex(play.title.transform.GetSiblingIndex());
+                }
+                Stretch(root);
+                var black = MovieGraphic<Image>(root, "Blackout");
+                Stretch(black.rectTransform);
+                black.color = Color.black;
+                var screen = MovieGraphic<RawImage>(root, "Screen");
+                screen.rectTransform.anchorMin = screen.rectTransform.anchorMax = screen.rectTransform.pivot = new Vector2(.5f, .5f);
+                screen.rectTransform.anchoredPosition = Vector2.zero;
+                screen.rectTransform.sizeDelta = new Vector2(1920, 1080);
+                var player = root.GetComponent<WebMoviePlayer>();
+                if (player == null) player = root.gameObject.AddComponent<WebMoviePlayer>();
+                player.video = root.GetComponent<UnityEngine.Video.VideoPlayer>();
+                var view = root.GetComponent<BackgroundMovieView>();
+                if (view == null) view = root.gameObject.AddComponent<BackgroundMovieView>();
+                view.player = player; view.screen = screen; view.blackout = black;
+                string[] stage = { "Backdrop", "FestivalBackground", "FestivalLights", "Dancers", "Footer" };
+                view.stageArt = viewport.Cast<Transform>().Where(t => stage.Contains(t.name) || t.name.StartsWith("HeaderPattern", StringComparison.Ordinal)).Select(Group).ToArray();
+                var lane = viewport.Find("NoteLane");
+                view.laneBackgrounds = new[] { "LaneBackground", "BranchIndicator/RouteBackground", "GogoEffects/Lane" }
+                    .Select(name => lane.Find(name) ?? throw new InvalidOperationException("NoteLane/" + name + " is missing.")).Select(Group).ToArray();
+                play.movie = view;
+                EditorUtility.SetDirty(player);
+                EditorUtility.SetDirty(view);
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                Debug.Log("PracticeScene: BackgroundMovie with " + view.stageArt.Length + " stage art and " + view.laneBackgrounds.Length + " lane backgrounds");
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
+        static T MovieGraphic<T>(RectTransform root, string name) where T : Graphic
+        {
+            var rect = root.Find(name) as RectTransform;
+            if (rect == null) { rect = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer)).GetComponent<RectTransform>(); rect.SetParent(root, false); }
+            var graphic = rect.GetComponent<T>();
+            if (graphic == null) graphic = rect.gameObject.AddComponent<T>();
+            graphic.raycastTarget = false;
+            return graphic;
+        }
+
+        static CanvasGroup Group(Transform target)
+        {
+            var group = target.GetComponent<CanvasGroup>();
+            return group != null ? group : target.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        static void Stretch(RectTransform rect)
+        {
+            rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+        }
+
         static void RemoveDuplicateDifficultySprites()
         {
             var importer = AssetImporter.GetAtPath("Assets/OurTaiko/Art/game/lane/lane_difficulty.png");

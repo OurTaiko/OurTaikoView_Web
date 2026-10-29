@@ -6,7 +6,9 @@ namespace OurTaiko
         public object EmbeddedState() => new { paused = IsPaused, autoPlay, time = SongTime, branch = Session?.CurrentBranch.ToString(), forcedBranch = Session?.ForcedBranch?.ToString(), stage = Practice != null ? PracticeStage.ToString() : null,
             good = Session?.Good ?? 0, bad = Session?.Bad ?? 0, score = Session?.Score ?? 0,
             position = Practice?.Position ?? 0, first = Practice?.First ?? 0, speed = Practice?.Speed ?? 1,
-            drumVolume = Mathf.RoundToInt(SettingManager.EnsureInstance().Settings.audio.volume.drum * 100) };
+            drumVolume = Mathf.RoundToInt(SettingManager.EnsureInstance().Settings.audio.volume.drum * 100),
+            // The background movie: whether a frame of it is on screen, and how far in it is (-1: none open).
+            movie = movie != null && movie.IsShowing, moviePosition = movie != null && movie.HasMovie && movie.player.IsPrepared ? movie.player.Position : -1 };
         public void EmbeddedPause()
         {
             // A start that is still scrolling back to its lead-in is cancelled as well.

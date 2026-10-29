@@ -33,6 +33,9 @@ namespace OurTaiko
         public UnityEngine.UI.Button pauseButton, restartButton, backButton, resumeButton, resultRestart, resultBack;
         [Tooltip("The backdrop's dancers, on the chart's tempo and the soul gauge. DoublePlayScene has none.")]
         public DancerTroupeView dancers;
+        [Tooltip("The chart's background movie behind the lanes; practice moves it with the measure.")]
+        public BackgroundMovieView movie;
+        double movieOffset;
         [Tooltip("The kusudama ball over the whole screen, shared by both seats.")]
         public KusudamaView kusudama;
 
@@ -138,6 +141,8 @@ namespace OurTaiko
                 ShowSubtitleLines(displayInfo);
                 music.SetAudioSong(song);
                 hitAudio.PrepareAudioEffects(balloonPop, kusudamaPop);
+                // Both seats play one file, so the song's one BGMOVIE plays behind both lanes.
+                if (movie != null) { movieOffset = song.MovieOffset(); movie.Load(song.moviePath); }
             }
             catch (Exception error)
             {
@@ -222,6 +227,7 @@ namespace OurTaiko
                 ? music.AudioPosition() : null;
             songClock.Update(GameTimeline.AudioFrameTime, playback);
             StartDueMusic();
+            if (movie != null) movie.Show(SongTime - movieOffset, songClock.Rate, !IsPaused);
             if (closingPauseMenu || Time.frameCount == resumeFrame || Time.frameCount == pauseOpenedFrame) return;
             if (InputManager.GetKeyDown(InputKey.Back) || InputManager.GetKeyDown(InputKey.Pause))
             { TogglePause(); return; }

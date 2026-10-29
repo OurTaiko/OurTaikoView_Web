@@ -64,6 +64,13 @@ namespace OurTaiko
         // Wait for every display refresh (vSyncCount 1). On desktop the refresh rate then replaces
         // targetFrameRate; mobile platforms ignore vSyncCount and always use targetFrameRate.
         public bool vSync;
+        // Play the chart's background movie (BGMOVIE) behind the lanes, and download it for online
+        // charts. While it plays the stage art is hidden and the lanes' backgrounds are drawn at
+        // movieLaneOpacity percent (OpenTaiko's BGAlpha, 100 of 255).
+        public bool backgroundMovie = true;
+        public const int MovieLaneOpacityDefault = 40, MovieLaneOpacityStep = 5;
+        public int movieLaneOpacity = MovieLaneOpacityDefault;
+        public float MovieLaneAlpha => Mathf.Clamp(movieLaneOpacity, 0, 100) / 100f;
 
         // Applies these settings to the running player; render every frame (no frame skipping).
         public void Apply()
