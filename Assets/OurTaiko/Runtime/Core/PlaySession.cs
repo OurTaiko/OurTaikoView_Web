@@ -296,6 +296,8 @@ namespace OurTaiko
                 if (time > note.EndTime && !resolved[i]) { resolved[i] = true; Version++; }
             }
             else if (auto) Resolve(i, Judgment.Good);
+            // An Ad-Lib nobody hit past its 可 window just goes: never 不可, never a miss.
+            else if (note.IsAdLib) { if (time - note.Time > okWindow) { resolved[i] = true; Version++; } }
             else if (time - note.Time > badWindow) { missed[i] = true; Resolve(i, Judgment.Bad); }
             return !resolved[i];
         }
@@ -314,6 +316,13 @@ namespace OurTaiko
                 // one is within 可, unless any other pending note lies between them.
                 int next = NextInLane(ka, target + 1);
                 if (next >= 0 && time > Chart.Notes[next].Time - okWindow && !PendingBetween(target, next)) target = next;
+            }
+            bool kadonCompletes = target >= 0 && KadonWaits(target, time) && kadonFirstKa != ka;
+            int adLib = kadonCompletes ? -1 : AdLibTarget(target, time);
+            if (adLib >= 0)
+            {
+                Judgment adLibResult = Math.Abs(Chart.Notes[adLib].Time - time) <= goodWindow ? Judgment.Good : Judgment.Ok;
+                Resolve(adLib, adLibResult); return adLibResult;
             }
             if (target >= 0)
             {
@@ -338,6 +347,45 @@ namespace OurTaiko
             int roll = HittableLong(ka, time);
             if (roll >= 0) { HitLong(roll, time + JudgeOffset); return Judgment.Roll; }
             return Judgment.None;
+        }
+
+        // OpenTaiko's Ad-Lib, either colour, taken only within 可 (a press in its 不可 range goes on as if
+        // it were not there). As GetChipToJudgeIgnoringRollBody: the latest past Ad-Lib hides the
+        // older notes; a past note after it within 可 comes first; past and future then go to the
+        // nearer when the past one is an Ad-Lib, else to the past note unless only it is 不可.
+        // Returns the Ad-Lib to judge, or -1 when the press goes to `target` as before.
+        int AdLibTarget(int target, double time)
+        {
+            int past = -1, future = -1;
+            int from = 0;
+            if (timeSorted)
+            {
+                foreach (int i in pending) Consider(i);
+                from = head;
+            }
+            for (int i = from; i < Chart.Notes.Count && (!timeSorted || Chart.Notes[i].Time <= time + okWindow); i++) Consider(i);
+            if (past < 0 && future < 0) return -1;
+
+            double offset = target >= 0 ? Chart.Notes[target].Time - time : double.PositiveInfinity;
+            bool note = Math.Abs(offset) <= badWindow, noteBad = Math.Abs(offset) > okWindow;
+            bool notePast = note && offset <= 0 && (past < 0 || Chart.Notes[target].Time > Chart.Notes[past].Time);
+            if (notePast && !noteBad) return -1;
+            // The note is the first future one: future = -2.
+            if (note && offset > 0 && (future < 0 || Chart.Notes[target].Time < Chart.Notes[future].Time)) future = -2;
+            // Only a 不可 past note, or none: the first future one (-2, the note itself, gives -1).
+            if (past < 0) return Math.Max(future, -1);
+            if (future == -1) return past;
+            double futureOffset = future == -2 ? offset : Chart.Notes[future].Time - time;
+            return futureOffset < time - Chart.Notes[past].Time ? (future == -2 ? -1 : future) : past;
+
+            void Consider(int i)
+            {
+                if (!Pending(i) || !Chart.Notes[i].IsAdLib) return;
+                double d = Chart.Notes[i].Time - time;
+                if (Math.Abs(d) > okWindow) return;
+                if (d <= 0) past = i;
+                else if (future < 0) future = i;
+            }
         }
 
         bool KadonWaits(int i, double time) => kadonWaiting == i && Pending(i) && time - kadonFirstHit < KadonWait;
@@ -368,6 +416,7 @@ namespace OurTaiko
         }
 
         // Earliest pending don (ka = false) or ka note from index start; big notes share the lane, Kadon both.
+        // Ad-Libs are left to AdLibTarget.
         int NextInLane(bool ka, int start)
         {
             if (timeSorted)
@@ -379,7 +428,7 @@ namespace OurTaiko
                 if (IsLaneNote(i, ka)) return i;
             return -1;
         }
-        bool IsLaneNote(int i, bool ka) => Pending(i) && !Chart.Notes[i].IsLong && (Chart.Notes[i].IsKa == ka || Chart.Notes[i].IsKadon);
+        bool IsLaneNote(int i, bool ka) => Pending(i) && !Chart.Notes[i].IsLong && !Chart.Notes[i].IsAdLib && (Chart.Notes[i].IsKa == ka || Chart.Notes[i].IsKadon);
 
         bool PendingBetween(int first, int last)
         {

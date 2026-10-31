@@ -218,6 +218,7 @@ namespace OurTaiko
             }
             SpawnArc(index, result);
             var judged = Session.Chart.Notes[index];
+            if (judged.IsAdLib && scene.adLibHit != null) scene.hitAudio.PlayAudioOneShot(scene.adLibHit, AudioGroup.Drum);
             bool big = judged.IsBigNote || judged.IsKadon;
             double judgedAt = ChartTime;
             v.hitFace.Play(result, big, judgedAt);
@@ -244,14 +245,16 @@ namespace OurTaiko
             UpdateHud();
         }
 
-        // Good/ok notes 1-4 and Kadon fly as themselves; popped balloons fly as big don. Roll hits use the roll's size
-        // and the struck drum's colour (autoplay rolls with don). Kusudama never flies.
+        // Good/ok notes 1-4 and Kadon fly as themselves, an Ad-Lib as the small note of the struck drum (autoplay
+        // strikes don); popped balloons fly as big don. Roll hits use the roll's size and the struck drum's colour
+        // (autoplay rolls with don). Kusudama never flies.
         void SpawnArc(int index, Judgment result)
         {
             if (Views.noteArcs == null) return;
             var note = Session.Chart.Notes[index];
             NoteKind kind;
-            if (result == Judgment.Good || result == Judgment.Ok) kind = note.Kind;
+            if ((result == Judgment.Good || result == Judgment.Ok) && note.IsAdLib) kind = hitKa && !AutoPlay ? NoteKind.Ka : NoteKind.Don;
+            else if (result == Judgment.Good || result == Judgment.Ok) kind = note.Kind;
             else if (result != Judgment.Roll || note.Kind == NoteKind.Kusudama) return;
             else if (note.Kind == NoteKind.Balloon)
             {

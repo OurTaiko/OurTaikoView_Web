@@ -305,6 +305,8 @@ namespace OurTaiko
             for (int k = 0; k < noteWindow.Count; k++)
             {
                 int i = noteWindow[k];
+                // An Ad-Lib is not drawn, nor any text for it.
+                if (chartNotes[i].IsAdLib) continue;
                 var note = chartNotes[i]; var view = shownNotes[i]; var pos = Position(note, time);
                 if (note.IsBalloon && time >= note.Time) pos = judge;
                 // The tail is placed (and cut to whole pixels) on its own, as OpenTaiko's roll end:

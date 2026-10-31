@@ -36,7 +36,8 @@ namespace OurTaiko
             }
         }
 
-        // Notes 1–4 and the Kadon (G): judged 良/可/不可 and counted for score and gauge.
+        // Notes 1–4 and the Kadon (G): judged 良/可/不可 and counted for score and gauge. An Ad-Lib (F)
+        // is not: hit, it scores and fills the gauge on top, as a bonus.
         static bool IsJudgeable(ChartNote note) => note.Kind >= NoteKind.Don && note.Kind <= NoteKind.BigKa || note.IsKadon;
     }
 }
