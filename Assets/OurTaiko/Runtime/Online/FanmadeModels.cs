@@ -26,6 +26,9 @@ namespace OurTaiko.Online
         public int Level;
         // The block has #BRANCHSTART (Fanmade migration 031).
         public bool Branching;
+        // The server's content hash of the block as played ("v1:" + 64 hex, TJAParser): the block's
+        // identity for queued scores. Empty while the server has not computed it.
+        public string ChartHash = "";
     }
 
     // A published chart as /api/v1/game/categories/{id}/charts and /api/v1/charts/{id} return it.
@@ -34,7 +37,7 @@ namespace OurTaiko.Online
         public static readonly string[] Courses = { "Easy", "Normal", "Hard", "Oni", "Edit" };
 
         public string Server = "", Id = "", Title = "", Subtitle = "", Maker = "";
-        // The audio file's hash (the download check); the servers no longer publish the TJA file's.
+        // The audio file's hash (the download check); the chart itself is identified by its blocks.
         public string AudioHash = "", AudioName = "";
         public string Category = "", Genre = "";
         public bool IsSingle = true;
@@ -45,6 +48,9 @@ namespace OurTaiko.Online
         public readonly List<FanmadeDifficulty> Blocks = new List<FanmadeDifficulty>();
 
         public bool IsPlayable => Difficulties.Any(d => d != null);
+        // Every block with its content hash: the same text for the same playable chart, whatever
+        // the file or its headers (replaces the TJA file hash as the cache identity).
+        public string BlocksKey => string.Join(",", Blocks.Select(b => b.Course + "=" + b.ChartHash));
 
         public static FanmadeChart From(JToken v, string server)
         {
@@ -75,10 +81,12 @@ namespace OurTaiko.Online
                 if (slot < 0) continue;  // Tower/Dan are not playable here.
                 long level = Json.Number(d, "level");
                 if (level > 100 || d["branching"]?.Type != JTokenType.Boolean) throw new FanmadeException("API_DIFFICULTY_INVALID");
+                string chartHash = Json.Str(d, "chartHash");
+                if (chartHash.Length > 0 && !ChartHashPattern.IsMatch(chartHash)) throw new FanmadeException("API_DIFFICULTY_INVALID");
                 var difficulty = new FanmadeDifficulty
                 {
                     Course = name, Level = (int)level, Player = player,
-                    Maker = Json.Str(d, "maker"), Branching = (bool)d["branching"],
+                    Maker = Json.Str(d, "maker"), Branching = (bool)d["branching"], ChartHash = chartHash,
                 };
                 if (c.Blocks.Any(x => x.Course == name) || c.IsSingle != (player.Length == 0))
                     throw new FanmadeException("API_DIFFICULTY_INVALID");
@@ -87,6 +95,8 @@ namespace OurTaiko.Online
             }
             return c;
         }
+
+        static readonly System.Text.RegularExpressions.Regex ChartHashPattern = new System.Text.RegularExpressions.Regex("^v[0-9]+:[0-9a-f]{64}$");
 
         public string SelectedPlayer = "";
         public FanmadeChart ForPlayer(string player)

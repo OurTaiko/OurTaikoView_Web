@@ -178,7 +178,8 @@ namespace OurTaiko.Tests
             int updates = 0;
             var (play, _, prepared) = Run(() => client.PrepareAsync(listed, progress: p => { last = p; updates++; }));
             Assert.That(prepared.Title, Is.EqualTo("First v2"));
-            Assert.That(client.Charts[0].Title, Is.EqualTo(prepared.Title), "The catalog entry follows the replaced files.");
+            Assert.That(prepared.BlocksKey, Is.Not.EqualTo(listed.BlocksKey), "the replaced TJA's blocks have new content hashes");
+            Assert.That(client.Charts[0].BlocksKey, Is.EqualTo(prepared.BlocksKey), "The catalog entry follows the replaced files.");
             Assert.That(TjaParser.Parse(play, "Oni").Notes.Count, Is.EqualTo(8));
             Assert.That(last.Step, Is.EqualTo(DownloadProgress.Stage.Ready));
             Assert.That(last.Audio.Status, Is.EqualTo(FileProgress.State.Complete));
@@ -318,8 +319,9 @@ namespace OurTaiko.Tests
             {
                 Title = "Double", Difficulties = new System.Collections.Generic.List<(string, int, string)> { ("Oni", 9, "P1"), ("Oni", 8, "P2") },
             }.ToJson();
-            keyed["difficulties"] = new JArray(new JObject { ["course"] = "Oni_1p", ["level"] = 9, ["maker"] = "", ["branching"] = false },
-                new JObject { ["course"] = "Oni_2p", ["level"] = 8, ["maker"] = "", ["branching"] = true });
+            // Every block carries the server's content hash, as both servers report it.
+            keyed["difficulties"] = new JArray(new JObject { ["course"] = "Oni_1p", ["level"] = 9, ["maker"] = "", ["branching"] = false, ["chartHash"] = "v1:" + new string('1', 64) },
+                new JObject { ["course"] = "Oni_2p", ["level"] = 8, ["maker"] = "", ["branching"] = true, ["chartHash"] = "v1:" + new string('2', 64) });
             var p2 = FanmadeChart.From(keyed, "server").ForPlayer("P2").ToSongInfo("en");
             Assert.That(p2.Title, Is.EqualTo("Double P2"));
             Assert.That(p2.Courses().Select(c => (c.Difficulty, c.Course, c.Level, c.IsBranching)), Is.EqualTo(new[] { (Difficulty.Oni, "Oni_2p", 8, true) }));

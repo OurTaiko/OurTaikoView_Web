@@ -29,6 +29,8 @@ namespace OurTaiko.Online
                     if (c.Id != selected.Id) throw new FanmadeException("RESOURCE_CHART_MISMATCH");
                     c.Category = selected.Category; c.Genre = selected.Genre;
                     var manifest = await e.ResourcesAsync(c.Id, cancel);
+                    // The server's current chart is prepared (the catalog entry follows it); the
+                    // manifest must name that chart's audio, and the TJA is checked on download.
                     if (c.AudioHash != manifest.Audio.Hash)
                     { if (attempt == 0) continue; throw new FanmadeException("CHART_UPDATING"); }
                     if (!c.IsPlayable) throw new FanmadeException("CHART_NO_PLAYABLE_COURSE");

@@ -32,6 +32,10 @@ namespace OurTaiko.Tests
             // Courses (as the API names them) reported with "branching": true; the rest are false.
             public readonly HashSet<string> Branching = new HashSet<string>();
 
+            // A block's content hash as a server would report it: "v1:" + 64 hex, changing with the TJA.
+            public string ChartHash(string course)
+                => "v1:" + Sha(System.Text.Encoding.UTF8.GetBytes(System.Text.Encoding.UTF8.GetString(Tja) + "\n" + course));
+
             public JObject ToJson()
             {
                 var value = new JObject
@@ -44,7 +48,8 @@ namespace OurTaiko.Tests
                     ["difficulties"] = new JArray(Difficulties.Select(d =>
                     {
                         string course = d.Course + (d.Player == "P1" ? "_1p" : d.Player == "P2" ? "_2p" : "");
-                        return new JObject { ["course"] = course, ["level"] = d.Level, ["maker"] = Maker, ["branching"] = Branching.Contains(course) };
+                        // The server's content hash of the block: here one that follows the TJA bytes.
+                        return new JObject { ["course"] = course, ["level"] = d.Level, ["maker"] = Maker, ["branching"] = Branching.Contains(course), ["chartHash"] = ChartHash(course) };
                     })),
                 };
                 if (Encoding != null) value["encoding"] = Encoding;

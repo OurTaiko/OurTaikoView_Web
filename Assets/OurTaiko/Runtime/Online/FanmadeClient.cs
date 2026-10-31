@@ -220,7 +220,7 @@ namespace OurTaiko.Online
             };
             try
             {
-                UploadQueue.Enqueue(e.Id, RandomKey(), body.ToString(Newtonsoft.Json.Formatting.None), null, chart.AudioHash);
+                UploadQueue.Enqueue(e.Id, RandomKey(), body.ToString(Newtonsoft.Json.Formatting.None), chart.Difficulties[difficulty].ChartHash, chart.AudioHash);
                 lock (sync) retryAt = DateTime.MinValue;
                 Update();
                 return true;
@@ -268,14 +268,15 @@ namespace OurTaiko.Online
                         await e.Transport.WaitAsync();
                         try
                         {
-                            // A score belongs to the files it was played on; if they changed since, keep it aside.
-                            if (!Json.HexId(queued.AudioHash ?? "", 64))
+                            // A score belongs to the block it was played on and to the audio; if either
+                            // changed since, keep it aside.
+                            if (string.IsNullOrEmpty(queued.ChartHash) || !Json.HexId(queued.AudioHash ?? "", 64))
                             { UploadQueue.Reject(queued.Key); continue; }
                             var current = FanmadeChart.From(Json.Parse(await e.AuthorizedAsync("/api/v1/charts/" + Json.Str(Json.Parse(queued.Body), "songId"))), e.Id);
                             var manifest = await e.ResourcesAsync(current.Id);
                             if (manifest.Audio.Hash != current.AudioHash)
                                 throw new FanmadeException("CHART_UPDATING");
-                            if (current.AudioHash != queued.AudioHash)
+                            if (!current.Blocks.Any(b => b.ChartHash == queued.ChartHash) || current.AudioHash != queued.AudioHash)
                             { UploadQueue.Reject(queued.Key); continue; }
                             score = FanmadeScore.From(Json.Parse(await e.AuthorizedAsync("/api/v1/game/scores", queued.Body, queued.Key)));
                         }
