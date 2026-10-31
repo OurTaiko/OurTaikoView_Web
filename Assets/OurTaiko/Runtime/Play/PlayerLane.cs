@@ -132,16 +132,19 @@ namespace OurTaiko
             if (renderer.Render(Session, time, preview, hideSkipped) && Views.gogo != null) Views.gogo.ShowTime(Session, time, preview);
         }
 
-        // Input mutex: a frame judges only this seat's earliest drum press; later ones in the same frame are dropped.
+        // Input mutex: a frame judges only this seat's earliest drum press; later ones in the same frame are
+        // dropped, except one of the other colour when the first left a Kadon waiting for it.
         void HitFirstDrumPress()
         {
-            bool judged = false;
+            bool first = true, second = false;
             foreach (var press in Input.PressesThisFrame)
             {
                 bool wasHeard = Forget(press);
-                if (judged) continue;
-                judged = true;
-                Hit(press.Key.IsKa(), press.Key.IsRight(), !wasHeard);
+                bool ka = press.Key.IsKa();
+                if (first) first = false;
+                else if (second || Session == null || !Session.AwaitsKadon(ka, ChartTime)) continue;
+                else second = true;
+                Hit(ka, press.Key.IsRight(), !wasHeard);
             }
         }
         // The drum sound does not wait for the input delay: a press that will be judged is heard in the
@@ -205,14 +208,17 @@ namespace OurTaiko
                 v.soulGauge.SetPoints(Session.GaugePoints, ChartTime);
             if (AutoPlay)
             {
-                // Alternate actual strikes, including every hit within the same long note.
-                PlayDrum(Session.Chart.Notes[index].IsKa);
-                Feedback(Session.Chart.Notes[index].IsKa, nextAutoRight);
+                // Alternate actual strikes, including every hit within the same long note. A Kadon
+                // strikes don and ka together with opposite hands.
+                var struck = Session.Chart.Notes[index];
+                PlayDrum(struck.IsKa);
+                Feedback(struck.IsKa, nextAutoRight);
+                if (struck.IsKadon) { PlayDrum(true); Feedback(true, !nextAutoRight); }
                 nextAutoRight = !nextAutoRight;
             }
             SpawnArc(index, result);
             var judged = Session.Chart.Notes[index];
-            bool big = judged.IsBigNote;
+            bool big = judged.IsBigNote || judged.IsKadon;
             double judgedAt = ChartTime;
             v.hitFace.Play(result, big, judgedAt);
             v.hitRing.Play(result, big, judgedAt);
@@ -238,7 +244,7 @@ namespace OurTaiko
             UpdateHud();
         }
 
-        // Good/ok notes 1-4 fly as themselves; popped balloons fly as big don. Roll hits use the roll's size
+        // Good/ok notes 1-4 and Kadon fly as themselves; popped balloons fly as big don. Roll hits use the roll's size
         // and the struck drum's colour (autoplay rolls with don). Kusudama never flies.
         void SpawnArc(int index, Judgment result)
         {
@@ -256,7 +262,7 @@ namespace OurTaiko
                 kind = hitKa && !AutoPlay ? NoteKind.BigKa : NoteKind.BigDon;
             else kind = hitKa && !AutoPlay ? NoteKind.Ka : NoteKind.Don;
             // NoteArc's is_big picks the gauge burst's circle; popped balloons fly as big don.
-            bool big = kind == NoteKind.BigDon || kind == NoteKind.BigKa;
+            bool big = kind == NoteKind.BigDon || kind == NoteKind.BigKa || kind == NoteKind.Kadon;
             // The note leaves the judge where #JPOSSCROLL has it now (user request; OpenTaiko's
             // FlyingNotes start from the fixed skin point).
             var shift = JudgeShift.At(Session.Chart.JudgeMoves, ChartTime);

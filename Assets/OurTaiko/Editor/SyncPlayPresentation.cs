@@ -470,6 +470,70 @@ namespace OurTaiko.Editor
             rect.offsetMin = rect.offsetMax = Vector2.zero;
         }
 
+        // The Kadon (G), OurTaikoPlay a7b65ab and dc98eda: its purple note and the moji カドン. The images
+        // are copied from OurTaikoPlay; the new slices stand where the existing ones leave room, so
+        // none of those move. noteSprites stays indexed by NoteKind (Kadon is 16).
+        [MenuItem("OurTaikoView/Sync Kadon")]
+        public static void ApplyKadon()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string atlas = "Assets/OurTaiko/Art/game/notes/notes_atlas.png", moji = "Assets/OurTaiko/Art/game/notes/moji.png";
+            foreach (string image in new[] { atlas, moji })
+            {
+                FileUtil.ReplaceFile(Path.GetFullPath("../OurTaikoPlay/" + image), image);
+                AssetDatabase.ImportAsset(image, ImportAssetOptions.ForceSynchronousImport);
+            }
+            AddSlice(atlas, "Note16", new Rect(384, 1728, 192, 192));
+            AddSlice(atlas, "Note16Alternate", new Rect(384, 1536, 192, 192));
+            AddSlice(moji, "Moji12", new Rect(0, 576, 256, 48));
+            var notes = AssetDatabase.LoadAllAssetsAtPath(atlas).OfType<Sprite>().ToDictionary(s => s.name);
+            var texts = AssetDatabase.LoadAllAssetsAtPath(moji).OfType<Sprite>().ToDictionary(s => s.name);
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                play.noteSprites = WithSprite(play.noteSprites, (int)NoteKind.Kadon, notes["Note16"]);
+                play.alternateNoteSprites = WithSprite(play.alternateNoteSprites, (int)NoteKind.Kadon, notes["Note16Alternate"]);
+                play.mojiSprites = WithSprite(play.mojiSprites, NoteMoji.Kadon, texts["Moji12"]);
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                AssetDatabase.SaveAssets();
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
+        // Sets one entry, growing the array with empty entries up to it.
+        static Sprite[] WithSprite(Sprite[] sprites, int index, Sprite sprite)
+        {
+            var grown = new Sprite[Math.Max(sprites.Length, index + 1)];
+            Array.Copy(sprites, grown, sprites.Length);
+            grown[index] = sprite;
+            return grown;
+        }
+
+        // Adds a centred slice unless the sheet has one of that name.
+        static void AddSlice(string path, string name, Rect rect)
+        {
+            var importer = AssetImporter.GetAtPath(path);
+            var factory = new SpriteDataProviderFactories();
+            factory.Init();
+            var provider = factory.GetSpriteEditorDataProviderFromObject(importer);
+            if (provider == null) throw new InvalidOperationException("Sprite data provider unavailable.");
+            provider.InitSpriteEditorDataProvider();
+            var rects = provider.GetSpriteRects();
+            if (rects.Any(r => r.name == name)) return;
+            var slice = new SpriteRect { name = name, rect = rect, alignment = SpriteAlignment.Center, pivot = new Vector2(0.5f, 0.5f), spriteID = GUID.Generate() };
+            provider.SetSpriteRects(rects.Append(slice).ToArray());
+            var names = provider.GetDataProvider<ISpriteNameFileIdDataProvider>();
+            names?.SetNameFileIdPairs(names.GetNameFileIdPairs().Append(new SpriteNameFileIdPair(name, slice.spriteID)).ToArray());
+            provider.Apply();
+            importer.SaveAndReimport();
+        }
+
         static void RemoveDuplicateDifficultySprites()
         {
             var importer = AssetImporter.GetAtPath("Assets/OurTaiko/Art/game/lane/lane_difficulty.png");

@@ -8,6 +8,8 @@ namespace OurTaiko
     public sealed class PlaySession
     {
         public const double GoodWindow = 0.0250250015258789, OkWindow = 0.0750750045776367, BadWindow = 0.108441665649414;
+        // OpenTaiko's BigNotesWaitTime (default 50 ms): a Kadon's second colour must follow the first within it.
+        public const double KadonWait = 0.05;
         public readonly TaikoChart Chart;
         public int KiwamiThreshold => scoring.CeilingScore;
         public double JudgeOffset { get; }
@@ -64,6 +66,10 @@ namespace OurTaiko
         readonly BranchFeed branchFeed = new BranchFeed();
         readonly BranchCounter branchCounter;
         double practiceStart = double.NegativeInfinity;
+        // The Kadon waiting for its second colour (-1 for none), and its first hit.
+        int kadonWaiting = -1;
+        double kadonFirstHit;
+        bool kadonFirstKa;
 
         sealed class TimelineEvent
         {
@@ -300,6 +306,7 @@ namespace OurTaiko
             time -= JudgeOffset;
             // check_note: don and ka are separate lanes, so a press judges the front of
             // its own colour's lane regardless of a pending note of the other colour.
+            // A Kadon (G) is in both lanes.
             int target = NextInLane(ka, 0);
             if (target >= 0 && time > Chart.Notes[target].Time + okWindow)
             {
@@ -310,10 +317,21 @@ namespace OurTaiko
             }
             if (target >= 0)
             {
-                double delta = Math.Abs(Chart.Notes[target].Time - time);
+                // OpenTaiko's swap note: the other colour within KadonWait completes it, judged at the first hit.
+                bool completes = KadonWaits(target, time) && kadonFirstKa != ka;
+                double at = completes ? kadonFirstHit : time;
+                double delta = Math.Abs(Chart.Notes[target].Time - at);
                 if (delta <= badWindow)
                 {
                     Judgment result = delta <= goodWindow ? Judgment.Good : delta <= okWindow ? Judgment.Ok : Judgment.Bad;
+                    if (Chart.Notes[target].IsKadon && !completes && (result != Judgment.Bad || KadonWaits(target, time)))
+                    {
+                        // A good or ok first hit waits; the same colour again is an empty hit. A wait that
+                        // ran out starts over, and the note is missed once its window passes (OpenTaiko).
+                        if (!KadonWaits(target, time)) { kadonWaiting = target; kadonFirstHit = time; kadonFirstKa = ka; }
+                        return Judgment.None;
+                    }
+                    if (kadonWaiting == target) kadonWaiting = -1;
                     Resolve(target, result); return result;
                 }
             }
@@ -321,6 +339,11 @@ namespace OurTaiko
             if (roll >= 0) { HitLong(roll, time + JudgeOffset); return Judgment.Roll; }
             return Judgment.None;
         }
+
+        bool KadonWaits(int i, double time) => kadonWaiting == i && Pending(i) && time - kadonFirstHit < KadonWait;
+
+        // A Kadon waits for this colour: a press of it in the same frame as the first is judged too.
+        public bool AwaitsKadon(bool ka, double time) => kadonWaiting >= 0 && kadonFirstKa != ka && KadonWaits(kadonWaiting, time - JudgeOffset);
 
         bool Pending(int i) => !resolved[i] && IsActive(Chart.Notes[i]);
         bool CanHitLong(int i, bool ka, double time)
@@ -344,7 +367,7 @@ namespace OurTaiko
             return -1;
         }
 
-        // Earliest pending don (ka = false) or ka note from index start; big notes share the lane.
+        // Earliest pending don (ka = false) or ka note from index start; big notes share the lane, Kadon both.
         int NextInLane(bool ka, int start)
         {
             if (timeSorted)
@@ -356,7 +379,7 @@ namespace OurTaiko
                 if (IsLaneNote(i, ka)) return i;
             return -1;
         }
-        bool IsLaneNote(int i, bool ka) => Pending(i) && !Chart.Notes[i].IsLong && Chart.Notes[i].IsKa == ka;
+        bool IsLaneNote(int i, bool ka) => Pending(i) && !Chart.Notes[i].IsLong && (Chart.Notes[i].IsKa == ka || Chart.Notes[i].IsKadon);
 
         bool PendingBetween(int first, int last)
         {

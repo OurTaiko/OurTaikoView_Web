@@ -11661,6 +11661,13 @@ MonoBehaviour:
   - {fileID: 1023139906, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   - {fileID: 0}
   - {fileID: -1110431548, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 1335696861, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   alternateNoteSprites:
   - {fileID: 0}
   - {fileID: -420797378, guid: 35c88b130e4b742368a255c10449afff, type: 3}
@@ -11672,6 +11679,13 @@ MonoBehaviour:
   - {fileID: 1600525810, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   - {fileID: 0}
   - {fileID: -1110431548, guid: 35c88b130e4b742368a255c10449afff, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: -1804706513, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   rollBodySprites:
   - {fileID: -391363771, guid: 35c88b130e4b742368a255c10449afff, type: 3}
   - {fileID: 1456176127, guid: 35c88b130e4b742368a255c10449afff, type: 3}
@@ -11692,6 +11706,7 @@ MonoBehaviour:
   - {fileID: -809232076, guid: 7fa1318e8839646ec97be9227b136cc2, type: 3}
   - {fileID: 475634943, guid: 7fa1318e8839646ec97be9227b136cc2, type: 3}
   - {fileID: 163934189, guid: 7fa1318e8839646ec97be9227b136cc2, type: 3}
+  - {fileID: 34513732, guid: 7fa1318e8839646ec97be9227b136cc2, type: 3}
   mojiRollSprite: {fileID: 21300000, guid: 3e54d678dcbf44f76a37ad176b3e47cd, type: 3}
   judgmentSprites:
   - {fileID: 21300000, guid: bbace4a2462f0474baaa4c4f81b73e61, type: 3}
