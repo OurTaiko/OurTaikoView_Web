@@ -65,7 +65,7 @@ namespace OurTaiko.Tests
         }
 
         [Test]
-        public void DifficultySearchIncludesDoubleCoursesAndUsesAnyQualifyingScore()
+        public void DifficultySearchCoversEverySideAndUsesAnyQualifyingScore()
         {
             using var fixture = new FanmadeFixture();
             string cache = Path.Combine(Path.GetTempPath(), "ourtaiko-search-" + Guid.NewGuid().ToString("N"));
@@ -73,9 +73,9 @@ namespace OurTaiko.Tests
             var chart = new FanmadeFixture.Chart { Title = "Double", Difficulties = { } };
             chart.Difficulties.Clear(); chart.Difficulties.Add(("Oni", 8, "P1")); chart.Difficulties.Add(("Hard", 6, "P2"));
             fixture.Charts.Add(chart);
-            fixture.AddAccountScore("don", chart, "Oni_1p", 1000, 2);
+            fixture.AddAccountScore("don", chart, "Oni", 1000, 2, "P1");
             fixture.AccountScores[0]["good"] = 10; fixture.AccountScores[0]["ok"] = 1; fixture.AccountScores[0]["bad"] = 0;
-            fixture.AddAccountScore("don", chart, "Oni_1p", 2000, 1);
+            fixture.AddAccountScore("don", chart, "Oni", 2000, 1, "P1");
             fixture.AccountScores[1]["bad"] = 1;
             try
             {
@@ -85,10 +85,12 @@ namespace OurTaiko.Tests
                     var query = new SongSearchQuery("", Difficulty.Oni, 8, SongSearchOrder.UnFullCombo);
                     var reply = (await client.SearchAsync(query)).Single();
                     Assert.That(reply.Error, Is.Null); Assert.That(reply.Charts.Count, Is.EqualTo(1));
-                    var p1 = reply.Charts[0].ForPlayer("P1"); var p2 = reply.Charts[0].ForPlayer("P2");
-                    Assert.That(query.Matches(p1.ToSongInfo(null)), Is.True); Assert.That(query.Matches(p2.ToSongInfo(null)), Is.False);
-                    Assert.That(client.SearchNeedsClear(p1, query), Is.False, "Earlier FC counts even though the highest score has a miss.");
-                    Assert.That(client.SearchNeedsClear(p1, new SongSearchQuery("", Difficulty.Oni, 8, SongSearchOrder.UnPerfect)), Is.True);
+                    // One song: single play reads the 1P Oni block; Hard has only a 2P block, which it never reads.
+                    var found = reply.Charts[0];
+                    Assert.That(query.Matches(found.ToSongInfo(null)), Is.True);
+                    Assert.That(found.ToSongInfo(null).Courses().Select(c => c.Difficulty), Is.EqualTo(new[] { Difficulty.Oni }));
+                    Assert.That(client.SearchNeedsClear(found, query), Is.False, "Earlier FC counts even though the highest score has a miss.");
+                    Assert.That(client.SearchNeedsClear(found, new SongSearchQuery("", Difficulty.Oni, 8, SongSearchOrder.UnPerfect)), Is.True);
                 }).GetAwaiter().GetResult();
             }
             finally { client.Dispose(); Directory.Delete(cache, true); }

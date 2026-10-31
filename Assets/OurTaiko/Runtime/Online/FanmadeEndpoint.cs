@@ -201,7 +201,9 @@ namespace OurTaiko.Online
         internal void IndexScore(FanmadeScore score)
         {
             var key = ScoreKey(score.Song, score.Difficulty);
-            if (!Best.TryGetValue(key, out var best) || score.Score > best.Score) Best[key] = score;
+            // A score of the song's current files comes before any score of replaced ones.
+            if (!Best.TryGetValue(key, out var best) || (score.IsLatest && !best.IsLatest)
+                || (score.IsLatest == best.IsLatest && score.Score > best.Score)) Best[key] = score;
         }
     }
 }

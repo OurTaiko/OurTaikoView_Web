@@ -41,13 +41,16 @@ namespace OurTaiko
             return threshold;
         }
         // The block a seat plays on a course (ChartSide): its COURSE as written and its side. Online
-        // the playable copy PlayableTja builds names each block after the API (Oni_1p, Oni_2p) under
-        // a plain #START, so it is read on the single side; offline the file's own blocks decide.
+        // the server's blocks decide (PlayableTja keeps their #START player); offline the file's own.
         (string course, string side) ResolveBlock(string requested, string seat)
         {
             var difficulty = SongInfo.DifficultyOf(requested);
             if (!difficulty.HasValue) return (requested, "single");
-            if (onlineChart != null) return (onlineChart.Difficulties[(int)difficulty.Value]?.Course ?? requested, "single");
+            if (onlineChart != null)
+            {
+                var online = onlineChart.Block((int)difficulty.Value, seat);
+                return online != null ? (online.Course, online.Side) : (requested, SeatBlocks.Reads(seat)[0]);
+            }
             var block = SongInfo.Read(chart.text).PlayedBlock(difficulty.Value, seat);
             return block != null ? (block.Course, block.Side) : (requested, SeatBlocks.Reads(seat)[0]);
         }

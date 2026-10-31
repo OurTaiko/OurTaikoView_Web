@@ -123,7 +123,7 @@ namespace OurTaiko.Online
         {
             var keep = new HashSet<string>();
             songs.Clear(); charts.Clear();
-            foreach (var chart in Client.Charts.SelectMany(c => !c.IsSingle ? new[] { c.ForPlayer("P1"), c.ForPlayer("P2") }.Where(x => x.IsPlayable) : new[] { c }))
+            foreach (var chart in Client.Charts.Where(c => c.IsPlayable))
             {
                 string key = SongKey(chart);
                 keep.Add(key);
@@ -175,7 +175,7 @@ namespace OurTaiko.Online
             return entry.Song;
         }
 
-        public static string SongKey(FanmadeChart chart) => "fanmade/" + chart.Server + "/" + chart.Id + (chart.SelectedPlayer.Length > 0 ? "/" + chart.SelectedPlayer : "");
+        public static string SongKey(FanmadeChart chart) => "fanmade/" + chart.Server + "/" + chart.Id;
 
         public bool IsOnline(SongDefinition song) => song != null && charts.ContainsKey(song);
         public FanmadeChart ChartOf(SongDefinition song) => song != null && charts.TryGetValue(song, out var chart) ? chart : null;

@@ -69,7 +69,7 @@ namespace OurTaiko.Online
                         }
                         Interlocked.Increment(ref revision);
                         state.Step = DownloadProgress.Stage.Ready; Publish(); SetStatus(e.Config.DisplayName + ": ready");
-                        return (text, audio, selected.SelectedPlayer.Length > 0 ? c.ForPlayer(selected.SelectedPlayer) : c);
+                        return (text, audio, c);
                     }
                     catch (HttpStatusException error) when (attempt == 0 && (error.Status == 403 || error.Status == 404 || error.Status >= 500)) { }
                     catch (FanmadeException error) when (attempt == 0 && (error.Message == "RESOURCE_LINK_EXPIRED" || error.Message == "NETWORK_TIMEOUT")) { }

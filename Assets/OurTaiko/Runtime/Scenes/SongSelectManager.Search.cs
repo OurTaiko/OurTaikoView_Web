@@ -43,8 +43,7 @@ namespace OurTaiko
             var found = local;
             foreach (var reply in replies)
                 foreach (var chart in reply.Charts)
-                    foreach (var player in chart.IsSingle ? new[] { chart } : new[] { chart.ForPlayer("P1"), chart.ForPlayer("P2") })
-                        if (player.IsPlayable && query.Matches(player.ToSongInfo(null))) found.Add(online.SearchSong(player));
+                    if (chart.IsPlayable && query.Matches(chart.ToSongInfo(null))) found.Add(online.SearchSong(chart));
             bool NeedsClear(SongDefinition song) => song.onlineChart != null ? online.Client.SearchNeedsClear(song.onlineChart, query)
                 : query.Order != SongSearchOrder.Default && song.ReadDisplayInfo().Courses().Where(query.Matches)
                     .Any(c => (int)(SongScores.Get(song, c.Difficulty)?.crown ?? Crown.None) < (query.Order == SongSearchOrder.UnFullCombo ? 2 : 3));
