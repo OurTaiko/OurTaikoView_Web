@@ -18,7 +18,7 @@ namespace OurTaiko.Online
         public int? RankThreshold(FanmadeChart chart, int difficulty)
         {
             if (chart == null || difficulty < 0 || difficulty >= chart.Difficulties.Length || chart.Difficulties[difficulty] == null) return null;
-            string key = chart.Server + "/" + chart.Id + "/" + chart.TjaHash + "/"
+            string key = chart.Server + "/" + chart.Id + "/" + chart.AudioHash + "/"
                 + string.Join(",", chart.Difficulties.Select(d => d?.Course ?? ""));
             lock (sync)
             {
@@ -54,7 +54,6 @@ namespace OurTaiko.Online
                 {
                     var manifest = await endpoint.ResourcesAsync(selected.Id, cancel);
                     var resource = manifest.Tja;
-                    if (resource.Hash != selected.TjaHash) throw new FanmadeException("CHART_UPDATING");
                     string path = ObjectPath(resource.Hash);
                     try
                     {

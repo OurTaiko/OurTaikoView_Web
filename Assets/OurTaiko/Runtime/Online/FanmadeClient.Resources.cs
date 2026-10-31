@@ -29,7 +29,7 @@ namespace OurTaiko.Online
                     if (c.Id != selected.Id) throw new FanmadeException("RESOURCE_CHART_MISMATCH");
                     c.Category = selected.Category; c.Genre = selected.Genre;
                     var manifest = await e.ResourcesAsync(c.Id, cancel);
-                    if (c.TjaHash != manifest.Tja.Hash || c.AudioHash != manifest.Audio.Hash)
+                    if (c.AudioHash != manifest.Audio.Hash)
                     { if (attempt == 0) continue; throw new FanmadeException("CHART_UPDATING"); }
                     if (!c.IsPlayable) throw new FanmadeException("CHART_NO_PLAYABLE_COURSE");
                     c.AudioName = manifest.Audio.ContentType == "audio/ogg" ? "audio.ogg" : "audio.mp3";

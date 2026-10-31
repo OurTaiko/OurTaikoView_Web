@@ -37,7 +37,7 @@ namespace OurTaiko.Tests
                 var value = new JObject
                 {
                     ["id"] = Id, ["title"] = Title, ["subtitle"] = Subtitle, ["maker"] = Maker,
-                    ["tjaHash"] = Sha(Tja), ["audioHash"] = Sha(Audio), ["audioName"] = AudioName,
+                    ["audioHash"] = Sha(Audio), ["audioName"] = AudioName,
                     ["titleTranslations"] = new JObject { ["ja"] = Title + " JA" }, ["subtitleTranslations"] = new JObject(),
                     ["bpm"] = Bpm, ["demoStart"] = DemoStart,
                     ["isSingle"] = Difficulties.All(d => string.IsNullOrEmpty(d.Player)),

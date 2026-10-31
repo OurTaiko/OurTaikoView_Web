@@ -49,7 +49,9 @@ namespace OurTaiko.Tests
             Assert.That(api.Requests.Any(r => r.Contains("/audio")), Is.False);
         }
 
-        [Test] public void PollingDeduplicatesRequestsAndChangedHashInvalidatesTheRules()
+        // The servers no longer publish the TJA file's hash, so a cached rule is the chart's until its
+        // audio hash changes (a new upload).
+        [Test] public void PollingDeduplicatesRequestsAndChangedAudioInvalidatesTheRules()
         {
             int Wait(FanmadeChart chart) => Task.Run(async () =>
             {
@@ -66,22 +68,26 @@ namespace OurTaiko.Tests
             Assert.That(Wait(selected), Is.EqualTo(1000020));
             Assert.That(api.Downloads, Is.EqualTo(1));
             api.Charts[0].Tja = Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(api.Charts[0].Tja).Replace("1110", "1111"));
+            api.Charts[0].Audio = api.Charts[0].Audio.Append((byte)0).ToArray();
             var updated = FanmadeChart.From(api.Charts[0].ToJson(), selected.Server);
+            Assert.That(updated.AudioHash, Is.Not.EqualTo(selected.AudioHash));
             Assert.That(Wait(updated), Is.EqualTo(1000000));
             Assert.That(api.Downloads, Is.EqualTo(2));
         }
 
-        [Test] public void StaleCatalogHashDoesNotProduceAnIncorrectRank()
+        // A catalog older than the chart still ranks by the TJA the server lists now.
+        [Test] public void StaleCatalogRanksTheServersCurrentChart()
         {
             api.Charts[0].Tja = Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(api.Charts[0].Tja).Replace("1110", "1111"));
-            Assert.That(Assert.Throws<FanmadeException>(() => Load(selected)).Message, Is.EqualTo("CHART_UPDATING"));
-            Assert.That(api.Downloads, Is.Zero);
+            Assert.That(Load(selected)[3], Is.EqualTo(1000000));
+            Assert.That(api.Downloads, Is.EqualTo(1));
         }
 
         [Test] public void CorruptedCachedChartIsVerifiedAndDownloadedAgain()
         {
             Load(selected);
-            string path = Path.Combine(cache, "objects", selected.TjaHash.Substring(0, 2), selected.TjaHash);
+            string tjaHash = FanmadeFixture.Sha(api.Charts[0].Tja);
+            string path = Path.Combine(cache, "objects", tjaHash.Substring(0, 2), tjaHash);
             var bytes = File.ReadAllBytes(path); bytes[0] ^= 1; File.WriteAllBytes(path, bytes);
             Assert.That(Load(selected)[3], Is.EqualTo(1000020));
             Assert.That(api.Downloads, Is.EqualTo(2));
