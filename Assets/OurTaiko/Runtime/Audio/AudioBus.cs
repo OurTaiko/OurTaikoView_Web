@@ -11,25 +11,34 @@ namespace OurTaiko
         AudioSource source;
         AudioEngine engine;
         SettingManager settings;
-        float authoredVolume;
+        float authoredVolume, fade = 1;
         public AudioGroup Group { get; private set; } = AudioGroup.Effects;
         readonly Dictionary<AudioClip, AudioGroup> effectGroups = new();
         readonly Dictionary<AudioGroup, AudioSource> unityEffects = new();
         public float MainOutputVolume => engine != null && engine.Native ? main?.OutputVolume ?? 0 : source != null ? source.volume : 0;
         float Volume(AudioGroup group) => source.mute ? 0 : authoredVolume * settings.Settings.audio.volume.Gain(group);
+        // The main sound's own fade (a play's music under its ending), over its group's volume.
+        float MainVolume => Volume(Group) * fade;
+        public float Fade => fade;
+        public void SetFade(float value)
+        {
+            fade = Math.Max(0, Math.Min(1, value));
+            if (engine != null && engine.Native) main?.SetVolume(MainVolume);
+            else if (source != null) source.volume = Mathf.Clamp01(MainVolume);
+        }
         public void SetGroup(AudioGroup group) { Group = group; ApplyVolumes(settings.Settings); }
         void ApplyVolumes(GameSettings unused)
         {
             if (engine == null || source == null) return;
             if (engine.Native)
             {
-                main?.SetVolume(Volume(Group));
+                main?.SetVolume(MainVolume);
                 foreach (var pair in tracks) pair.Value.SetVolume(Volume(Group));
                 foreach (var pair in effects) pair.Value.SetVolume(Volume(effectGroups.TryGetValue(pair.Key, out var group) ? group : Group));
             }
             else
             {
-                source.volume = Mathf.Clamp01(Volume(Group));
+                source.volume = Mathf.Clamp01(MainVolume);
                 foreach (var pair in unityEffects) pair.Value.volume = Mathf.Clamp01(Volume(pair.Key));
             }
         }
@@ -76,7 +85,7 @@ namespace OurTaiko
         }
         public void SetSong(SongDefinition value, bool gameplay = true)
         {
-            ReleaseMain(); song = value; source.clip = value.music; SetGroup(AudioGroup.Track);
+            ReleaseMain(); song = value; source.clip = value.music; fade = 1; SetGroup(AudioGroup.Track);
             if (!engine.Native) return;
             main = value.TakePreparedAudio();
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -131,7 +140,7 @@ namespace OurTaiko
             {
                 // The browser starts the voice on its own clock instead of at the next frame.
                 pending = false;
-                main.Play(Volume(Group), source.loop, seek, source.pitch, at.HasValue ? at.Value - GameTimeline.AudioNow : null);
+                main.Play(MainVolume, source.loop, seek, source.pitch, at.HasValue ? at.Value - GameTimeline.AudioNow : null);
                 return;
             }
             scheduledAt = at ?? GameTimeline.AudioNow; pending = true;
@@ -142,7 +151,7 @@ namespace OurTaiko
             // Like MajdataPlay's game clock, trigger native playback when the countdown expires.
             if (!pending || GameTimeline.AudioNow < scheduledAt) return;
             pending = false;
-            main.Play(Volume(Group), source.loop, seek, source.pitch);
+            main.Play(MainVolume, source.loop, seek, source.pitch);
         }
         public void OneShot(AudioClip clip, AudioGroup? group = null)
         {
@@ -198,6 +207,8 @@ namespace OurTaiko
         public static void SetAudioSong(this AudioSource source, SongDefinition song, bool gameplay = true) => AudioBus.Get(source).SetSong(song, gameplay);
         public static double AudioLength(this AudioSource source) => AudioBus.Get(source).Length;
         public static void PlayAudio(this AudioSource source) => AudioBus.Get(source).Play();
+        public static void SetAudioFade(this AudioSource source, float fade) => AudioBus.Get(source).SetFade(fade);
+        public static float AudioFade(this AudioSource source) => AudioBus.Get(source).Fade;
         public static void PlayAudioScheduled(this AudioSource source, double clockTime) => AudioBus.Get(source).Play(clockTime);
         public static void PlayAudioOneShot(this AudioSource source, AudioClip clip, AudioGroup? group = null) => AudioBus.Get(source).OneShot(clip, group);
         public static void StopAudio(this AudioSource source)
