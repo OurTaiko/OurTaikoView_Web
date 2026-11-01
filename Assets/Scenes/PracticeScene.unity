@@ -11643,6 +11643,7 @@ MonoBehaviour:
   ka: {fileID: 8300000, guid: b5d46904052a14efdbf9361bde1e09ae, type: 3}
   balloonPop: {fileID: 8300000, guid: 44b1297bb1bd74b4ab8ac5ed9f62c148, type: 3}
   kusudamaPop: {fileID: 8300000, guid: e7df7d936a436464a94bfa6e9c9b284d, type: 3}
+  adLibHit: {fileID: 8300000, guid: f7802383c306246a096571af1954febb, type: 3}
   hitSounds: {fileID: 11400000, guid: 5515db8dbe20b4e3796637e25e79846f, type: 2}
   laneDifficultySprites:
   - {fileID: -455977207, guid: afc21b14a938040be93225af4c3983cf, type: 3}

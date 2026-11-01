@@ -506,6 +506,32 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        // The Ad-Lib (F) hit sound, OurTaikoPlay's adlib.ogg (the user's clip, 6 dB up to sit near ka),
+        // copied from there and played on top of the drum.
+        [MenuItem("OurTaikoView/Sync Ad-Lib Sound")]
+        public static void ApplyAdLibSound()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string clip = "Assets/OurTaiko/Audio/adlib.ogg";
+            File.Copy(Path.GetFullPath("../OurTaikoPlay/" + clip), clip, true);
+            AssetDatabase.ImportAsset(clip, ImportAssetOptions.ForceSynchronousImport);
+            var sound = AssetDatabase.LoadAssetAtPath<AudioClip>(clip);
+            if (sound == null) throw new InvalidOperationException("Could not import " + clip);
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                play.adLibHit = sound;
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
         // Sets one entry, growing the array with empty entries up to it.
         static Sprite[] WithSprite(Sprite[] sprites, int index, Sprite sprite)
         {
