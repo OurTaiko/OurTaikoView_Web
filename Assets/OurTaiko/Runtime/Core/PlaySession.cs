@@ -20,8 +20,10 @@ namespace OurTaiko
         public IReadOnlyList<bool> Missed => missed;
         // Notes that ended before the practice cursor: never judged, and hidden once the attempt starts.
         public IReadOnlyList<bool> Skipped => skipped;
+        // Mines that were hit. A mine left alone is resolved once its window passes and scrolls on.
+        public IReadOnlyList<bool> Exploded => exploded;
         public IReadOnlyList<int> LongHits => longHits;
-        readonly bool[] resolved, missed, skipped;
+        readonly bool[] resolved, missed, skipped, exploded;
         readonly int[] longHits;
         // Each kusudama note's ball: its own, or shared with the other seat (Kusudama.Share).
         readonly Kusudama[] kusudamas;
@@ -35,6 +37,13 @@ namespace OurTaiko
         public int Ok { get; private set; }
         public int Bad { get; private set; }
         public int Rolls { get; private set; }
+        // Ad-Libs hit 良 and 可: they score, combo and fill the gauge as small notes but are counted
+        // apart from Good and Ok (OpenTaiko nADLIB), so the judge counts are the chart's notes only.
+        public int AdLibGood { get; private set; }
+        public int AdLibOk { get; private set; }
+        // Mines hit (OpenTaiko nMine): each breaks the combo, costs gauge and loses a full combo,
+        // but is not a 不可.
+        public int MinesHit { get; private set; }
         public double Gauge => gauge.Value;
         public double GaugePoints => gauge.Points;
         public int GaugePercent => gauge.Percent;
@@ -92,7 +101,7 @@ namespace OurTaiko
                         throw new NotSupportedException("A branch without #E or #M can only be played on a fixed route, as in practice.");
             ForcedBranch = forcedBranch;
             JudgeOffset = judgeOffset;
-            Chart = chart; resolved = new bool[chart.Notes.Count]; missed = new bool[chart.Notes.Count]; skipped = new bool[chart.Notes.Count]; longHits = new int[chart.Notes.Count];
+            Chart = chart; resolved = new bool[chart.Notes.Count]; missed = new bool[chart.Notes.Count]; skipped = new bool[chart.Notes.Count]; exploded = new bool[chart.Notes.Count]; longHits = new int[chart.Notes.Count];
             kusudamas = new Kusudama[chart.Notes.Count];
             for (int i = 0; i < chart.Notes.Count; i++)
                 if (chart.Notes[i].Kind == NoteKind.Kusudama) kusudamas[i] = new Kusudama(this, i);
@@ -295,9 +304,10 @@ namespace OurTaiko
                 }
                 if (time > note.EndTime && !resolved[i]) { resolved[i] = true; Version++; }
             }
-            else if (auto) Resolve(i, Judgment.Good);
-            // An Ad-Lib nobody hit past its 可 window just goes: never 不可, never a miss.
-            else if (note.IsAdLib) { if (time - note.Time > okWindow) { resolved[i] = true; Version++; } }
+            // Autoplay leaves a mine alone (OpenTaiko CanAutoplayHitMine is off by default).
+            else if (auto && !note.IsMine) Resolve(i, Judgment.Good);
+            // An Ad-Lib or mine nobody hit past its 可 window just goes: never 不可, never a miss.
+            else if (note.IsAdLib || note.IsMine) { if (time - note.Time > okWindow) { resolved[i] = true; Version++; } }
             else if (time - note.Time > badWindow) { missed[i] = true; Resolve(i, Judgment.Bad); }
             return !resolved[i];
         }
@@ -318,11 +328,13 @@ namespace OurTaiko
                 if (next >= 0 && time > Chart.Notes[next].Time - okWindow && !PendingBetween(target, next)) target = next;
             }
             bool kadonCompletes = target >= 0 && KadonWaits(target, time) && kadonFirstKa != ka;
-            int adLib = kadonCompletes ? -1 : AdLibTarget(target, time);
-            if (adLib >= 0)
+            int nearest = kadonCompletes ? -1 : NearestTarget(target, time);
+            // A mine hit is shown as 不可 (OpenTaiko sets the bomb's result to Bad).
+            if (nearest >= 0 && Chart.Notes[nearest].IsMine) { Explode(nearest); return Judgment.Bad; }
+            if (nearest >= 0)
             {
-                Judgment adLibResult = Math.Abs(Chart.Notes[adLib].Time - time) <= goodWindow ? Judgment.Good : Judgment.Ok;
-                Resolve(adLib, adLibResult); return adLibResult;
+                Judgment nearestResult = Math.Abs(Chart.Notes[nearest].Time - time) <= goodWindow ? Judgment.Good : Judgment.Ok;
+                Resolve(nearest, nearestResult); return nearestResult;
             }
             if (target >= 0)
             {
@@ -349,12 +361,13 @@ namespace OurTaiko
             return Judgment.None;
         }
 
-        // OpenTaiko's Ad-Lib, either colour, taken only within 可 (a press in its 不可 range goes on as if
-        // it were not there). As GetChipToJudgeIgnoringRollBody: the latest past Ad-Lib hides the
-        // older notes; a past note after it within 可 comes first; past and future then go to the
-        // nearer when the past one is an Ad-Lib, else to the past note unless only it is 不可.
-        // Returns the Ad-Lib to judge, or -1 when the press goes to `target` as before.
-        int AdLibTarget(int target, double time)
+        // OpenTaiko's judged-from-nearest notes, the Ad-Lib and the mine: either colour, taken only
+        // within 可 (a press in their 不可 range goes on as if they were not there). As
+        // GetChipToJudgeIgnoringRollBody: the latest past one hides the older notes; a past note
+        // after it within 可 comes first; past and future then go to the nearer when the past one is
+        // an Ad-Lib or mine, else to the past note unless only it is 不可.
+        // Returns the Ad-Lib or mine to judge, or -1 when the press goes to `target` as before.
+        int NearestTarget(int target, double time)
         {
             int past = -1, future = -1;
             int from = 0;
@@ -380,7 +393,7 @@ namespace OurTaiko
 
             void Consider(int i)
             {
-                if (!Pending(i) || !Chart.Notes[i].IsAdLib) return;
+                if (!Pending(i) || !(Chart.Notes[i].IsAdLib || Chart.Notes[i].IsMine)) return;
                 double d = Chart.Notes[i].Time - time;
                 if (Math.Abs(d) > okWindow) return;
                 if (d <= 0) past = i;
@@ -416,7 +429,7 @@ namespace OurTaiko
         }
 
         // Earliest pending don (ka = false) or ka note from index start; big notes share the lane, Kadon both.
-        // Ad-Libs are left to AdLibTarget.
+        // Ad-Libs and mines are left to NearestTarget.
         int NextInLane(bool ka, int start)
         {
             if (timeSorted)
@@ -428,7 +441,8 @@ namespace OurTaiko
                 if (IsLaneNote(i, ka)) return i;
             return -1;
         }
-        bool IsLaneNote(int i, bool ka) => Pending(i) && !Chart.Notes[i].IsLong && !Chart.Notes[i].IsAdLib && (Chart.Notes[i].IsKa == ka || Chart.Notes[i].IsKadon);
+        bool IsLaneNote(int i, bool ka) => Pending(i) && !Chart.Notes[i].IsLong && !Chart.Notes[i].IsAdLib && !Chart.Notes[i].IsMine
+            && (Chart.Notes[i].IsKa == ka || Chart.Notes[i].IsKadon);
 
         bool PendingBetween(int first, int last)
         {
@@ -457,6 +471,17 @@ namespace OurTaiko
         // Another seat hit a ball shared with this session.
         internal void Touch() => Version++;
 
+        // OpenTaiko's bomb hit: the combo breaks and the gauge takes MineDamage, but it scores
+        // nothing and is not counted as 不可 (nor by branch conditions). Shown as 不可.
+        void Explode(int i)
+        {
+            resolved[i] = exploded[i] = true; Version++;
+            MinesHit++; Combo = 0;
+            expressionEighthStart = expressionSixteenthStart = double.PositiveInfinity;
+            gauge.ApplyMine();
+            Judged?.Invoke(i, Judgment.Bad);
+        }
+
         void Resolve(int i, Judgment result)
         {
             resolved[i] = true; Version++;
@@ -467,7 +492,8 @@ namespace OurTaiko
             }
             else
             {
-                if (result == Judgment.Good) Good++; else Ok++;
+                if (Chart.Notes[i].IsAdLib) { if (result == Judgment.Good) AdLibGood++; else AdLibOk++; }
+                else if (result == Judgment.Good) Good++; else Ok++;
                 Combo++; MaxCombo = Math.Max(MaxCombo, Combo);
                 if (Combo == 50) expressionEighthStart = NoteExpression.StartBeat(Chart.Notes[i].Beat);
                 if (Combo == 150) expressionSixteenthStart = NoteExpression.StartBeat(Chart.Notes[i].Beat);

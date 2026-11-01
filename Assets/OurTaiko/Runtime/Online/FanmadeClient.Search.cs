@@ -63,7 +63,7 @@ namespace OurTaiko.Online
                     string block = chart.Difficulties[(int)course.Difficulty].Name;
                     var plays = e.Scores.Where(s => s.Song == chart.Id && s.Difficulty == block).ToList();
                     if (plays.Any(s => s.IsLatest)) plays.RemoveAll(s => !s.IsLatest);
-                    return !plays.Any(s => s.Bad == 0 && (s.Good > 0 || s.Ok > 0) && (query.Order == SongSearchOrder.UnFullCombo || s.Ok == 0));
+                    return !plays.Any(s => s.Bad == 0 && s.Mines == 0 && (s.Good > 0 || s.Ok > 0) && (query.Order == SongSearchOrder.UnFullCombo || s.Ok == 0));
                 });
             }
         }

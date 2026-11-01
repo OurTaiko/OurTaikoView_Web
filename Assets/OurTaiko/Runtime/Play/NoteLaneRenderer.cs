@@ -315,11 +315,11 @@ namespace OurTaiko
                 float length = note.IsDrumroll ? (float)(tail.X + judge.x) - pos.x : 0;
                 float rise = note.IsDrumroll ? (float)(judge.y - tail.Y) - pos.y : 0;
                 // ドロン hides the notes; they are still judged. Like draw_note_buffer,
-                // only a hit removes a note: a 5/6 roll resolved at its tail and a note
-                // missed by timeout keep scrolling until they leave the lane.
-                bool rolling = note.IsDrumroll;
+                // only a hit removes a note: a 5/6 roll resolved at its tail, a note
+                // missed by timeout and a mine left alone keep scrolling until they leave the lane.
+                bool scrollsOn = note.IsDrumroll || note.IsMine && !Session.Exploded[i];
                 // #SUDDEN hides a note and its text until it appears; it is still judged.
-                bool alive = note.Display && NoteScroll.Appeared(note, time) && !(hideSkipped && Session.Skipped[i]) && (preview ? Session.IsPracticePreviewActive(note) : Session.IsShown(note)) && (rolling || Session.Missed[i] || !Session.Resolved[i])
+                bool alive = note.Display && NoteScroll.Appeared(note, time) && !(hideSkipped && Session.Skipped[i]) && (preview ? Session.IsPracticePreviewActive(note) : Session.IsShown(note)) && (scrollsOn || Session.Missed[i] || !Session.Resolved[i])
                     && !Struck(i);
                 bool visible = alive && InLane(pos.x, Reach(note, view, length));
                 if (mojiLayer != null) mojiEntered |= RenderMoji(i, note, pos, length, alive);
@@ -391,7 +391,8 @@ namespace OurTaiko
         bool RenderMoji(int index, ChartNote note, Vector2 pos, float length, bool alive)
         {
             // skip_note: a balloon whose counter is up draws neither the note nor its text.
-            alive &= balloonCounter.NoteIndex != index;
+            // A note without text (a mine) has none to draw.
+            alive &= balloonCounter.NoteIndex != index && note.Moji >= 0;
             bool roll = MojiShapeOf(note) == 1;
             var view = shownMoji[index];
             // The text follows its head, rolls too (OpenTaiko draws SE notes at the head's y).

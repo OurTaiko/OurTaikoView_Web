@@ -102,6 +102,27 @@ namespace OurTaiko.Tests
             Assert.That(client.Best(chart, (int)Difficulty.Oni).ClearStatus, Is.EqualTo(clearStatus));
         }
 
+        // Ad-Libs as "adlib": [良, 可] and "mines" are sent only when there are any, and read back.
+        [Test]
+        public void AdLibAndMineCountsAreSentOnlyWhenThereAreAny()
+        {
+            Connect(guest: false);
+            var chart = client.Charts[0];
+            Assert.That(client.Submit(chart, (int)Difficulty.Oni, new FanmadeScore { Score = 1000, Good = 10 }), Is.True);
+            Run(() => client.WaitForUploadsAsync());
+            Assert.That(fixture.AcceptedScores.TryDequeue(out var plain), Is.True);
+            Assert.That(plain.ContainsKey("adlib") || plain.ContainsKey("mines"), Is.False);
+
+            Assert.That(client.Submit(chart, (int)Difficulty.Oni,
+                new FanmadeScore { Score = 900000, Good = 10, AdLibGood = 3, AdLibOk = 1, Mines = 2 }), Is.True);
+            Run(() => client.WaitForUploadsAsync());
+            Assert.That(fixture.AcceptedScores.TryDequeue(out var body), Is.True);
+            Assert.That(body["adlib"].ToObject<long[]>(), Is.EqualTo(new long[] { 3, 1 }));
+            Assert.That((long)body["mines"], Is.EqualTo(2));
+            var best = client.Best(chart, (int)Difficulty.Oni);
+            Assert.That((best.AdLibGood, best.AdLibOk, best.Mines), Is.EqualTo((3L, 1L, 2L)));
+        }
+
         [Test]
         public void RejectedCredentialsThrowAndAGuestRetryStillConnects()
         {

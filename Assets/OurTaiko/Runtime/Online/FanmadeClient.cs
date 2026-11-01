@@ -220,6 +220,9 @@ namespace OurTaiko.Online
                 ["ClearStatus"] = score.ClearStatus,
                 ["replay_data"] = replay != null ? replay.ToJson() : JValue.CreateNull(),
             };
+            // Sent only when there are any, so a play without them reads the same as before they existed.
+            if (score.AdLibGood > 0 || score.AdLibOk > 0) body["adlib"] = new JArray(score.AdLibGood, score.AdLibOk);
+            if (score.Mines > 0) body["mines"] = score.Mines;
             try
             {
                 UploadQueue.Enqueue(e.Id, RandomKey(), body.ToString(Newtonsoft.Json.Formatting.None), block.ChartHash, chart.AudioHash, chart.Id);

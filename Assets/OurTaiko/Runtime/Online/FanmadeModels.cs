@@ -192,6 +192,8 @@ namespace OurTaiko.Online
         // Difficulty is the played block's name (FanmadeDifficulty.Name).
         public string Id = "", Song = "", Difficulty = "";
         public long Good, Ok, Bad, Score, Drumroll, MaxCombo, ClearStatus;
+        // Ad-Libs hit 良 and 可 (sent as "adlib": [良, 可]) and mines hit, apart from Good/Ok/Bad.
+        public long AdLibGood, AdLibOk, Mines;
         // False once the song's files were replaced after the play.
         public bool IsLatest = true;
 
@@ -203,7 +205,14 @@ namespace OurTaiko.Online
             Good = Json.Number(v, "good"), Ok = Json.Number(v, "ok"), Bad = Json.Number(v, "bad"), Score = Json.Number(v, "score"),
             Drumroll = Json.Number(v, "drumroll"), MaxCombo = Json.Number(v, "max_combo"),
             ClearStatus = Json.Number(v, "ClearStatus"),
+            // Servers from before these were kept send neither: 0.
+            AdLibGood = v["adlib"] is JArray a && a.Count == 2 ? Count(a[0]) : 0,
+            AdLibOk = v["adlib"] is JArray b && b.Count == 2 ? Count(b[1]) : 0,
+            Mines = Count(v["mines"]),
         };
+
+        // An optional count: 0 when missing or not a whole number of at least 0.
+        static long Count(JToken v) => v?.Type == JTokenType.Integer ? Math.Max(0, (long)v) : 0;
     }
 
     // Recorded input sent with every score (scoreReplayVersion 1).

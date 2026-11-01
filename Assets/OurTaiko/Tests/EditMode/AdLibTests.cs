@@ -3,7 +3,8 @@ using NUnit.Framework;
 namespace OurTaiko.Tests
 {
     // The Ad-Lib (F): hidden, hit with either colour within 可 and then judged like a small note (良/可,
-    // combo, gauge), but left out of the note count, so its points are a bonus. Never 不可, never missed.
+    // combo, gauge), but left out of the note count, so its points are a bonus. Its 良 and 可 are
+    // counted apart (AdLibGood, AdLibOk), not in Good and Ok. Never 不可, never missed.
     public sealed class AdLibTests
     {
         static TaikoChart Chart(string body) => TjaParser.Parse("TITLE:Test\nBPM:120\nCOURSE:Oni\n#START\n" + body + "\n#END");
@@ -15,13 +16,15 @@ namespace OurTaiko.Tests
         {
             var don = Session("F000,");
             Assert.That(don.Hit(false, 0.01), Is.EqualTo(Judgment.Good));
-            Assert.That(don.Good, Is.EqualTo(1));
+            Assert.That(don.AdLibGood, Is.EqualTo(1));
+            Assert.That(don.Good, Is.Zero);
             Assert.That(don.Combo, Is.EqualTo(1));
             Assert.That(don.Gauge, Is.GreaterThan(0));
 
             var ka = Session("F000,");
             Assert.That(ka.Hit(true, -0.05), Is.EqualTo(Judgment.Ok));
-            Assert.That(ka.Ok, Is.EqualTo(1));
+            Assert.That(ka.AdLibOk, Is.EqualTo(1));
+            Assert.That(ka.Ok, Is.Zero);
         }
 
         [Test] public void ItScoresOnTopOfTheNotes()
@@ -98,7 +101,8 @@ namespace OurTaiko.Tests
             var session = Session("1F2F,");
             Assert.That(new ChartStatistics(session.Chart).JudgeableNotes, Is.EqualTo(2));
             session.Advance(2, true);
-            Assert.That(session.Good, Is.EqualTo(4));
+            Assert.That(session.Good, Is.EqualTo(2));
+            Assert.That(session.AdLibGood, Is.EqualTo(2));
             Assert.That(session.MaxCombo, Is.EqualTo(4));
             Assert.That(session.Score, Is.EqualTo(4 * session.BaseScore));
         }

@@ -21,7 +21,8 @@ namespace OurTaiko
             var crown = best.ClearStatus >= 0 && best.ClearStatus <= 3 ? (Crown)best.ClearStatus : Crown.None;
             return new ScoreStore.Record { key = ScoreStore.Key(song.name, difficulty), score = Clamp(best.Score),
                 good = Clamp(best.Good), ok = Clamp(best.Ok), bad = Clamp(best.Bad), maxCombo = Clamp(best.MaxCombo),
-                rolls = Clamp(best.Drumroll), crown = crown };
+                rolls = Clamp(best.Drumroll), crown = crown,
+                adLibGood = Clamp(best.AdLibGood), adLibOk = Clamp(best.AdLibOk), mines = Clamp(best.Mines) };
         }
 
         static int Clamp(long value) => (int)Math.Clamp(value, 0, int.MaxValue);

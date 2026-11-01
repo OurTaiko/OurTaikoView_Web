@@ -269,6 +269,8 @@ namespace OurTaiko.Tests
                 ["good"] = body["good"], ["ok"] = body["ok"], ["bad"] = body["bad"], ["score"] = body["score"],
                 ["drumroll"] = body["drumroll"], ["max_combo"] = body["max_combo"],
                 ["ClearStatus"] = body["ClearStatus"] ?? new JValue(0),
+                // As the servers: always present, zero when the play sent none.
+                ["adlib"] = body["adlib"] ?? new JArray(0, 0), ["mines"] = body["mines"] ?? new JValue(0),
             };
             Idempotent[key] = score;
             AcceptedScores.Enqueue(body);

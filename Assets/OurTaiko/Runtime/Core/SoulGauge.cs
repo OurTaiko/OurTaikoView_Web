@@ -28,6 +28,15 @@ namespace OurTaiko
             BadPoints = GoodPoints * rules.BadMultiplier;
         }
 
+        // A mine hit (OpenTaiko MineDamage under the default BOOMRULE, SCAL 4): four percent of the
+        // gauge off, whatever the course.
+        public const float MineDamage = 4f;
+        public void ApplyMine()
+        {
+            Points = Math.Max(0, Points - MineDamage / 100 * MaximumPoints);
+            if (Math.Abs(Points - ClearPoints) < PointsEpsilon) Points = ClearPoints;
+        }
+
         public void ApplyJudgment(Judgment judgment)
         {
             double delta;

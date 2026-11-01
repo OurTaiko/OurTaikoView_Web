@@ -204,6 +204,7 @@ namespace OurTaiko
         void OnJudged(int index, Judgment result)
         {
             var v = Views;
+            var judged = Session.Chart.Notes[index];
             if (result != Judgment.Roll)
                 v.soulGauge.SetPoints(Session.GaugePoints, ChartTime);
             if (AutoPlay)
@@ -217,8 +218,8 @@ namespace OurTaiko
                 nextAutoRight = !nextAutoRight;
             }
             SpawnArc(index, result);
-            var judged = Session.Chart.Notes[index];
             if (judged.IsAdLib && scene.adLibHit != null) scene.hitAudio.PlayAudioOneShot(scene.adLibHit, AudioGroup.Drum);
+            if (judged.IsMine && scene.mineHit != null) scene.hitAudio.PlayAudioOneShot(scene.mineHit, AudioGroup.Drum);
             bool big = judged.IsBigNote || judged.IsKadon;
             double judgedAt = ChartTime;
             v.hitFace.Play(result, big, judgedAt);

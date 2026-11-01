@@ -506,6 +506,36 @@ namespace OurTaiko.Editor
             finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
+        // The mine (C) note of OurTaikoPlay 2505c09: the atlas copied from there with its two new
+        // cells, sliced as Note12 and Note12Alternate, and the PracticeScene sprite arrays set at
+        // NoteKind.Mine. A mine has no moji. Existing slices are unchanged.
+        [MenuItem("OurTaikoView/Sync Mine Note")]
+        public static void ApplyMine()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+                if (EditorSceneManager.GetSceneAt(i).isDirty) throw new InvalidOperationException("Save current scene edits first.");
+            const string atlas = "Assets/OurTaiko/Art/game/notes/notes_atlas.png";
+            FileUtil.ReplaceFile(Path.GetFullPath("../OurTaikoPlay/" + atlas), atlas);
+            AssetDatabase.ImportAsset(atlas, ImportAssetOptions.ForceSynchronousImport);
+            AddSlice(atlas, "Note12", new Rect(192, 768, 192, 192));
+            AddSlice(atlas, "Note12Alternate", new Rect(384, 768, 192, 192));
+            var notes = AssetDatabase.LoadAllAssetsAtPath(atlas).OfType<Sprite>().ToDictionary(s => s.name);
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
+                var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
+                play.noteSprites = WithSprite(play.noteSprites, (int)NoteKind.Mine, notes["Note12"]);
+                play.alternateNoteSprites = WithSprite(play.alternateNoteSprites, (int)NoteKind.Mine, notes["Note12Alternate"]);
+                EditorUtility.SetDirty(play);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                AssetDatabase.SaveAssets();
+            }
+            finally { if (setup.Any(s => s.isLoaded && s.isActive)) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        }
+
         // The Ad-Lib (F) hit sound, OurTaikoPlay's adlib.ogg (the user's clip, 6 dB up to sit near ka),
         // copied from there and played on top of the drum.
         [MenuItem("OurTaikoView/Sync Ad-Lib Sound")]

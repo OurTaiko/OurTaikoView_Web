@@ -19,6 +19,8 @@ namespace OurTaiko
         public string ChartKey = "", Title = "", Subtitle = "", Course = "Oni";
         public Difficulty Difficulty = Difficulty.Oni;
         public int Level, Score, Good, Ok, Bad, MaxCombo, Rolls, PreviousBest;
+        // Ad-Libs hit 良 and 可 and mines hit, counted apart from Good/Ok/Bad (PlaySession).
+        public int AdLibGood, AdLibOk, Mines;
         public int KiwamiThreshold = 1000000;
         public ScoreRank Rank => ScoreRankUtil.FromScore(Score, KiwamiThreshold);
         public double GaugePoints;
@@ -29,11 +31,15 @@ namespace OurTaiko
         // result_player.lua: floor(gauge_length * 50 / 87), gauge_length = points / max * 87.
         public int Cells => Math.Min(GaugeCells, (int)Math.Floor(GaugePoints * GaugeCells / SoulGauge.MaximumPoints + 1e-4));
 
+        // A full combo has no bad and no mine hit (OpenTaiko nMiss == 0 && nMine == 0); a donderful one no ok either.
+        // Ad-Libs never matter.
+        bool FullCombo => Bad == 0 && Mines == 0;
+
         // GameScreen::save_score: DFC with no ok/bad and FC with no bad are stored even for a failed gauge.
-        public Crown StoredCrown => Ok == 0 && Bad == 0 ? Crown.DonderfulCombo : Bad == 0 ? Crown.FullCombo : IsClear ? Crown.Clear : Crown.None;
+        public Crown StoredCrown => FullCombo && Ok == 0 ? Crown.DonderfulCombo : FullCombo ? Crown.FullCombo : IsClear ? Crown.Clear : Crown.None;
 
         // ResultPlayer ctor picks the same kind, but the result crown only appears for a cleared gauge.
-        public Crown ResultCrown => !IsClear ? Crown.None : Ok == 0 && Bad == 0 ? Crown.DonderfulCombo : Bad == 0 ? Crown.FullCombo : Crown.Clear;
+        public Crown ResultCrown => !IsClear ? Crown.None : FullCombo && Ok == 0 ? Crown.DonderfulCombo : FullCombo ? Crown.FullCombo : Crown.Clear;
 
         // ResultMain.DisplayMessage: chosen from the soul gauge, not the crown.
         public ResultMessage Message => GaugeState == GaugeState.Full ? ResultMessage.Perfect
@@ -51,6 +57,7 @@ namespace OurTaiko
                 Difficulty = SongInfo.DifficultyOf(chart.Course) ?? Difficulty.Oni, Level = chart.Level,
                 Score = session.Score, KiwamiThreshold = session.KiwamiThreshold,
                 Good = session.Good, Ok = session.Ok, Bad = session.Bad,
+                AdLibGood = session.AdLibGood, AdLibOk = session.AdLibOk, Mines = session.MinesHit,
                 MaxCombo = session.MaxCombo, Rolls = session.Rolls, GaugePoints = session.GaugePoints,
                 IsClear = session.IsClear, IsGaugeFull = session.IsGaugeFull, AutoPlay = autoPlay,
             };

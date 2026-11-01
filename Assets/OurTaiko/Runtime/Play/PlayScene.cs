@@ -15,6 +15,8 @@ namespace OurTaiko
         public AudioClip don, ka, balloonPop, kusudamaPop;
         [Tooltip("Played on top of the drum when an Ad-Lib is hit (OpenTaiko's Adlib sound). Left empty until we have our own.")]
         public AudioClip adLibHit;
+        [Tooltip("Played on top of the drum when a mine is hit (OpenTaiko's bomb sound). Left empty until we have our own.")]
+        public AudioClip mineHit;
         public HitSoundLibrary hitSounds;
         public Sprite[] laneDifficultySprites;
         public Sprite[] noteSprites;
@@ -148,7 +150,7 @@ namespace OurTaiko
                 title.text = displayInfo.Title;
                 ShowSubtitleLines(displayInfo);
                 music.SetAudioSong(song);
-                hitAudio.PrepareAudioEffects(balloonPop, kusudamaPop, adLibHit);
+                hitAudio.PrepareAudioEffects(balloonPop, kusudamaPop, adLibHit, mineHit);
                 // Both seats play one file, so the song's one BGMOVIE plays behind both lanes.
                 if (movie != null) { movieOffset = song.MovieOffset(); movie.Load(song.moviePath); }
             }

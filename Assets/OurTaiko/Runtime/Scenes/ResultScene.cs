@@ -112,6 +112,7 @@ namespace OurTaiko
             {
                 Good = Result.Good, Ok = Result.Ok, Bad = Result.Bad, Score = Result.Score,
                 Drumroll = Result.Rolls, MaxCombo = Result.MaxCombo, ClearStatus = (int)Result.StoredCrown,
+                AdLibGood = Result.AdLibGood, AdLibOk = Result.AdLibOk, Mines = Result.Mines,
             }, record);
         }
 

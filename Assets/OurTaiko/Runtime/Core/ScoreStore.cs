@@ -20,6 +20,10 @@ namespace OurTaiko
             [Column("maxCombo")] public int maxCombo { get; set; }
             [Column("rolls")] public int rolls { get; set; }
             [Column("crown")] public Crown crown { get; set; }
+            // Added later: sqlite-net's CreateTable adds the columns to an older file, rows reading 0.
+            [Column("adLibGood")] public int adLibGood { get; set; }
+            [Column("adLibOk")] public int adLibOk { get; set; }
+            [Column("mines")] public int mines { get; set; }
         }
 
         static ScoreStore shared;
@@ -59,6 +63,8 @@ namespace OurTaiko
                 key = key, score = higher ? result.Score : best.score, good = higher ? result.Good : best.good,
                 ok = higher ? result.Ok : best.ok, bad = higher ? result.Bad : best.bad,
                 maxCombo = higher ? result.MaxCombo : best.maxCombo, rolls = higher ? result.Rolls : best.rolls,
+                adLibGood = higher ? result.AdLibGood : best.adLibGood, adLibOk = higher ? result.AdLibOk : best.adLibOk,
+                mines = higher ? result.Mines : best.mines,
                 crown = (Crown)Math.Max((int)(best?.crown ?? Crown.None), (int)result.StoredCrown),
             };
             using (var db = Open()) db.InsertOrReplace(next);
