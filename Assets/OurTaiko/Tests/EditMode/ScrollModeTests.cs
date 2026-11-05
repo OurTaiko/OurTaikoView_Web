@@ -221,7 +221,7 @@ namespace OurTaiko.Tests
             Assert.That(Parse("#SCROLL inf\n1,").Notes[0].ScrollX, Is.EqualTo(double.PositiveInfinity));
             var chart = Parse("#SCROLL 1+1i\n#SCROLL abc\n1,");
             Assert.That((chart.Notes[0].ScrollX, chart.Notes[0].ScrollY), Is.EqualTo((1.0, 1.0)));
-            Assert.That(chart.Warnings, Has.Member("#SCROLL abc"));
+            Assert.That(chart.Warnings, Has.Member("#SCROLL abc (line 8)"));
             // OpenTaiko's split also cuts after a `+` followed by a space, leaving a lone `+`: it
             // does not read `1 + 2i` either.
             var spaced = Parse("#SCROLL 0.5\n#SCROLL 1 + 2i\n1,");

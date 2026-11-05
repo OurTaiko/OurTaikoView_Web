@@ -22,7 +22,7 @@ namespace OurTaiko.Tests
             Assert.That(Times(Parse("#SUDDEN 0.0004 0.0009\n1,")), Is.EqualTo(new[] { (Unset, Unset) }), "Under a millisecond is unset.");
             var missing = Parse("#SUDDEN 1 0.5\n#SUDDEN 2\n1,");
             Assert.That(Times(missing), Is.EqualTo(new[] { (1.0, 0.5) }), "A command without both times is ignored.");
-            Assert.That(missing.Warnings, Has.Member("#SUDDEN 2"));
+            Assert.That(missing.Warnings, Has.Member("#SUDDEN 2 (line 7)"));
         }
 
         [Test] public void RoutesStartFromTheBranchStartTimes()

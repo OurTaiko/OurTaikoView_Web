@@ -56,7 +56,7 @@ namespace OurTaiko.Tests
             Assert.That(Hits("BALLOON:4,6"), Is.EqualTo(new[] { 4, 6, 5 }), "Past the end: 5.");
             Assert.That(Hits("BALLOON:4,,6"), Is.EqualTo(new[] { 4, 5, 5 }), "Reading stops at an empty item.");
             Assert.That(Hits("BALLOON:4,6\nBALLOON:5.10"), Is.EqualTo(new[] { 4, 6, 5 }), "An unreadable line is ignored.");
-            Assert.That(Parse("7008,", "BALLOON:5.10").Warnings, Has.Member("BALLOON:5.10"));
+            Assert.That(Parse("7008,", "BALLOON:5.10").Warnings, Has.Member("BALLOON:5.10 (line 4)"));
             // Lists before any COURSE are every course's defaults; a course's own list replaces them.
             Assert.That(TjaParser.Parse("BPM:120\nBALLOON:7\nCOURSE:Hard\nBALLOON:8\n#START\n7008,\n#END\nCOURSE:Oni\n#START\n7008,\n#END").Notes[0].BalloonHits, Is.EqualTo(7));
         }
@@ -270,7 +270,7 @@ namespace OurTaiko.Tests
             Assert.That(roll.Route, Is.EqualTo(BranchRoute.Normal));
             Assert.That(roll.EndTime, Is.EqualTo(chart.Duration));
             Assert.That(chart.Warnings, Has.Some.StartsWith("A stray 8"));
-            Assert.That(chart.Warnings, Has.Some.EqualTo("An unended roll is ended by #END"));
+            Assert.That(chart.Warnings, Has.Some.EqualTo("An unended roll is ended by #END (line 11)"));
         }
     }
 }

@@ -21,7 +21,7 @@ namespace OurTaiko.Tests
             {
                 var chart = Parse(bad + "\n1,");
                 Assert.That(chart.JudgeMoves, Is.Empty, bad);
-                Assert.That(chart.Warnings, Has.Member(bad));
+                Assert.That(chart.Warnings, Has.Member(bad + " (line 5)"));
             }
         }
 
