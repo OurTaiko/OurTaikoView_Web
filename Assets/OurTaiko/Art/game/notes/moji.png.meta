@@ -81,7 +81,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -89,9 +89,7 @@ TextureImporter:
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
-  spriteTessellationMethod: 0
   spriteTessellationDetail: -1
-  spriteGeometrySubdivision: -1
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
@@ -453,8 +451,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d4dade5a32fd34045b94e28dfc7b3dd6
-      internalID: 34513732
+      spriteID: 9684b992af1741cf82d6f94e25d7b876
+      internalID: 1426806141
       vertices: []
       indices: 
       edges: []
@@ -477,7 +475,7 @@ TextureImporter:
       Moji1: -1386001064
       Moji10: 475634943
       Moji11: 163934189
-      Moji12: 34513732
+      Moji12: 1426806141
       Moji2: 2093287263
       Moji3: 552836711
       Moji4: 926926321

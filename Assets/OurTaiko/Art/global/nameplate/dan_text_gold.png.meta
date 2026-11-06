@@ -1,0 +1,793 @@
+fileFormatVersion: 2
+guid: 9f434462bdb662713a116e49247e347d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -415527793
+    second: NameplateDanTextGold00
+  - first:
+      213: -2062372247
+    second: NameplateDanTextGold01
+  - first:
+      213: -1528440765
+    second: NameplateDanTextGold02
+  - first:
+      213: -188009262
+    second: NameplateDanTextGold03
+  - first:
+      213: 1568120443
+    second: NameplateDanTextGold04
+  - first:
+      213: 1666403881
+    second: NameplateDanTextGold05
+  - first:
+      213: 413513493
+    second: NameplateDanTextGold06
+  - first:
+      213: 1344224910
+    second: NameplateDanTextGold07
+  - first:
+      213: -531176456
+    second: NameplateDanTextGold08
+  - first:
+      213: -1512480457
+    second: NameplateDanTextGold09
+  - first:
+      213: -895051325
+    second: NameplateDanTextGold10
+  - first:
+      213: 1020744265
+    second: NameplateDanTextGold11
+  - first:
+      213: 1959366493
+    second: NameplateDanTextGold12
+  - first:
+      213: -1914793575
+    second: NameplateDanTextGold13
+  - first:
+      213: -924112886
+    second: NameplateDanTextGold14
+  - first:
+      213: -1180447434
+    second: NameplateDanTextGold15
+  - first:
+      213: 320298210
+    second: NameplateDanTextGold16
+  - first:
+      213: -395485991
+    second: NameplateDanTextGold17
+  - first:
+      213: -1028628607
+    second: NameplateDanTextGold18
+  - first:
+      213: 1469372377
+    second: NameplateDanTextGold19
+  - first:
+      213: 1196937531
+    second: NameplateDanTextGold20
+  - first:
+      213: -541894187
+    second: NameplateDanTextGold21
+  - first:
+      213: 902574474
+    second: NameplateDanTextGold22
+  - first:
+      213: -735118759
+    second: NameplateDanTextGold23
+  - first:
+      213: -1975536901
+    second: NameplateDanTextGold24
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: NameplateDanTextGold00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 160
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8201fd48af656aead5ad159778577444
+      internalID: -415527793
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold01
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 160
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c10055b78680be4eed6a975ee5efedc
+      internalID: -2062372247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold02
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 160
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 56f45f15bec9b4835070c7909a3399e1
+      internalID: -1528440765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold03
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 160
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d73f1fb1421ebb0efc84427e7b839b0d
+      internalID: -188009262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold04
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 160
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f94e1c1119d2138ed1fe8de6422fb606
+      internalID: 1568120443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold05
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 120
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f965b763df7f3a315d45eeb33f75af0
+      internalID: 1666403881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold06
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 120
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 471a26690379aa6f6dc6cab99c6743f6
+      internalID: 413513493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold07
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 120
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 93d059c26efd2a95078420c08bdf5c17
+      internalID: 1344224910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold08
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 120
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7da80ff9b650cfd531f3a6a8528df63f
+      internalID: -531176456
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold09
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 120
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 76bca54c43af0c98bbddc909735db911
+      internalID: -1512480457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold10
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 80
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9373e0ff37bd64df5c91c10a2c79a24
+      internalID: -895051325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold11
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 80
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5d128360b3088940027de02a227f2e0b
+      internalID: 1020744265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold12
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 80
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ddf7a348a3ade9407554c287346999ec
+      internalID: 1959366493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold13
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 80
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cc5d3d29580d93a77d05a3c0dd3cfc98
+      internalID: -1914793575
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold14
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 80
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d47bba6a6958abd31457d3299a4527fa
+      internalID: -924112886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold15
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 40
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6c5611f22ff74fe028043de07e0ae42
+      internalID: -1180447434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold16
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 40
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b0d144718ac7141775b2ae4be333bc8f
+      internalID: 320298210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold17
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 40
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8fe6a17c1a21f9f2f6f511d3f471f060
+      internalID: -395485991
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold18
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 40
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db3b1e93ea718f89e0b4141b6dcef2db
+      internalID: -1028628607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold19
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 40
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64789852a35b5b6e644fab401af87c98
+      internalID: 1469372377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold20
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26285ceb27235b6b71d5d1bfcd40cf66
+      internalID: 1196937531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold21
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 0
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7298b490d36c1e1d5cce228091da91ac
+      internalID: -541894187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold22
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 0
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 72c226378b71a309185952fa4deed976
+      internalID: 902574474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold23
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 0
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 424484f2b61ebe37d7ff0985a9857160
+      internalID: -735118759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NameplateDanTextGold24
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 0
+        width: 72
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aea561bd20767fdbc8ed00c7605dd991
+      internalID: -1975536901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      NameplateDanTextGold00: -415527793
+      NameplateDanTextGold01: -2062372247
+      NameplateDanTextGold02: -1528440765
+      NameplateDanTextGold03: -188009262
+      NameplateDanTextGold04: 1568120443
+      NameplateDanTextGold05: 1666403881
+      NameplateDanTextGold06: 413513493
+      NameplateDanTextGold07: 1344224910
+      NameplateDanTextGold08: -531176456
+      NameplateDanTextGold09: -1512480457
+      NameplateDanTextGold10: -895051325
+      NameplateDanTextGold11: 1020744265
+      NameplateDanTextGold12: 1959366493
+      NameplateDanTextGold13: -1914793575
+      NameplateDanTextGold14: -924112886
+      NameplateDanTextGold15: -1180447434
+      NameplateDanTextGold16: 320298210
+      NameplateDanTextGold17: -395485991
+      NameplateDanTextGold18: -1028628607
+      NameplateDanTextGold19: 1469372377
+      NameplateDanTextGold20: 1196937531
+      NameplateDanTextGold21: -541894187
+      NameplateDanTextGold22: 902574474
+      NameplateDanTextGold23: -735118759
+      NameplateDanTextGold24: -1975536901
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

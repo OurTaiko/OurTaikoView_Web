@@ -167,9 +167,7 @@
     "Skins/YataiDONNijiiro/Graphics/game/notes/notes_atlas.png",
     "Skins/YataiDONNijiiro/Graphics/global/indicator/background.png",
     "Skins/YataiDONNijiiro/Graphics/global/nameplate/1p.png",
-    "Skins/YataiDONNijiiro/Graphics/global/nameplate/dan_emblem.png",
     "Skins/YataiDONNijiiro/Graphics/global/nameplate/dan_emblem_bg.png",
-    "Skins/YataiDONNijiiro/Graphics/global/nameplate/dan_emblem_gold.png",
     "Skins/YataiDONNijiiro/Graphics/global/nameplate/frame_top.png",
     "Skins/YataiDONNijiiro/Graphics/global/nameplate/frame_top_rainbow.png",
     "Skins/YataiDONNijiiro/Graphics/global/nameplate/outline.png",
@@ -635,5 +633,20 @@
     ],
     "destination": "Assets/OurTaiko/Art/game/drumroll_counter",
     "notes": "Original PNG bytes preserved. The 96x112 counter sprites are shared by the fan (96x112, 80-unit advance) and balloon (77x90, 64-unit advance). Mipmaps and trilinear filtering support smaller UI rendering. The redundant game/balloon/counter.png was removed. Placement and animation IDs 8/9 follow the Nijiiro skin."
-  }
+  },
+  "endingAnimations": {
+    "source": "../YataiDONNijiiro",
+    "graphics": "Graphics/game/ending_{fail,clear,fullcombo,donderful}_anim/*.png",
+    "destination": "Assets/OurTaiko/Art/game/ending",
+    "notes": "Original PNG bytes preserved; identical images shared across variants by SHA-256. Shape mapping and exported 60 Hz frame tables converted to JSON under Editor/EndingTimelines. ProjectBuilder.ApplyEndingAnimations bakes native AnimationClips; runtime uses ClipSampler, with no Lua or JSON loading. Origin (1209,109.5) is anchored relative to the 1920x264 NoteLane. Each ending plays once before the Result curtain. Import as Single/FullRect with transparent margins retained; automatic tight slicing distorts the authored shape dimensions.",
+    "sounds": [
+      "Sounds/game/fail.ogg",
+      "Sounds/game/clear.ogg",
+      "Sounds/game/full_combo.ogg",
+      "Sounds/game/donderful_combo.ogg",
+      "Sounds/game/full_combo_voice.ogg",
+      "Sounds/game/donderful_combo_voice.ogg"
+    ]
+  },
+  "danEmblem": {"source": "../ArtSources/name_plate_edit (name_plate_edit.psd, the user's art sheet; pieces cut by transparent gaps, see its README)", "graphics": ["pieces/090.png (銀粋 ring)", "pieces/186.png (金粋 ring)", "pieces/187.png (虹粋 ring)", "19 white and 19 gold 段位 glyphs (五級 .. 達人)"], "destination": "Assets/OurTaiko/Art/global/nameplate/dan_ring_{silver,gold,rainbow}.png, dan_text.png, dan_text_gold.png", "notes": "2026-10-22: the nameplate emblem is two layers like a song's crown, drawn by NameplateView: a ring by the pass's combo (銀粋 / 金粋 full combo / 虹粋 all 良; 72x40 single sprites, the 69x39 art centred) under the rank's text by the pass line (white red pass / gold gold pass; two 360x200 sheets of 72x40 cells, 初級 0 .. 達人 24, cells 0..5 blank because the game offers 五級 .. 達人 only), sliced like the former Nijiiro dan_emblem.png / dan_emblem_gold.png, which were removed."}
 }
