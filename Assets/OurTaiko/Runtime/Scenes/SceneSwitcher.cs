@@ -51,6 +51,11 @@ namespace OurTaiko
         public string SelectedCourse2P { get; private set; }
         public bool AutoPlay2P { get; private set; }
         public string CourseOf(int seat) => seat == 1 ? SelectedCourse2P : SelectedCourse;
+        // The side each seat plays (ChartSide), decided by Select from SeatBlocks before the play:
+        // the chart is that block and the result uploads to it.
+        public string SelectedSide { get; private set; } = "single";
+        public string SelectedSide2P { get; private set; } = "p2";
+        public string SideOf(int seat) => seat == 1 ? SelectedSide2P : SelectedSide;
         public bool AutoPlayOf(int seat) => seat == 1 ? AutoPlay2P : AutoPlay;
         // Scene that started the current song; Back and the result screen return there.
         public string ReturnScene { get; private set; } = MenuScene;
@@ -155,6 +160,8 @@ namespace OurTaiko
         {
             SelectedSong = song; SelectedCourse = course; AutoPlay = autoPlay;
             SelectedCourse2P = course2P ?? course; AutoPlay2P = autoPlay2P;
+            SelectedSide = song != null ? song.PlayedSide(SelectedCourse, SeatBlocks.Seats[0], PlaysTwo) : "single";
+            SelectedSide2P = song != null ? song.PlayedSide(SelectedCourse2P, SeatBlocks.Seats[1], true) : "p2";
         }
 
         public void ShowSongOnCurtain(SongDefinition song)

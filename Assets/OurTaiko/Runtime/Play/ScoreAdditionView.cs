@@ -29,7 +29,8 @@ namespace OurTaiko
             if (canvas != null)
             {
                 canvas.overrideSorting = true;
-                canvas.sortingOrder = transform.parent.GetComponentInParent<Canvas>().sortingOrder + 1;
+                // Pooled rows inherit the template's authored order. The immediate parent
+                // is the lane foreground, which is deliberately behind the separate HUD.
             }
             ShowTime(now);
         }

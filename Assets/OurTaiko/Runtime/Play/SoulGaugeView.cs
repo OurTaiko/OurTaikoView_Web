@@ -15,6 +15,8 @@ namespace OurTaiko
         }
 
         public Style[] styles;
+        [Tooltip("段位道場's gauge (game/gauge_dan): used when the clear threshold is the whole gauge. Empty in the other play scenes.")]
+        public Style danStyle;
         public UnityEngine.UI.Image border, empty, red, clearCap, goldTop, goldBottom;
         public UnityEngine.UI.Image rainbowA, rainbowB, cellFade, grid, clearLabel, soul, fire, soulOverlay;
         [Tooltip("The Rainbow group holding RainbowA and RainbowB.")]
@@ -41,7 +43,10 @@ namespace OurTaiko
         {
             threshold = clearThreshold;
             clearPoints = clearThreshold * SoulGauge.MaximumPoints;
-            style = styles[threshold < 0.7 ? 0 : threshold < 0.8 ? 1 : 2];
+            bool dan = threshold >= 1 && danStyle != null && danStyle.border != null;
+            style = dan ? danStyle : styles[threshold < 0.7 ? 0 : threshold < 0.8 ? 1 : 2];
+            // A 段位 gauge has no norma zone: no クリア mark, only the full gauge counts.
+            clearLabel.gameObject.SetActive(!dan);
             border.sprite = style.border;
             empty.sprite = style.empty;
             grid.sprite = style.grid;

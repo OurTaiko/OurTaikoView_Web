@@ -87,7 +87,7 @@ namespace OurTaiko
 
         void OnFailed(string message)
         {
-            Debug.LogWarning("Background movie " + loaded + " cannot play: " + message);
+            Log.Warn("Movie", "Background movie " + loaded + " cannot play: " + message);
             loaded = null;
             Present(false);
         }

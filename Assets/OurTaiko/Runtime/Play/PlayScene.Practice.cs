@@ -17,8 +17,11 @@ namespace OurTaiko
         PracticeStage FirstPracticeStage => Session.Chart.Branches.Count > 0 ? PracticeStage.Branch : PracticeStage.Measure;
         // The lane is scrolling back to the preparation lead-in; playback starts when it arrives.
         bool practiceRewinding;
-        double AudioOffset => audioOffset;
-        double VisualOffset => visualOffset;
+        // The offsets in chart seconds at the chosen speed. The clock runs at it whenever it plays, so
+        // these agree with ChartTime; a seek to a new speed must use them, not the clock's old rate.
+        double AudioOffset => audioOffset * Practice.Speed;
+        double VisualOffset => visualOffset * Practice.Speed;
+        double PracticeJudgeOffset => judgeOffset * Practice.Speed;
 
         void InitializePractice()
         {
@@ -48,7 +51,7 @@ namespace OurTaiko
             songClock.Pause(); IsPaused = true; practiceRewinding = false;
             music.StopAudio(); hitAudio.StopAudio();
             PracticeStage = FirstPracticeStage;
-            if (first) Session = new PlaySession(Session.Chart, judgeOffset, practiceBranch);
+            if (first) Session = new PlaySession(Session.Chart, judgeOffset, practiceBranch, 1, judgeWindows);
             RefreshPracticeBars();
             // The cursor is visual chart time, so a bar aligns exactly even with configured offsets.
             double position = first ? Practice.First : SongTime - AudioOffset - VisualOffset;
@@ -62,7 +65,7 @@ namespace OurTaiko
         void ResetPracticeAttempt(double position)
         {
             var previous = Session;
-            Session = PlaySession.PracticeAt(previous.Chart, position + VisualOffset, previous, practiceBranch);
+            Session = PlaySession.PracticeAt(previous.Chart, position + VisualOffset, previous, practiceBranch, Practice.Speed);
             Lane1.ResetBranchLane(position + VisualOffset);
             Lane1.ResetAttempt();
         }
@@ -110,7 +113,7 @@ namespace OurTaiko
             practiceView.panel.SetActive(false);
             practiceRewinding = true;
             // Playback renders ChartTime - VisualOffset, so the scroll ends on the first played frame.
-            Practice.Rewind(Practice.PlaybackStart(AudioOffset, VisualOffset, judgeOffset) - AudioOffset - VisualOffset,
+            Practice.Rewind(Practice.PlaybackStart(AudioOffset, VisualOffset, PracticeJudgeOffset) - AudioOffset - VisualOffset,
                 GameTimeline.FrameTime);
         }
         void UpdatePracticeRewind()
@@ -121,7 +124,7 @@ namespace OurTaiko
             if (Practice.Scrolling) return;
             practiceRewinding = false;
             music.pitch = (float)Practice.Speed;
-            songClock.Seek(Practice.PlaybackStart(AudioOffset, VisualOffset, judgeOffset), Practice.Speed);
+            songClock.Seek(Practice.PlaybackStart(AudioOffset, VisualOffset, PracticeJudgeOffset), Practice.Speed);
             // The preparation lead-in may start in a different section than the practice target.
             Lane1.ResetBranchLane(ChartTime);
             songClock.Resume(GameTimeline.AudioNow);

@@ -44,13 +44,10 @@ namespace OurTaiko
     {
         public int Seat { get; }
         internal readonly List<InputPress> frame = new List<InputPress>();
-        internal readonly List<InputPress> leads = new List<InputPress>();
         internal PlayerInput(int seat) => Seat = seat;
 
         // This seat's drum presses of this frame in the order they happened.
         public IReadOnlyList<InputPress> PressesThisFrame => frame;
-        // InputManager.DrumLeadsThisFrame for this seat alone.
-        public IReadOnlyList<InputPress> DrumLeadsThisFrame => leads;
         public bool GetKeyDown(InputKey face) => InputManager.GetKeyDown(face.OfSeat(Seat));
         public bool GetKey(InputKey face) => InputManager.GetKey(face.OfSeat(Seat));
         public bool DonDown => GetKeyDown(InputKey.LeftDon) || GetKeyDown(InputKey.RightDon);
@@ -68,9 +65,6 @@ namespace OurTaiko
         static readonly Dictionary<Key, InputKey> reverse = new Dictionary<Key, InputKey>();
         static readonly List<InputPress> pending = new List<InputPress>();
         static readonly List<InputPress> frame = new List<InputPress>();
-        static readonly List<InputPress> leads = new List<InputPress>();
-        // How many presses at the start of pending were already there last frame, waiting out DrumDelay.
-        static int waiting;
         static readonly bool[] pressedThisFrame = new bool[KeyCount];
         // Keys whose press arrived as an event since the last frame, so the poll does not add it again.
         static readonly bool[] recorded = new bool[KeyCount];
@@ -90,11 +84,6 @@ namespace OurTaiko
         // Seconds a drum press waits before it is published, like the arcade's input delay.
         // The play scene sets it for its lifetime; other keys and GetKey are never delayed.
         public static double DrumDelay { get; set; }
-        // Drum presses first seen this frame that will be the earliest drum press of their seat in the
-        // frame that publishes them, so a scene can sound them before the delay ends. That frame is
-        // certain while DrumDelay is no longer than a frame; with a longer delay every later frame
-        // counts as one and a press may be left out here although it ends up first in its frame.
-        public static IReadOnlyList<InputPress> DrumLeadsThisFrame => leads;
 
         static InputManager() => ResetBindings();
 
@@ -126,8 +115,8 @@ namespace OurTaiko
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
-            pending.Clear(); frame.Clear(); pads.Clear(); leads.Clear(); waiting = 0;
-            foreach (var player in players) { player.frame.Clear(); player.leads.Clear(); }
+            pending.Clear(); frame.Clear(); pads.Clear();
+            foreach (var player in players) player.frame.Clear();
             Array.Clear(pressedThisFrame, 0, KeyCount); Array.Clear(held, 0, KeyCount);
             Array.Clear(recorded, 0, KeyCount);
             DrumDelay = 0;
@@ -166,54 +155,20 @@ namespace OurTaiko
             PollKeyboard();
             PollPads();
             Array.Clear(recorded, 0, KeyCount);
-            double now = InputState.currentTime;
-            FindDrumLeads(now);
-            PublishDue(now);
-            Sort(frame, 0);
+            PublishDue(InputState.currentTime);
+            SortFrame();
             SplitBySeat();
         }
 
         static void SplitBySeat()
         {
-            foreach (var player in players) { player.frame.Clear(); player.leads.Clear(); }
+            foreach (var player in players) player.frame.Clear();
             foreach (var press in frame)
                 if (press.Key.IsDrum()) players[press.Key.Seat()].frame.Add(new InputPress(press.Key.Face(), press.Time));
-            foreach (var press in leads)
-                players[press.Key.Seat()].leads.Add(new InputPress(press.Key.Face(), press.Time));
-        }
-
-        static bool IsDue(InputPress press, double now) => !press.Key.IsDrum() || now - press.Time >= DrumDelay;
-
-        static void FindDrumLeads(double now)
-        {
-            leads.Clear();
-            // A press that was already waiting comes before any new one in the frame that publishes it.
-            // Each seat has its own lock.
-            Span<bool> takenNow = stackalloc bool[InputKeyExtensions.Seats], takenLater = stackalloc bool[InputKeyExtensions.Seats];
-            for (int i = 0; i < waiting; i++)
-            {
-                if (!pending[i].Key.IsDrum()) continue;
-                int seat = pending[i].Key.Seat();
-                if (IsDue(pending[i], now)) takenNow[seat] = true; else takenLater[seat] = true;
-            }
-            Sort(pending, waiting);
-            for (int i = waiting; i < pending.Count; i++)
-            {
-                var press = pending[i];
-                if (!press.Key.IsDrum()) continue;
-                int seat = press.Key.Seat();
-                bool due = IsDue(press, now);
-                if (!(due ? takenNow[seat] : takenLater[seat])) leads.Add(press);
-                if (due) takenNow[seat] = true; else takenLater[seat] = true;
-            }
         }
 
         // Forgets the drum presses still waiting out DrumDelay.
-        public static void DropDelayed()
-        {
-            pending.RemoveAll(press => press.Key.IsDrum());
-            waiting = 0;
-        }
+        public static void DropDelayed() => pending.RemoveAll(press => press.Key.IsDrum());
 
         // Moves the presses whose delay has passed from pending to this frame; the rest wait.
         static void PublishDue(double now)
@@ -222,12 +177,11 @@ namespace OurTaiko
             for (int i = 0; i < pending.Count; i++)
             {
                 var press = pending[i];
-                if (!IsDue(press, now)) { pending[kept++] = press; continue; }
+                if (press.Key.IsDrum() && now - press.Time < DrumDelay) { pending[kept++] = press; continue; }
                 pressedThisFrame[(int)press.Key] = true;
                 frame.Add(press);
             }
             pending.RemoveRange(kept, pending.Count - kept);
-            waiting = kept;
         }
 
         static void PollKeyboard()
@@ -273,14 +227,14 @@ namespace OurTaiko
         }
 
         // Stable insertion sort: keyboard and pointer presses interleave by the time they happened.
-        static void Sort(List<InputPress> presses, int start)
+        static void SortFrame()
         {
-            for (int i = start + 1; i < presses.Count; i++)
+            for (int i = 1; i < frame.Count; i++)
             {
-                var press = presses[i];
+                var press = frame[i];
                 int j = i - 1;
-                for (; j >= start && presses[j].Time > press.Time; j--) presses[j + 1] = presses[j];
-                presses[j + 1] = press;
+                for (; j >= 0 && frame[j].Time > press.Time; j--) frame[j + 1] = frame[j];
+                frame[j + 1] = press;
             }
         }
     }

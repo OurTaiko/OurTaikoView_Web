@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace OurTaiko
 {
@@ -6,6 +7,9 @@ namespace OurTaiko
     public sealed class ChartStatistics
     {
         public int JudgeableNotes { get; }
+        // Judgeable notes on each whole route (Normal, Expert, Master): OpenTaiko nノーツ数_Branch,
+        // which sizes the soul gauge increments of that route.
+        public IReadOnlyList<int> RouteNotes { get; }
         public int BalloonHitBudget { get; }
         public double DrumrollMilliseconds { get; }
 
@@ -19,6 +23,14 @@ namespace OurTaiko
             Accumulate(-1);
             for (int branch = 0; branch < chart.Branches.Count; branch++) Accumulate(branch);
             JudgeableNotes = judgeableNotes;
+            var routeNotes = new int[3];
+            foreach (var note in chart.Notes)
+            {
+                if (!IsJudgeable(note)) continue;
+                for (int route = 0; route < 3; route++)
+                    if (note.BranchId < 0 || note.Route == chart.Branches[note.BranchId].ResolveRoute((BranchRoute)route)) routeNotes[route]++;
+            }
+            RouteNotes = routeNotes;
             BalloonHitBudget = balloonHitBudget;
             DrumrollMilliseconds = drumrollMilliseconds;
 

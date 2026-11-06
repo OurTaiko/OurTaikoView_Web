@@ -50,14 +50,14 @@ namespace OurTaiko
         {
             public int Shape;
             public RectTransform Root, Body, Tail;
-            public UnityEngine.UI.Image Head, BodyImage, TailImage, BalloonTail;
+            public LaneSprite Head, BodyImage, TailImage, BalloonTail;
             public float TailAspect;
         }
         sealed class MojiView
         {
             public int Shape;
             public RectTransform Root, Mid, Tail;
-            public UnityEngine.UI.Image Head;
+            public LaneSprite Head;
             public float MidAspect;
         }
 
@@ -76,22 +76,31 @@ namespace OurTaiko
             r.SetParent(parent, false); r.anchorMin = r.anchorMax = new Vector2(0, 1);
             r.pivot = new Vector2(0.5f, 0.5f); r.sizeDelta = new Vector2(width, height); return r;
         }
-        static UnityEngine.UI.Image Image(RectTransform r, Sprite sprite)
+        static LaneSprite Image(RectTransform r, Sprite sprite)
         {
-            var image = r.gameObject.AddComponent<UnityEngine.UI.Image>(); image.sprite = sprite; image.raycastTarget = false; return image;
+            var image = r.gameObject.AddComponent<LaneSprite>();
+            image.Initialize(r.GetComponentInParent<LaneSpriteLayer>(), sprite, r.GetSiblingIndex());
+            return image;
         }
         static int ShapeOf(ChartNote note) => note.Kind == NoteKind.Balloon ? BalloonShape : note.IsDrumroll ? RollShape : PlainShape;
         static int MojiShapeOf(ChartNote note) => ShapeOf(note) == RollShape ? RollShape - 1 : PlainShape;
 
         // Only the notes on the lane own views; prewarm enough that the first screens do not allocate.
+        // A 段位 course prepares the same renderer again for its next song: what the song before left
+        // on the lane goes back to the pools first, and the lane windows are built for the new chart.
         public void Prepare(PlaySession session)
         {
+            for (int i = 0; i < shownNotes.Length; i++) { if (shownNotes[i] != null) ReleaseNote(i); if (shownMoji[i] != null) ReleaseMoji(i); }
+            for (int i = 0; i < shownBars.Length; i++) if (shownBars[i] != null) ReleaseBar(i);
+            noteWindow = barWindow = null; rendered = false; renderedSession = null;
+            bool warm = notePool[PlainShape].Count > 0;
             Session = session;
             clocks = new ScrollClockTimeline(session.Chart);
             judgeTravel = JudgeShift.MaxAcross(session.Chart.JudgeMoves);
             shownNotes = new NoteView[Session.Chart.Notes.Count];
             shownMoji = new MojiView[Session.Chart.Notes.Count];
             shownBars = new RectTransform[Session.Chart.Bars.Count];
+            if (warm) return;
             for (int i = 0; i < 32; i++) notePool[PlainShape].Push(NewNote(PlainShape));
             for (int i = 0; i < 2; i++) notePool[RollShape].Push(NewNote(RollShape));
             notePool[BalloonShape].Push(NewNote(BalloonShape));
@@ -105,6 +114,7 @@ namespace OurTaiko
         NoteView NewNote(int shape)
         {
             var root = Rect("Note", noteLayer, NoteSize, NoteSize);
+            root.gameObject.AddComponent<UnityEngine.Rendering.SortingGroup>();
             var view = new NoteView { Shape = shape, Root = root };
             if (shape == RollShape)
             {
@@ -142,6 +152,7 @@ namespace OurTaiko
         MojiView NewMoji(int shape)
         {
             var root = Rect("Moji", mojiLayer, MojiWidth, MojiHeight);
+            root.gameObject.AddComponent<UnityEngine.Rendering.SortingGroup>();
             var view = new MojiView { Shape = shape, Root = root };
             if (shape == 1)
             {
@@ -221,13 +232,18 @@ namespace OurTaiko
         }
 
         // draw_notes walks draw_note_buffer in reverse, so earlier notes paint over
-        // later ones; uGUI draws later siblings on top. Pooled views are re-stacked
+        // later ones. SortingGroups keep each note's parts together. Pooled views are re-stacked
         // whenever a note enters, since a reused view keeps its old sibling slot.
         // Only candidates hold views, so walking them in descending index order is enough.
         static void Restack<T>(T[] shown, List<int> order, Func<T, Transform> root) where T : class
         {
             for (int k = order.Count - 1; k >= 0; k--)
-                if (shown[order[k]] != null) root(shown[order[k]]).SetAsLastSibling();
+                if (shown[order[k]] != null)
+                {
+                    var transform = root(shown[order[k]]);
+                    transform.SetAsLastSibling();
+                    transform.GetComponent<UnityEngine.Rendering.SortingGroup>().sortingOrder = order.Count - k;
+                }
         }
         void SortCandidates(LaneWindow window)
         {
@@ -375,7 +391,7 @@ namespace OurTaiko
                 {
                     root = shownBars[i] = barPool.Count > 0 ? barPool.Pop() : NewBar();
                     root.sizeDelta = new Vector2(bar.IsBranchStart ? 6 : 3, 200);
-                    root.GetComponent<UnityEngine.UI.Image>().color = bar.IsBranchStart ? new Color(1, 0.8f, 0.2f, 0.8f) : new Color(1, 1, 1, 0.35f);
+                    root.GetComponent<LaneSprite>().color = bar.IsBranchStart ? new Color(1, 0.8f, 0.2f, 0.8f) : new Color(1, 1, 1, 0.35f);
                     root.gameObject.SetActive(true);
                 }
                 root.anchoredPosition = pos;
@@ -422,7 +438,9 @@ namespace OurTaiko
         // window resolution, so cull against its live rect instead of fixed pixels.
         // A note is drawn from the screen's left edge to the lane's right edge (CStage演奏ドラム画面
         // t進行描画_チップ_Taiko: x > -note size and x < the resolution); left of the lane it is under the cover.
-        bool InLane(float x, Vector2 reach) => LaneCull.InLane(x + leftMargin, reach.x, reach.y, noteLayer.rect.width + leftMargin);
+        // The width is the one EnsureLaneWindows read at the start of this frame: reading
+        // RectTransform.rect for every note costs microseconds each once the layout is dirty.
+        bool InLane(float x, Vector2 reach) => LaneCull.InLane(x + leftMargin, reach.x, reach.y, windowWidth + leftMargin);
         float leftMargin;
         // How far the note layer's left edge is from the lane's (the screen's) left edge, in lane
         // units: summed down the hierarchy, so it holds before the canvas has been scaled.

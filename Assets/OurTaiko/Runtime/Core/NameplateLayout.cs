@@ -9,7 +9,10 @@ namespace OurTaiko
         public const float Width = 408, Height = 96;
         // Every text_name rect is 190 wide, text_title 215; OutlinedText spacing 2.
         public const float NameBoxWidth = 190, TitleBoxWidth = 215, TextSpacing = 2;
-        public const float TitleX = 226.5f, TitleY = 34.5f, TitleFontSize = 22;
+        // nameplate.lua puts the title at y 34.5 and the name at 67.5 / 53, but TMP's line box sits
+        // the glyphs lower than the original's text, so the rows are raised to centre the glyphs in
+        // the band and the name box (measured on NameplatePlay.png, 2026-10-22).
+        public const float TitleX = 226.5f, TitleY = 32, TitleFontSize = 22;
         // White fill, black border 3 (OutlinedText thickness 2 x screen_scale 1.5).
         public const float NameOutline = 3;
         public const float BadgeX = 36, BadgeY = 4, DanBackgroundX = 44, DanBackgroundY = 44, DanX = 106, DanY = 44;
@@ -23,8 +26,8 @@ namespace OurTaiko
         // Nameplate:name_box for a plate with a badge: 1p_coin, 1p / 1p_shougou or *_dani.
         public static TextBox NameBox(PlayerInfo info)
         {
-            if (info.IsCoin) return new TextBox(226, 53, 30);
-            return info.HasDan ? new TextBox(261, 67.5f, 24) : new TextBox(226, 67.5f, 24);
+            if (info.IsCoin) return new TextBox(226, 46, 30);
+            return info.HasDan ? new TextBox(261, 64.5f, 24) : new TextBox(226, 64.5f, 24);
         }
     }
 

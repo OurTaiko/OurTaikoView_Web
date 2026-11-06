@@ -50,19 +50,36 @@ namespace OurTaiko
         public bool FadeInFinished => Now >= FadeInEndMs;
         // 0 while the reveal runs (a drum press skips); afterwards the MoveResultAction beat.
         public double RevealEndMs => messageShown ? MessageAtMs.Value : 0;
-        public bool CanAdvance => RevealEndMs > 0 && Now >= RevealEndMs + WaitEffectEndMs + WaitNextSceneMs;
-        public bool ShouldAutoAdvance => RevealEndMs > 0 && Now >= RevealEndMs + WaitEffectEndMs + AutoNextSceneMs;
-        public bool CanSkip => Now >= FadeInEndMs + EnableSkipMs;
+        public bool CanAdvance => RevealEndMs > 0;
+        public bool ShouldAutoAdvance => false;
+        public bool CanSkip => FadeInFinished;
 
         public IReadOnlyList<(ResultCue Cue, int Row)> Update(double now)
         {
             cues.Clear();
             Now = now;
             if (!FadeInFinished) return cues;
+            if (Skipped && !messageShown)
+            {
+                GaugeShown = result.Cells; gaugeDone = true;
+                StopCountLoop();
+                if (result.GaugeState == GaugeState.Full) RainbowStartMs ??= now;
+                ScoreLandMs ??= now;
+                if (result.ScoreDifference > 0 && result.IsRecordable && !highScoreShown)
+                { highScoreShown = true; HighScoreAtMs = now; cues.Add((ResultCue.HighScore, 0)); }
+                if (result.Rank > 0) { RankAtMs = now; rankShown = true; }
+                CrownAtMs = MessageAtMs = now;
+                if (result.GaugeState != GaugeState.Failed && !crownShown)
+                { crownShown = true; cues.Add((ResultCue.Crown, 0)); }
+                messageShown = true;
+                cues.Add((ResultCue.Message, 0));
+                if (result.GaugeState != GaugeState.Failed) cues.Add((ResultCue.SuccessBackground, 0));
+                return cues;
+            }
+            if (Skipped) return cues;
             int target = result.Cells;
             double elapsed = now - FadeInEndMs - WaitGaugeMs;
-            if (Skipped) GaugeShown = target;
-            else if (elapsed > 0)
+            if (elapsed > 0)
             {
                 if (!countLoop && !gaugeDone) { countLoop = true; cues.Add((ResultCue.CountLoopStart, 0)); }
                 GaugeShown = Math.Min(target, (int)Math.Floor(elapsed / GaugeCellMs));
@@ -71,10 +88,10 @@ namespace OurTaiko
                     achieved = true; cues.Add((ResultCue.AchieveSoul, 0));
                 }
             }
-            if (GaugeShown >= target && !gaugeDone && (Skipped || elapsed > 0))
+            if (GaugeShown >= target && !gaugeDone && elapsed > 0)
             {
                 gaugeDone = true;
-                scoreDelay = now + (Skipped ? 0 : WaitScoreMs);
+                scoreDelay = now + WaitScoreMs;
                 StopCountLoop();
             }
             if (result.GaugeState == GaugeState.Full && GaugeShown >= PlayResult.GaugeCells && RainbowStartMs == null)
@@ -92,7 +109,7 @@ namespace OurTaiko
                 MessageAtMs = CrownAtMs + (result.GaugeState != GaugeState.Failed ? CrownToActionMs : 0);
             }
             // ResultPlayer::update_score_animation with count_up_instant: each row lands whole.
-            while (!Skipped && rowDelay.HasValue && RowsLanded <= Rows && now > rowDelay.Value)
+            while (rowDelay.HasValue && RowsLanded <= Rows && now > rowDelay.Value)
             {
                 if (RowsLanded < Rows) { RowLandMs[RowsLanded] = now; cues.Add((ResultCue.RowLanded, RowsLanded)); }
                 else { ScoreLandMs = now; cues.Add((ResultCue.ScoreLanded, 0)); }
@@ -100,13 +117,7 @@ namespace OurTaiko
                 rowDelay += RowsLanded == Rows ? ScoreMs : RowMs;
                 if (RowsLanded > Rows) break;
             }
-            if (Skipped && rowDelay.HasValue)
-            {
-                if (RankAtMs.HasValue) RankAtMs = Math.Min(RankAtMs.Value, now);
-                CrownAtMs = Math.Min(CrownAtMs.Value, now);
-                MessageAtMs = Math.Min(MessageAtMs.Value, now);
-            }
-            if (ScoreLandMs.HasValue && !highScoreShown && result.ScoreDifference > 0 && !result.AutoPlay)
+            if (ScoreLandMs.HasValue && !highScoreShown && result.ScoreDifference > 0 && result.IsRecordable)
             {
                 highScoreShown = true; HighScoreAtMs = now; cues.Add((ResultCue.HighScore, 0));
             }

@@ -38,14 +38,14 @@ namespace OurTaiko.Editor
                 EditorUtility.SetDirty(clip);
                 var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
                 var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
-                var rect = play.judgment.rectTransform;
+                var rect = play.firstLane.judgment.rectTransform;
                 var pivot = new Vector2(rect.pivot.x, 0);
                 rect.anchoredPosition += Vector2.Scale(pivot - rect.pivot, Vector2.Scale(rect.rect.size, rect.localScale));
                 rect.pivot = pivot;
-                play.judgment.color = new Color(1, 1, 1, 0);
-                play.judgment.GetComponent<ClipSampler>().clip = clip;
-                var voices = play.comboAnnounce.voices.Where(v => v != null && v.name != "50_1p");
-                play.comboAnnounce.voices = voices.Prepend(AssetDatabase.LoadAssetAtPath<AudioClip>(voicePath)).ToArray();
+                play.firstLane.judgment.color = new Color(1, 1, 1, 0);
+                play.firstLane.judgment.GetComponent<ClipSampler>().clip = clip;
+                var voices = play.firstLane.comboAnnounce.voices.Where(v => v != null && v.name != "50_1p");
+                play.firstLane.comboAnnounce.voices = voices.Prepend(AssetDatabase.LoadAssetAtPath<AudioClip>(voicePath)).ToArray();
                 // All five course sprites use the shared LaneDifficulty slices.
                 RemoveDuplicateDifficultySprites();
                 EditorSceneManager.MarkSceneDirty(scene);
@@ -73,12 +73,12 @@ namespace OurTaiko.Editor
             {
                 var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
                 var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
-                var lane = (RectTransform)play.noteLayer.parent.parent;
+                var lane = (RectTransform)play.firstLane.noteLayer.parent.parent;
                 var rig = lane.Find("DrumrollCounter") as RectTransform;
                 if (rig == null) rig = CounterRect("DrumrollCounter", lane, Vector2.zero, Vector2.zero);
                 rig.anchorMin = Vector2.zero; rig.anchorMax = Vector2.one;
                 rig.offsetMin = rig.offsetMax = Vector2.zero;
-                PlaceBefore(rig, play.scoreCounter.transform);
+                PlaceBefore(rig, play.firstLane.scoreCounter.transform);
                 var view = rig.GetComponent<DrumrollCounterView>();
                 if (view == null) view = rig.gameObject.AddComponent<DrumrollCounterView>();
                 view.visuals = rig.GetComponent<CanvasGroup>();
@@ -95,10 +95,10 @@ namespace OurTaiko.Editor
                 if (rig.GetComponent<Animator>() == null) rig.gameObject.AddComponent<Animator>();
                 rig.GetComponent<ClipSampler>().clip = clip;
                 view.ResetDisplay();
-                play.drumrollCounter = view;
-                play.balloonCounter.digitSprites = digits;
-                play.balloonCounter.digitSize = new Vector2(77, 90);
-                var balloon = (RectTransform)play.balloonCounter.transform;
+                play.firstLane.drumrollCounter = view;
+                play.firstLane.balloonCounter.digitSprites = digits;
+                play.firstLane.balloonCounter.digitSize = new Vector2(77, 90);
+                var balloon = (RectTransform)play.firstLane.balloonCounter.transform;
                 balloon.SetParent(lane.parent, false);
                 balloon.anchorMin = lane.anchorMin; balloon.anchorMax = lane.anchorMax;
                 balloon.pivot = lane.pivot; balloon.sizeDelta = lane.sizeDelta;
@@ -106,7 +106,7 @@ namespace OurTaiko.Editor
                 balloon.localScale = lane.localScale; balloon.localRotation = lane.localRotation;
                 PlaceBefore(balloon, play.pauseButton.transform);
                 EditorUtility.SetDirty(play);
-                EditorUtility.SetDirty(play.balloonCounter);
+                EditorUtility.SetDirty(play.firstLane.balloonCounter);
                 EditorSceneManager.MarkSceneDirty(scene);
                 EditorSceneManager.SaveScene(scene);
                 AssetDatabase.SaveAssets();
@@ -209,7 +209,7 @@ namespace OurTaiko.Editor
             {
                 var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
                 var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
-                var after = (RectTransform)play.balloonCounter.transform;
+                var after = (RectTransform)play.firstLane.balloonCounter.transform;
                 var root = play.kusudama != null ? (RectTransform)play.kusudama.transform
                     : CounterRect("Kusudama", after.parent, Vector2.zero, new Vector2(1920, 1080));
                 root.SetSiblingIndex(after.GetSiblingIndex() + 1);
@@ -256,7 +256,7 @@ namespace OurTaiko.Editor
             try
             {
                 var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
-                var counter = UnityEngine.Object.FindFirstObjectByType<PlayScene>().scoreCounter;
+                var counter = UnityEngine.Object.FindFirstObjectByType<PlayScene>().firstLane.scoreCounter;
                 var view = counter.scoreRank;
                 if (view == null)
                 {
@@ -317,7 +317,7 @@ namespace OurTaiko.Editor
             {
                 var scene = EditorSceneManager.OpenScene("Assets/Scenes/PracticeScene.unity");
                 var play = UnityEngine.Object.FindFirstObjectByType<PlayScene>();
-                var lane = (RectTransform)play.branchLane.transform.parent;
+                var lane = (RectTransform)play.firstLane.branchLane.transform.parent;
                 var old = lane.Find("GogoTint");
                 if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
                 var root = lane.Find("GogoEffects") as RectTransform ?? CounterRect("GogoEffects", lane, Vector2.zero, Vector2.zero);
@@ -344,7 +344,7 @@ namespace OurTaiko.Editor
                 view.explosion = GogoSampler(explosion, burstClip);
                 root.SetSiblingIndex(lane.Find("JudgeCircle").GetSiblingIndex() + 1);
                 view.ResetDisplay();
-                play.gogo = view;
+                play.firstLane.gogo = view;
                 EditorUtility.SetDirty(play);
                 EditorSceneManager.MarkSceneDirty(scene);
                 EditorSceneManager.SaveScene(scene);
