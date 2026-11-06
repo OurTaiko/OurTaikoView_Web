@@ -2,32 +2,20 @@ using System;
 
 namespace OurTaiko
 {
-    // Table copied from OurTaikoPlayer's gauge.h; its unconfirmed entries remain source values.
+    // Increments follow OpenTaiko's normal gauge (CAct演奏ゲージ共通.Init), which looks only at the
+    // stars; the clear tier keeps the per-course values (Easy 60, Normal/Hard 70, Oni/Edit 80).
     public readonly struct SoulGaugeRules
     {
-        public double SoulPercent { get; }
-        public double OkMultiplier { get; }
-        public double BadMultiplier { get; }
+        // Share of a route's notes that, all 良, fill the gauge (fGaugeMaxRate, in percent).
+        public float GaugeRate { get; }
+        // A 不可 costs this many 良 increments (dbDamageRate).
+        public float DamageRate { get; }
         public int ClearPoints { get; }
 
-        SoulGaugeRules(double soulPercent, double okMultiplier, double badMultiplier, int clearPoints)
+        internal SoulGaugeRules(float gaugeRate, float damageRate, int clearPoints)
         {
-            SoulPercent = soulPercent; OkMultiplier = okMultiplier;
-            BadMultiplier = badMultiplier; ClearPoints = clearPoints;
+            GaugeRate = gaugeRate; DamageRate = damageRate; ClearPoints = clearPoints;
         }
-
-        static readonly double[][] SoulPercentTable = {
-            new[] { 60.0, 63.333, 63.333, 73.333, 73.333, 0, 0, 0, 0, 0 },
-            new[] { 65.6, 65.6, 69.5, 70.3, 75.0, 75.0, 75.0, 0, 0, 0 },
-            new[] { 77.6, 77.6, 72.5, 69.15, 67.5, 68.74, 68.74, 68.74, 0, 0 },
-            new[] { 70.75, 70.75, 70.75, 70.75, 70.75, 70.75, 70.75, 70.0, 76.75, 76.75 }
-        };
-        static readonly double[][] BadMultiplierTable = {
-            new[] { -0.5, -0.5, -0.5, -0.5, -0.5, 0, 0, 0, 0, 0 },
-            new[] { -0.5, -0.5, -0.5, -0.75, -1.0, -1.0, -1.0, 0, 0, 0 },
-            new[] { -0.75, -0.75, -1.0, -1.17, -1.25, -1.25, -1.25, -1.25, 0, 0 },
-            new[] { -1.6, -1.6, -1.6, -1.6, -1.6, -1.6, -1.6, -2.0, -2.0, -2.0 }
-        };
 
         public static SoulGaugeRules ForChart(string course, int level)
         {
@@ -40,13 +28,19 @@ namespace OurTaiko
                 case "oni": case "edit": difficulty = 3; break;
                 default: throw new NotSupportedException("Unsupported soul gauge course: " + course);
             }
-            // Player::reset_chart treats absent/zero LEVEL as Oni 10, including the clear tier.
-            if (level == 0) { difficulty = 3; level = 10; }
-            int row = Math.Max(1, Math.Min(10, level)) - 1;
-            double soul = SoulPercentTable[difficulty][row];
-            double ok = soul == 0 ? 0 : difficulty == 3 ? 0.5 : 0.75;
-            int clear = difficulty == 0 ? 6000 : difficulty < 3 ? 7000 : 8000;
-            return new SoulGaugeRules(soul, ok, BadMultiplierTable[difficulty][row], clear);
+            // Player::reset_chart treats absent/zero LEVEL as Oni 10 for the clear tier.
+            int clear = level == 0 || difficulty == 3 ? 8000 : difficulty == 0 ? 6000 : 7000;
+            // OpenTaiko reads an absent LEVEL as 0; ★0–7 and ★8 forgive misses, ★9 and above
+            // (★11–13 included: their rates are listed but never selected) do not.
+            switch (Math.Max(0, level))
+            {
+                case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+                    return new SoulGaugeRules(70.7f, 0.625f, clear);
+                case 8:
+                    return new SoulGaugeRules(70f, 0.625f, clear);
+                default:
+                    return new SoulGaugeRules(75.0f, 2.0f, clear);
+            }
         }
     }
 }

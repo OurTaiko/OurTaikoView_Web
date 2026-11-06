@@ -37,6 +37,10 @@ namespace OurTaiko
         public float Stretch { get; private set; }
         public Image Digit(int index) => digits[index];
 
+        // Forgets the shown count, so the next Show draws it even when it is the same number
+        // (a 段位 course's next song shows the combo running into it).
+        public void ResetDisplay() => combo = -1;
+
         public void Show(int value)
         {
             if (value == combo) return;

@@ -58,7 +58,7 @@ namespace OurTaiko.Tests
             Assert.That(clip.isLooping, Is.False);
             foreach (var (t, lit) in new[] { (0.0, true), (0.119, true), (0.12, false), (1.0, false) })
                 Assert.That(Sampled(clip, t, go => go.GetComponent<UnityEngine.UI.Image>().enabled), Is.EqualTo(lit), $"{t} s");
-            WithPlayScene(play => Assert.That(play.drumFlashes.All(f => f.GetComponent<ClipSampler>().clip == clip), Is.True));
+            WithPlayScene(play => Assert.That(play.firstLane.drumFlashes.All(f => f.GetComponent<ClipSampler>().clip == clip), Is.True));
         }
 
         [Test]
@@ -69,8 +69,8 @@ namespace OurTaiko.Tests
                 Assert.That(Sampled(clip, t, go => go.GetComponent<UnityEngine.UI.Image>().color.a), Is.EqualTo(alpha).Within(1e-4), $"{t} s");
             WithPlayScene(play =>
             {
-                Assert.That(play.judgment.GetComponent<ClipSampler>().clip, Is.SameAs(clip));
-                Assert.That((Vector3)(Vector4)play.judgment.color, Is.EqualTo(Vector3.one), "Judgment text stays untinted.");
+                Assert.That(play.firstLane.judgment.GetComponent<ClipSampler>().clip, Is.SameAs(clip));
+                Assert.That((Vector3)(Vector4)play.firstLane.judgment.color, Is.EqualTo(Vector3.one), "Judgment text stays untinted.");
             });
         }
 
@@ -81,10 +81,10 @@ namespace OurTaiko.Tests
             try
             {
                 var play = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<PlayScene>(true)).Single();
-                var image = play.judgment;
+                var image = play.firstLane.judgment;
                 var rect = image.rectTransform;
                 var sampler = image.GetComponent<ClipSampler>();
-                var comboSampler = play.combo.GetComponent<ClipSampler>();
+                var comboSampler = play.firstLane.combo.GetComponent<ClipSampler>();
                 var corners = new Vector3[4];
                 void ReadCorners()
                 {
@@ -105,7 +105,7 @@ namespace OurTaiko.Tests
                     foreach (double t in new[] { 0, .025, .05, .07, .10, .15, .167, .25, .0 })
                     {
                         comboSampler.Sample(Math.Min(t, comboSampler.clip.length));
-                        float stretch = play.combo.GetComponent<AnimatedFloat>().value;
+                        float stretch = play.firstLane.combo.GetComponent<AnimatedFloat>().value;
                         sampler.Sample(t);
                         ReadCorners();
                         Assert.That(Vector3.Distance(corners[0], bottom), Is.LessThan(.001f), "The bottom edge must not jump.");
@@ -194,8 +194,8 @@ namespace OurTaiko.Tests
             }
             WithPlayScene(play =>
             {
-                Assert.That(play.soulGauge.fire.GetComponent<ClipSampler>().clip, Is.SameAs(fire));
-                Assert.That(play.soulGauge.soulOverlay.GetComponent<ClipSampler>().clip, Is.SameAs(overlay));
+                Assert.That(play.firstLane.soulGauge.fire.GetComponent<ClipSampler>().clip, Is.SameAs(fire));
+                Assert.That(play.firstLane.soulGauge.soulOverlay.GetComponent<ClipSampler>().clip, Is.SameAs(overlay));
             });
         }
 
@@ -226,7 +226,7 @@ namespace OurTaiko.Tests
             }
             WithPlayScene(play =>
             {
-                var gauge = play.soulGauge;
+                var gauge = play.firstLane.soulGauge;
                 Assert.That(gauge.styles.Select(s => s.rainbow.name), Is.EqualTo(new[] { "SoulRainbowEasy", "SoulRainbowNormal", "SoulRainbowHard" }));
                 Assert.That(gauge.rainbowSampler.name, Is.EqualTo("Rainbow"));
                 Assert.That(gauge.rainbowA.transform.parent, Is.SameAs(gauge.rainbowSampler.transform));
@@ -241,7 +241,7 @@ namespace OurTaiko.Tests
             Assert.That(clip.length, Is.EqualTo(0.45).Within(1e-4));
             foreach (var (t, alpha) in new[] { (0.0, 0f), (0.225, 0.5f), (0.45, 1f) })
                 Assert.That(Sampled(clip, t, go => go.GetComponent<UnityEngine.UI.Image>().color.a), Is.EqualTo(alpha).Within(1e-4), $"{t} s");
-            WithPlayScene(play => Assert.That(play.soulGauge.cellFade.GetComponent<ClipSampler>().clip, Is.SameAs(clip)));
+            WithPlayScene(play => Assert.That(play.firstLane.soulGauge.cellFade.GetComponent<ClipSampler>().clip, Is.SameAs(clip)));
         }
 
         [Test]
@@ -301,7 +301,7 @@ namespace OurTaiko.Tests
                 }
             }
             finally { Object.DestroyImmediate(root); }
-            WithPlayScene(play => Assert.That(play.branchLane.GetComponent<ClipSampler>().clip, Is.SameAs(clip)));
+            WithPlayScene(play => Assert.That(play.firstLane.branchLane.GetComponent<ClipSampler>().clip, Is.SameAs(clip)));
         }
 
         [Test]
@@ -345,8 +345,8 @@ namespace OurTaiko.Tests
             finally { Object.DestroyImmediate(root); }
             WithPlayScene(play =>
             {
-                Assert.That(play.scoreCounter.GetComponent<ClipSampler>().clip, Is.SameAs(clip));
-                Assert.That(play.balloonCounter.GetComponent<ClipSampler>().clip, Is.SameAs(clip));
+                Assert.That(play.firstLane.scoreCounter.GetComponent<ClipSampler>().clip, Is.SameAs(clip));
+                Assert.That(play.firstLane.balloonCounter.GetComponent<ClipSampler>().clip, Is.SameAs(clip));
             });
         }
 
@@ -372,8 +372,8 @@ namespace OurTaiko.Tests
             finally { Object.DestroyImmediate(root); Object.DestroyImmediate(reference); }
             WithPlayScene(play =>
             {
-                Assert.That(play.balloonCounter.popClip, Is.SameAs(clip));
-                Assert.That(play.balloonCounter.stretchClip, Is.SameAs(stretch));
+                Assert.That(play.firstLane.balloonCounter.popClip, Is.SameAs(clip));
+                Assert.That(play.firstLane.balloonCounter.stretchClip, Is.SameAs(stretch));
             });
         }
     }

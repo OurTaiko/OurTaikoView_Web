@@ -32,7 +32,7 @@ namespace OurTaiko
         public int Revision { get; private set; }
         public static ScoreStore Shared
         {
-            get => shared ??= new ScoreStore(Path.Combine(Application.persistentDataPath, "scores.sqlite3"));
+            get => shared ??= new ScoreStore(Path.Combine(GamePaths.Root, "scores.sqlite3"));
             set => shared = value;
         }
 
@@ -53,7 +53,7 @@ namespace OurTaiko
 
         public void Save(PlayResult result)
         {
-            if (result.AutoPlay || SongScores.IsOnlineKey(result.ChartKey)) return;
+            if (!result.IsRecordable || SongScores.IsOnlineKey(result.ChartKey)) return;
             string key = Key(result.ChartKey, result.Difficulty);
             records.TryGetValue(key, out var best);
             result.PreviousBest = best?.score ?? 0;

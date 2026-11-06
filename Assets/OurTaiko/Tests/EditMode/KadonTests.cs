@@ -1,4 +1,7 @@
+using System.IO;
+using System.Linq;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace OurTaiko.Tests
 {
@@ -16,6 +19,7 @@ namespace OurTaiko.Tests
             Assert.That(donFirst.AwaitsKadon(false, 0.02), Is.False);
             // 30 ms after the note would be 可; the first hit at 10 ms makes it 良.
             Assert.That(donFirst.Hit(true, 0.03), Is.EqualTo(Judgment.Good));
+            Assert.That(donFirst.TimingOffsetMs(0), Is.EqualTo(10).Within(1e-6));
             Assert.That(donFirst.Combo, Is.EqualTo(1));
 
             var kaFirst = Session("G000,");
@@ -46,6 +50,7 @@ namespace OurTaiko.Tests
             Assert.That(session.Hit(true, 0.06), Is.EqualTo(Judgment.None));
             Assert.That(session.Resolved[0], Is.False);
             Assert.That(session.Hit(false, 0.07), Is.EqualTo(Judgment.Ok));
+            Assert.That(session.TimingOffsetMs(0), Is.EqualTo(60).Within(1e-6));
         }
 
         [Test] public void ABadFirstHitIsJudgedAtOnce()
@@ -62,6 +67,33 @@ namespace OurTaiko.Tests
             var session = new PlaySession(chart);
             session.Advance(2, true);
             Assert.That(session.Good, Is.EqualTo(4));
+        }
+
+        // A real chart with four Kadons an eighth apart at BPM 224 (Charts/IrohaUta.txt, PeepoDrumKit
+        // 2025-09-03): every note hit on time, each Kadon with don then ka 10 ms later, is a full combo.
+        [Test] public void IrohaUtaFullComboWithItsKadons()
+        {
+            var chart = TjaParser.Parse(File.ReadAllText(Path.Combine(Application.dataPath, "OurTaiko", "Tests/EditMode/Charts/IrohaUta.txt")), "Oni");
+            Assert.That(chart.Notes.Count(n => n.IsKadon), Is.EqualTo(4));
+            int judgeable = new ChartStatistics(chart).JudgeableNotes;
+            var session = new PlaySession(chart);
+            foreach (var note in chart.Notes.Where(n => !n.IsLong))
+            {
+                if (note.IsKadon)
+                {
+                    Assert.That(session.Hit(false, note.Time), Is.EqualTo(Judgment.None));
+                    Assert.That(session.Hit(true, note.Time + 0.01), Is.EqualTo(Judgment.Good));
+                }
+                else Assert.That(session.Hit(note.IsKa, note.Time), Is.EqualTo(Judgment.Good));
+            }
+            session.Advance(chart.Duration + 1, false);
+            Assert.That(session.Bad, Is.Zero);
+            Assert.That(session.Good, Is.EqualTo(judgeable));
+            Assert.That(session.MaxCombo, Is.EqualTo(judgeable));
+
+            var auto = new PlaySession(chart);
+            auto.Advance(chart.Duration + 1, true);
+            Assert.That(auto.Good, Is.EqualTo(judgeable));
         }
     }
 }

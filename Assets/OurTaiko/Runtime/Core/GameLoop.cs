@@ -11,7 +11,7 @@ namespace OurTaiko
         {
             InputManager.Initialize();
             GameTimeline.UpdateFrame();
-            if (FindFirstObjectByType<GameLoop>() != null) return;
+            if (FindAnyObjectByType<GameLoop>() != null) return;
             var root = new GameObject(nameof(GameLoop)) { hideFlags = HideFlags.HideInHierarchy };
             DontDestroyOnLoad(root);
             root.AddComponent<GameLoop>();

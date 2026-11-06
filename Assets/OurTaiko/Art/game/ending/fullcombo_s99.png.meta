@@ -1,0 +1,702 @@
+fileFormatVersion: 2
+guid: 3c26dd9b5d52543769e658a6a1e88ad0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5927490014388956099
+    second: fullcombo_s99_0
+  - first:
+      213: -6361344258475522607
+    second: fullcombo_s99_1
+  - first:
+      213: 8244237382359993641
+    second: fullcombo_s99_2
+  - first:
+      213: 3712010741593452051
+    second: fullcombo_s99_3
+  - first:
+      213: -8903732175549622367
+    second: fullcombo_s99_4
+  - first:
+      213: -7910496529392030650
+    second: fullcombo_s99_5
+  - first:
+      213: -4827169646261040300
+    second: fullcombo_s99_6
+  - first:
+      213: -3256880451672292836
+    second: fullcombo_s99_7
+  - first:
+      213: -7965506810967541306
+    second: fullcombo_s99_8
+  - first:
+      213: -8555091537390396401
+    second: fullcombo_s99_9
+  - first:
+      213: -6334595470769103635
+    second: fullcombo_s99_10
+  - first:
+      213: -1386880586322196568
+    second: fullcombo_s99_11
+  - first:
+      213: 3248897715234220027
+    second: fullcombo_s99_12
+  - first:
+      213: -2753759710038167808
+    second: fullcombo_s99_13
+  - first:
+      213: -7868652593145427744
+    second: fullcombo_s99_14
+  - first:
+      213: -2349704810699318839
+    second: fullcombo_s99_15
+  - first:
+      213: -5719930095456776507
+    second: fullcombo_s99_16
+  - first:
+      213: -7992952436752607468
+    second: fullcombo_s99_17
+  - first:
+      213: 2723158607150703975
+    second: fullcombo_s99_18
+  - first:
+      213: 6581664382914858520
+    second: fullcombo_s99_19
+  - first:
+      213: -8972035900100471650
+    second: fullcombo_s99_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: fullcombo_s99_0
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 144
+        width: 75
+        height: 167
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d34dba2bc335dbda0800000000000000
+      internalID: -5927490014388956099
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_1
+      rect:
+        serializedVersion: 2
+        x: 309
+        y: 296
+        width: 21
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d5889bc917f7b7a0800000000000000
+      internalID: -6361344258475522607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_2
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 241
+        width: 35
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92d409b283a696270800000000000000
+      internalID: 8244237382359993641
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_3
+      rect:
+        serializedVersion: 2
+        x: 172
+        y: 239
+        width: 45
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31eac173a16b38330800000000000000
+      internalID: 3712010741593452051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_4
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 237
+        width: 14
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a71625a2c69f6480800000000000000
+      internalID: -8903732175549622367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_5
+      rect:
+        serializedVersion: 2
+        x: 246
+        y: 260
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64ca0a07155483290800000000000000
+      internalID: -7910496529392030650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_6
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 242
+        width: 28
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45b001c38c2720db0800000000000000
+      internalID: -4827169646261040300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_7
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 241
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c12c8222c7c3dc2d0800000000000000
+      internalID: -3256880451672292836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_8
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 226
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c9335c22c5d47190800000000000000
+      internalID: -7965506810967541306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_9
+      rect:
+        serializedVersion: 2
+        x: 189
+        y: 178
+        width: 60
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0c15e4d295364980800000000000000
+      internalID: -8555091537390396401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_10
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 227
+        width: 6
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dec52014bfef618a0800000000000000
+      internalID: -6334595470769103635
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_11
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 220
+        width: 24
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a7416a647fc0cce0800000000000000
+      internalID: -1386880586322196568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_12
+      rect:
+        serializedVersion: 2
+        x: 452
+        y: 231
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf72d143247661d20800000000000000
+      internalID: 3248897715234220027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_13
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 192
+        width: 34
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00f646e322ea8c9d0800000000000000
+      internalID: -2753759710038167808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_14
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 151
+        width: 30
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e84c9c082eecc290800000000000000
+      internalID: -7868652593145427744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_15
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 181
+        width: 8
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c99d378ceb246fd0800000000000000
+      internalID: -2349704810699318839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_16
+      rect:
+        serializedVersion: 2
+        x: 390
+        y: 171
+        width: 20
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ce8b3832e9be90b0800000000000000
+      internalID: -5719930095456776507
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_17
+      rect:
+        serializedVersion: 2
+        x: 187
+        y: 129
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41794c47b14531190800000000000000
+      internalID: -7992952436752607468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_18
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 83
+        width: 37
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 765e346435a9ac520800000000000000
+      internalID: 2723158607150703975
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_19
+      rect:
+        serializedVersion: 2
+        x: 383
+        y: 76
+        width: 14
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81e0b7692e4c65b50800000000000000
+      internalID: 6581664382914858520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fullcombo_s99_20
+      rect:
+        serializedVersion: 2
+        x: 157
+        y: 21
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e94957e72ecec7380800000000000000
+      internalID: -8972035900100471650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      fullcombo_s99_0: -5927490014388956099
+      fullcombo_s99_1: -6361344258475522607
+      fullcombo_s99_10: -6334595470769103635
+      fullcombo_s99_11: -1386880586322196568
+      fullcombo_s99_12: 3248897715234220027
+      fullcombo_s99_13: -2753759710038167808
+      fullcombo_s99_14: -7868652593145427744
+      fullcombo_s99_15: -2349704810699318839
+      fullcombo_s99_16: -5719930095456776507
+      fullcombo_s99_17: -7992952436752607468
+      fullcombo_s99_18: 2723158607150703975
+      fullcombo_s99_19: 6581664382914858520
+      fullcombo_s99_2: 8244237382359993641
+      fullcombo_s99_20: -8972035900100471650
+      fullcombo_s99_3: 3712010741593452051
+      fullcombo_s99_4: -8903732175549622367
+      fullcombo_s99_5: -7910496529392030650
+      fullcombo_s99_6: -4827169646261040300
+      fullcombo_s99_7: -3256880451672292836
+      fullcombo_s99_8: -7965506810967541306
+      fullcombo_s99_9: -8555091537390396401
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

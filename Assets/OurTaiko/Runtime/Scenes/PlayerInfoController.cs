@@ -12,6 +12,10 @@ namespace OurTaiko
         public static PlayerInfoController Instance { get; private set; }
 
         public PlayerInfo Info { get; private set; } = new PlayerInfo();
+        // 2P's plate: its OurTaiko account's, or the "2P" guest plate. Not saved: it follows the
+        // account signed in on this device.
+        public PlayerInfo SecondInfo { get; private set; } = PlayerInfo.SecondPlayer;
+        public event Action<PlayerInfo> SecondChanged;
         // null for unsaved data (tests); otherwise where Info is read from and written to.
         public string FilePath { get; private set; }
         public event Action<PlayerInfo> Changed;
@@ -80,6 +84,12 @@ namespace OurTaiko
         {
             FilePath = null;
             Apply(info?.Clone() ?? new PlayerInfo());
+        }
+
+        public void SetSecond(PlayerInfo info)
+        {
+            SecondInfo = info?.Clone() ?? PlayerInfo.SecondPlayer;
+            SecondChanged?.Invoke(SecondInfo);
         }
 
         void Apply(PlayerInfo info)

@@ -12,7 +12,7 @@ namespace OurTaiko
         public static ScoreStore.Record Get(SongDefinition song, Difficulty difficulty)
         {
             if (song == null || difficulty < Difficulty.Easy || difficulty > Difficulty.Ura) return null;
-            if (!IsOnline(song)) return ScoreStore.Shared.Get(song.name, difficulty);
+            if (!IsOnline(song)) return ScoreStore.Shared.Get(song.ScoreKey, difficulty);
             var manager = Online.OnlineManager.Instance;
             var best = manager?.Client.Best(manager.ChartOf(song), (int)difficulty);
             if (best == null) return null;

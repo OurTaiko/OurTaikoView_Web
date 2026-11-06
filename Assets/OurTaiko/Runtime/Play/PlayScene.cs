@@ -8,25 +8,10 @@ using UnityEngine;
 namespace OurTaiko
 {
     // The play scenes' driver: the song clock, music, pause, title and ending around one PlayerLane per
-    // seat. The 1P lane's views are this component's own (LaneViews); DoublePlayScene adds secondLane.
-    public sealed partial class PlayScene : LaneViews
+    // seat. The 1P lane's views are firstLane (on NoteLane); DoublePlayScene adds secondLane.
+    // The art and sounds the lanes draw with are PlaySceneBase's.
+    public sealed partial class PlayScene : PlaySceneBase
     {
-        public AudioSource music, hitAudio;
-        public AudioClip don, ka, balloonPop, kusudamaPop;
-        [Tooltip("Played on top of the drum when an Ad-Lib is hit (OpenTaiko's Adlib sound). Left empty until we have our own.")]
-        public AudioClip adLibHit;
-        [Tooltip("Played on top of the drum when a mine is hit (OpenTaiko's bomb sound). Left empty until we have our own.")]
-        public AudioClip mineHit;
-        public HitSoundLibrary hitSounds;
-        public Sprite[] laneDifficultySprites;
-        public Sprite[] noteSprites;
-        [Tooltip("Nijiiro expression frame 1, indexed by NoteKind like noteSprites; alternates every eighth note at 50 combo.")]
-        public Sprite[] alternateNoteSprites;
-        public Sprite[] rollBodySprites, rollTailSprites;
-        public Sprite balloonTailSprite;
-        public Sprite[] mojiSprites;
-        public Sprite mojiRollSprite;
-        public Sprite[] judgmentSprites;
         [Tooltip("The touch drum; Settings > Play > Enable Drumpad for Single Player Mode turns it on or off. It strikes 1P.")]
         public DrumPad drumPad;
         public TMP_Text title, subtitle, resultText;
@@ -40,8 +25,6 @@ namespace OurTaiko
         [Tooltip("The chart's background movie behind the lanes; practice moves it with the measure.")]
         public BackgroundMovieView movie;
         double movieOffset;
-        [Tooltip("The kusudama ball over the whole screen, shared by both seats.")]
-        public KusudamaView kusudama;
 
         // One lane per seat: 1P, then 2P in DoublePlayScene.
         public IReadOnlyList<PlayerLane> Lanes => lanes;
@@ -59,7 +42,7 @@ namespace OurTaiko
             get => paused;
             private set
             {
-                if (paused != value) { InputManager.DropDelayed(); foreach (var lane in lanes) lane.ForgetHeard(); }
+                if (paused != value) InputManager.DropDelayed();
                 paused = value;
             }
         }
@@ -77,12 +60,18 @@ namespace OurTaiko
         public RectTransform MojiRoot(int index) => Lane1.MojiRoot(index);
         public RectTransform BarRoot(int index) => Lane1.BarRoot(index);
         SongDefinition song;
+        // Configured in real seconds. Chart time runs at the clock's rate (practice speed), so they are
+        // scaled by it wherever they meet chart time.
         double audioOffset, visualOffset, judgeOffset;
+        // PlaySettings.CustomJudgeWindows (null: the course's own), read once per play like the offsets.
+        JudgeWindows? judgeWindows;
+        int playedAudioOffsetMs;
         // OpenTaiko judges and draws at a whole millisecond of the play clock (cut toward zero).
-        double ChartTime => TjaTime.Truncate(SongTime - audioOffset);
-        internal double ChartTimeNow => ChartTime;
-        internal double JudgeOffset => judgeOffset;
-        internal bool AcceptsHits => songClock.Started && !switcher.IsInputBlocked && !IsPaused && !IsFinished;
+        double ChartTime => TjaTime.Truncate(SongTime - audioOffset * songClock.Rate);
+        internal override double ChartTimeNow => ChartTime;
+        internal override double JudgeOffset => judgeOffset * songClock.Rate;
+        internal override bool AcceptsHits => songClock.Started && !switcher.IsInputBlocked && !IsPaused && !IsFinished;
+        internal override float MovieLaneAlpha => movie != null ? movie.LaneAlpha : 1;
         SongInfo displayInfo;
         // The subtitle line shows the SUBTITLE and, when the chart names one, the MAKER in turn.
         const float SubtitleRotationSeconds = 4f;
@@ -107,6 +96,7 @@ namespace OurTaiko
         {
             while (WebPlayerBridge.Instance == null || WebPlayerBridge.Instance.Song == null) yield return null;
             switcher = SceneSwitcher.EnsureInstance();
+            PlayfieldMask.Cover(this);
             // Direct Editor runs must return to the same mode after Back and another song.
             switcher.PracticeMode = IsPractice;
             switcher.SceneChanging += PrepareToLeave;
@@ -114,15 +104,18 @@ namespace OurTaiko
             // Play scenes start from the song list; a direct run without a song goes back to Entry.
             if (song == null)
             {
-                Debug.LogWarning("No song is selected; returning to Entry.", this);
+                Log.Warn("Play", "No song is selected; returning to Entry.", this);
                 switcher.SwitchScene(SceneSwitcher.MenuScene);
                 yield break;
             }
             autoPlay = switcher.AutoPlay;
             var playSettings = SettingManager.EnsureInstance().Settings.play;
+            playedAudioOffsetMs = playSettings.audioOffsetMs;
             audioOffset = (song.audioOffsetMs + (double)playSettings.audioOffsetMs) / 1000.0;
             visualOffset = song.visualOffsetMs / 1000.0;
             judgeOffset = autoPlay ? 0 : playSettings.judgeOffsetMs / 1000.0;
+            judgeWindows = playSettings.CustomJudgeWindows;
+            InputManager.DrumDelay = Math.Min(Math.Max(0, playSettings.inputDelayMs), PlaySettings.InputDelayMaxMs) / 1000.0;
             pauseButton.onClick.AddListener(TogglePause);
             resumeButton.onClick.AddListener(Resume);
             restartButton.onClick.AddListener(Restart);
@@ -139,7 +132,7 @@ namespace OurTaiko
                 // Practice plays a fixed route, chosen only in its menu; a normal play evaluates branches.
                 practiceBranch = BranchRoute.Normal;
                 if (kusudama != null) kusudama.ResetDisplay();
-                var sessions = new List<PlaySession> { AddLane(0, this) };
+                var sessions = new List<PlaySession> { AddLane(0, firstLane) };
                 if (secondLane != null) sessions.Add(AddLane(1, secondLane));
                 // Both seats' kusudama at the same time are one ball; a lone one is a balloon.
                 if (sessions.Count > 1) Kusudama.Share(sessions[0], sessions[1]);
@@ -156,7 +149,7 @@ namespace OurTaiko
             }
             catch (Exception error)
             {
-                Debug.LogException(error);
+                Log.Exception("Play", error);
                 IsFinished = true; resultPanel.SetActive(true);
                 resultText.text = "CHART COULD NOT LOAD\n<size=22>" + error.Message + "</size>";
             }
@@ -171,13 +164,13 @@ namespace OurTaiko
         }
 
         // SongLoadingScene parsed each seat's chart behind the curtain; restarts and direct runs parse
-        // here. 2P reads its own block of the course (ChartSide) with its own options. The lane is
+        // here. Each seat reads the block of the side decided before the play, with its own options. The lane is
         // prepared with the returned session once every seat has one.
         PlaySession AddLane(int seat, LaneViews views)
         {
             string course = switcher.CourseOf(seat);
             var options = PlayOptions.ForSeat(seat);
-            var chart = switcher.TakePreparedChart(song, course, seat) ?? PrepareChart(song, course, seat);
+            var chart = switcher.TakePreparedChart(song, course, seat) ?? PrepareChart(song, course, switcher.SideOf(seat), seat);
             var lane = new PlayerLane(this, seat, views, options, seat == 0 ? autoPlay : switcher.AutoPlayOf(seat), new Online.PlayRecord
             {
                 // Replay v1 stores already corrected judgment time. Keep its two-offset convention:
@@ -186,8 +179,8 @@ namespace OurTaiko
                 VisualOffsetMs = (int)Math.Round((visualOffset - judgeOffset) * 1000),
             });
             lanes.Add(lane);
-            var session = new PlaySession(chart, judgeOffset, IsPractice ? practiceBranch : (BranchRoute?)null);
-            foreach (string warning in session.Chart.Warnings) Debug.LogWarning("Ignored TJA command: " + warning);
+            var session = new PlaySession(chart, judgeOffset, IsPractice ? practiceBranch : (BranchRoute?)null, 1, judgeWindows);
+            foreach (string warning in session.Chart.Warnings) Log.Warn("Play", "Ignored TJA command: " + warning);
             return session;
         }
 
@@ -209,10 +202,19 @@ namespace OurTaiko
         }
 
         // Player::reset_chart: the play options change the chart before load times are taken.
-        public static TaikoChart PrepareChart(SongDefinition song, string course, int seat = 0)
+        public static TaikoChart PrepareChart(SongDefinition song, string course, string side, int seat = 0)
         {
-            var chart = song.Parse(course, SeatBlocks.Seats[seat]);
+            var chart = song.ParseBlock(course, side);
             ChartModifiers.Apply(chart, PlayOptions.ForSeat(seat), new System.Random());
+            return chart;
+        }
+
+        // A 段位 course's song: the block the resolver settled on (a server course may pin the side),
+        // never the seat's own choice; dan is always played from the 1P seat.
+        public static TaikoChart PrepareChart(DanResolvedSong song)
+        {
+            var chart = song.Song.ParseBlock(song.Course, song.Side);
+            ChartModifiers.Apply(chart, PlayOptions.ForSeat(0), new System.Random());
             return chart;
         }
 
@@ -261,19 +263,19 @@ namespace OurTaiko
         }
 
         // Every seat must reach its end (OpenTaiko IsChartEnded: all players).
-        public double SongEndNow() => songEnd ??= lanes.Max(lane => SongEnd.Of(lane.Session.Chart, judgeOffset));
+        public double SongEndNow() => (songEnd ??= lanes.Max(lane => SongEnd.Of(lane.Session.Chart))) + Math.Max(0, JudgeOffset);
 
         // Presentation can keep running after the result is captured, without advancing judgment.
         void UpdatePlayVisuals(double time)
         {
             bool preview = IsPractice && IsPaused, hideSkipped = IsPractice && (!IsPaused || practiceRewinding);
-            foreach (var lane in lanes) lane.ShowVisuals(time, time - visualOffset, preview, hideSkipped);
+            foreach (var lane in lanes) lane.ShowVisuals(time, time - visualOffset * songClock.Rate, preview, hideSkipped);
             if (kusudama != null) kusudama.ShowTime(time);
             SampleDancers(time);
         }
 
         // 1P's drum (touch drum, tests); see PlayerLane.Hit.
-        public void Hit(bool isKa, bool right, bool sound = true) => Lane1?.Hit(isKa, right, sound);
+        public void Hit(bool isKa, bool right) => Lane1?.Hit(isKa, right);
 
         public void TogglePause()
         {
@@ -324,7 +326,7 @@ namespace OurTaiko
 
         void DisableDrumPads()
         {
-            foreach (var pad in FindObjectsByType<DrumPad>(FindObjectsSortMode.None))
+            foreach (var pad in FindObjectsByType<DrumPad>())
             {
                 if (pad.gameObject.scene != gameObject.scene || !pad.enabled) continue;
                 pausedPads.Add(pad);
@@ -337,9 +339,9 @@ namespace OurTaiko
             if (resuming) resumeLostFocus = true;
             if (Session != null && !IsPaused && !IsFinished) TogglePause();
         }
-        // The play's end (SongEnd, OurTaikoPlay 0951538): practice loops here. A play (OpenTaiko
-        // Game_EndChart) captures the result and stops input, and each lane plays its own ending
-        // (Player::spawn_ending_anim) over its lane while the music fades out; ResultScene follows.
+        // The play's end (SongEnd): practice loops here. A play (OpenTaiko Game_EndChart) captures the
+        // result and stops input, and each lane plays its own ending (Player::spawn_ending_anim) over
+        // its lane while the music fades out; ResultScene (which persists the result) follows.
         void Finish()
         {
             if (IsPractice) { WebPlayerBridge.Instance.Finished(PlayResult.From(Session, song.name, autoPlay)); PausePractice(true); return; }
@@ -347,7 +349,8 @@ namespace OurTaiko
             IsFinished = true;
             foreach (var lane in lanes)
             {
-                lane.Result = PlayResult.From(lane.Session, song.name, lane.AutoPlay);
+                lane.Result = PlayResult.From(lane.Session, song.ScoreKey, lane.AutoPlay, playedAudioOffsetMs);
+                lane.Result.Side = switcher.SideOf(lane.Seat);
                 lane.Result.Title = displayInfo.Title;
                 lane.Result.Subtitle = displayInfo.Subtitle;
             }
@@ -409,6 +412,7 @@ namespace OurTaiko
         }
         void OnDestroy()
         {
+            InputManager.DrumDelay = 0;
             music.StopAudio(); hitAudio.StopAudio();
             if (switcher != null) switcher.SceneChanging -= PrepareToLeave;
             foreach (var lane in lanes) lane.Release();
@@ -422,6 +426,8 @@ namespace OurTaiko
             bool hideSkipped = IsPractice && (!IsPaused || practiceRewinding);
             foreach (var lane in lanes) lane.RenderNotes(time, preview, hideSkipped);
         }
+
+        public const int SoulGaugeOrder = -20;
 
         void SampleDancers(double time)
         {

@@ -48,5 +48,16 @@ namespace OurTaiko
             return TjaLines.Read(song.chart.text).Any(line => line.Kind == TjaLineKind.Header
                 && (line.Key.StartsWith("TITLE") || line.Key.StartsWith("SUBTITLE") || line.Key == "MAKER") && MatchesText(line.Value));
         }
+
+        // A cached online song, whose TJA is not at hand: the keyword is matched against the titles,
+        // subtitles and maker the server described it with, as the server's own search does.
+        public bool MatchesCached(SongDefinition song)
+        {
+            var chart = song.onlineChart;
+            if (chart == null || !Matches(chart.ToSongInfo(null))) return false;
+            if (Keyword.Length == 0) return true;
+            return MatchesText(chart.Title) || MatchesText(chart.Subtitle) || MatchesText(chart.Maker)
+                || chart.Titles.Values.Any(MatchesText) || chart.Subtitles.Values.Any(MatchesText);
+        }
     }
 }

@@ -109,6 +109,22 @@ namespace OurTaiko.Tests
             Assert.That(p2.Notes.First(n => n.Kind == NoteKind.Balloon).BalloonHits, Is.EqualTo(2));
         }
 
+        [Test] public void TheSideIsDecidedBeforeThePlayAndTheChartIsThatBlock()
+        {
+            var song = UnityEngine.ScriptableObject.CreateInstance<SongDefinition>();
+            song.chart = new UnityEngine.TextAsset(ThreeSides);
+            try
+            {
+                Assert.That(song.PlayedSide("Oni", "p1", together: false), Is.EqualTo("single"));
+                Assert.That(song.PlayedSide("Oni", "p1", together: true), Is.EqualTo("p1"));
+                Assert.That(song.PlayedSide("Oni", "p2", together: true), Is.EqualTo("p2"));
+                Assert.That(song.ParseBlock("Oni", "p2").Level, Is.EqualTo(8));
+                Assert.That(song.ParseBlock("3", "single").Level, Is.EqualTo(9), "the course as the song list names it");
+                song.chart = new UnityEngine.TextAsset("not a chart");
+                Assert.That(song.PlayedSide("Oni", "p2", together: false), Is.EqualTo("single"), "an unreadable chart gets the first choice");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(song.chart); UnityEngine.Object.DestroyImmediate(song); }
+        }
 
         [Test] public void OnlineAndLocalShareTheReadOrder()
         {

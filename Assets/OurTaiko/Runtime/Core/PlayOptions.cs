@@ -28,13 +28,13 @@ namespace OurTaiko
         // Tests replace it with an unsaved instance so they never touch the player's options.
         public static PlayOptions Shared
         {
-            get => shared ??= Load(System.IO.Path.Combine(Application.persistentDataPath, "options.json"));
+            get => shared ??= Load(System.IO.Path.Combine(GamePaths.Root, "options.json"));
             set => shared = value;
         }
         // 2P's own options (the same panel, opened by 2P), kept apart from 1P's.
         public static PlayOptions Second
         {
-            get => second ??= Load(System.IO.Path.Combine(Application.persistentDataPath, "options_2p.json"));
+            get => second ??= Load(System.IO.Path.Combine(GamePaths.Root, "options_2p.json"));
             set => second = value;
         }
         public static PlayOptions ForSeat(int seat) => seat == 1 ? Second : Shared;
@@ -46,7 +46,7 @@ namespace OurTaiko
             {
                 if (File.Exists(path)) JsonUtility.FromJsonOverwrite(File.ReadAllText(path), options);
             }
-            catch (Exception error) { Debug.LogWarning("Ignoring unreadable options file: " + error.Message); }
+            catch (Exception error) { Log.Warn("Settings", "Ignoring unreadable options file: " + error.Message); }
             options.path = path;
             options.speed = Math.Max(MinSpeed, Math.Min(MaxSpeed, options.speed));
             if (!Enum.IsDefined(typeof(RandomMode), options.random)) options.random = RandomMode.Off;

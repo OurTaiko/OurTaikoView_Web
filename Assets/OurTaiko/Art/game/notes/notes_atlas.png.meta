@@ -120,7 +120,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -128,9 +128,7 @@ TextureImporter:
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
-  spriteTessellationMethod: 0
   spriteTessellationDetail: -1
-  spriteGeometrySubdivision: -1
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
@@ -668,8 +666,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 746fdc3bdb6974dcb9d73939c2c6f088
-      internalID: 1335696861
+      spriteID: b359ee82ba974ce586ae3edb2f65eea0
+      internalID: -1644300613
       vertices: []
       indices: 
       edges: []
@@ -690,8 +688,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 196034216ba984c468415397af602623
-      internalID: -1804706513
+      spriteID: 4ef1153bafd2432682693bf18ac3491c
+      internalID: 1678580101
       vertices: []
       indices: 
       edges: []
@@ -712,8 +710,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 988a2b743bf024775a42ea51114c6d2a
-      internalID: 1734523710
+      spriteID: 3bb5cd683d8ba171b2e4d36e82ca63dd
+      internalID: -1494793560
       vertices: []
       indices: 
       edges: []
@@ -734,8 +732,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: bc625f35c427c412f99ca8fddd72a369
-      internalID: -1878555003
+      spriteID: 2e6c454086542093481e7360269af78e
+      internalID: 1829800597
       vertices: []
       indices: 
       edges: []
@@ -756,10 +754,10 @@ TextureImporter:
     nameFileIdTable:
       BalloonTail: 1895508472
       Note1: -760195060
-      Note12: 1734523710
-      Note12Alternate: -1878555003
-      Note16: 1335696861
-      Note16Alternate: -1804706513
+      Note16: -1644300613
+      Note16Alternate: 1678580101
+      Note12: -1494793560
+      Note12Alternate: 1829800597
       Note1Alternate: -420797378
       Note2: 113572664
       Note2Alternate: -979542325

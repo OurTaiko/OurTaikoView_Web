@@ -62,12 +62,7 @@ namespace OurTaiko.Editor
             // Loading must continue while focus is on the host mode/branch controls.
             // The iframe explicitly pauses gameplay on blur and document visibility changes.
             PlayerSettings.runInBackground = true;
-            // Keep the authored scene dependencies and explicitly loaded shared resources.
-            var roots = new List<string> { Scene };
-            roots.AddRange(AssetDatabase.GetAllAssetPaths().Where(x => x.StartsWith("Assets/") && (x.Contains("/Resources/") || x.StartsWith("Assets/Settings/")) && !AssetDatabase.IsValidFolder(x)));
-            var keep = new HashSet<string>(AssetDatabase.GetDependencies(roots.ToArray(), true));
-            // Nothing depends on an atlas: its sprites are drawn from it only because it packs them.
-            keep.UnionWith(AssetDatabase.FindAssets("t:SpriteAtlas", new[] { "Assets/OurTaiko/Generated" }).Select(AssetDatabase.GUIDToAssetPath));
+            var keep = KeptAssets();
             foreach (var path in AssetDatabase.GetAllAssetPaths().Where(x => x.StartsWith("Assets/Scenes/") && x.EndsWith(".unity") && x != Scene).ToArray()) AssetDatabase.DeleteAsset(path);
             foreach (var path in AssetDatabase.GetAllAssetPaths().Where(x => (x.StartsWith("Assets/OurTaiko/Art/") || x.StartsWith("Assets/OurTaiko/Audio/") || x.StartsWith("Assets/OurTaiko/Generated/") || x.StartsWith("Assets/OurTaiko/Songs/")) && !AssetDatabase.IsValidFolder(x) && !keep.Contains(x)).ToArray()) AssetDatabase.DeleteAsset(path);
             AssetDatabase.SaveAssets();
@@ -82,6 +77,36 @@ namespace OurTaiko.Editor
             File.WriteAllText("Builds/report.json", JsonUtility.ToJson(new Result { result = report.summary.result.ToString(), errors = report.summary.totalErrors, bytes = report.summary.totalSize }, true));
             if (report.summary.result != BuildResult.Succeeded) throw new BuildFailedException("Web build failed");
         }
+        // The assets the build keeps: the authored scene's dependencies and explicitly loaded shared
+        // resources. A nested prefab that the scene removes from its instance (PracticeScene's NoteLane
+        // drops the game's Ending, with ~55 MB of art and its sounds) stays as a file, so the prefab
+        // that nests it still loads, but what only it references is left out (and with it, out of
+        // the NativeAudioCatalog). AssetDatabase.GetDependencies alone would follow the prefab asset.
+        public static HashSet<string> KeptAssets()
+        {
+            var scene = EditorSceneManager.OpenScene(Scene);
+            var roots = new List<string> { Scene };
+            roots.AddRange(AssetDatabase.GetAllAssetPaths().Where(x => x.StartsWith("Assets/") && (x.Contains("/Resources/") || x.StartsWith("Assets/Settings/")) && !AssetDatabase.IsValidFolder(x)));
+            var removed = new HashSet<(string, string)>();
+            foreach (var instance in scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Transform>(true)).Select(t => t.gameObject).Where(PrefabUtility.IsOutermostPrefabInstanceRoot))
+                foreach (var gone in PrefabUtility.GetRemovedGameObjects(instance))
+                    if (gone.assetGameObject != null && PrefabUtility.IsAnyPrefabInstanceRoot(gone.assetGameObject))
+                        removed.Add((AssetDatabase.GetAssetPath(gone.assetGameObject), PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gone.assetGameObject)));
+            var keep = new HashSet<string>();
+            var queue = new Queue<string>(roots);
+            while (queue.Count > 0)
+            {
+                string path = queue.Dequeue();
+                if (!keep.Add(path)) continue;
+                foreach (string dependency in AssetDatabase.GetDependencies(path, false))
+                    if (!removed.Contains((path, dependency))) queue.Enqueue(dependency);
+            }
+            keep.UnionWith(removed.Select(edge => edge.Item2));
+            // Nothing depends on an atlas: its sprites are drawn from it only because it packs them.
+            keep.UnionWith(AssetDatabase.FindAssets("t:SpriteAtlas", new[] { "Assets/OurTaiko/Generated" }).Select(AssetDatabase.GUIDToAssetPath));
+            return keep;
+        }
+
         // Web Audio decodes the original encoded files; scene AudioClips are only lookup keys.
         // Runs after pruning, so only clips the player still references are packaged.
         static void GenerateAudioCatalog()

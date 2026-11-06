@@ -5,18 +5,24 @@ using UnityEngine.UI;
 namespace OurTaiko
 {
     // Nijiiro Scripts/global/nameplate.lua on the 408x96 plate canvas. The children are drawn in the
-    // original's order: plate, title band, band outline, dan chip, 1P/2P badge, title, name. The 1P
+    // original's order: plate, title band, band outline, dan chip (its ring, then its text), 1P/2P
+    // badge, title, name. The 1P
     // plate follows PlayerInfoController, so an info change updates every plate on screen; the 2P
-    // plate shows PlayerInfo.SecondPlayer with the 2p badge.
+    // plate follows its SecondInfo (2P's account, else the "2P" guest plate) with the 2p badge.
     [RequireComponent(typeof(RectTransform), typeof(ClipSampler))]
     public sealed class NameplateView : MonoBehaviour
     {
-        public Image shadow, bandUnder, band, outline, danBackground, dan, badge;
+        public Image shadow, bandUnder, band, outline, danBackground, danRing, dan, badge;
         public TMP_Text title, playerName;
         [Tooltip("frame_top: the 5 title backgrounds.")]
         public Sprite[] titleBackgrounds;
-        [Tooltip("dan_emblem / dan_emblem_gold: 初級 .. 達人.")]
-        public Sprite[] danEmblems, goldDanEmblems;
+        // The 段位 emblem is two layers, like a song's crown: dan_ring_{silver,gold,rainbow} under the
+        // rank, by the pass's combo (銀粋 / 金粋 full combo / 虹粋 all 良), then dan_text[_gold]'s rank
+        // (初級 .. 達人, 0..5 blank), white for a red pass and gold for a gold pass.
+        [Tooltip("dan_ring_silver, dan_ring_gold, dan_ring_rainbow: PlayerInfo.danCombo 0..2.")]
+        public Sprite[] danRings;
+        [Tooltip("dan_text / dan_text_gold: 初級 .. 達人.")]
+        public Sprite[] danTexts, goldDanTexts;
         [Tooltip("0 = 1P, 1 = 2P.")]
         public int seat;
         [Tooltip("global/nameplate/2p: the badge of a 2P plate.")]
@@ -34,15 +40,18 @@ namespace OurTaiko
         {
             controller = PlayerInfoController.EnsureInstance();
             if (seat == 0) controller.Changed += Show;
+            else controller.SecondChanged += Show;
             rainbowStart = GameTimeline.FrameTime;
             renderedCanvasScale = float.NaN;
             Canvas.willRenderCanvases += RefreshCanvasScale;
-            Show(seat == 0 ? controller.Info : PlayerInfo.SecondPlayer);
+            // No rainbow sample yet: the Animator may not have woken, and evaluating its graph
+            // asserts m_DidAwake. Update draws the band before the first render.
+            Apply(seat == 0 ? controller.Info : controller.SecondInfo);
         }
 
         void OnDisable()
         {
-            if (controller != null) controller.Changed -= Show;
+            if (controller != null) { controller.Changed -= Show; controller.SecondChanged -= Show; }
             Canvas.willRenderCanvases -= RefreshCanvasScale;
         }
 
@@ -72,18 +81,27 @@ namespace OurTaiko
 
         public void Show(PlayerInfo info)
         {
+            Apply(info);
+            ShowRainbow(GameTimeline.FrameTime - rainbowStart);
+        }
+
+        void Apply(PlayerInfo info)
+        {
             Info = info = info ?? new PlayerInfo();
             bool hasBand = !info.IsCoin;
             band.enabled = outline.enabled = hasBand;
             bandUnder.enabled = false;
             if (hasBand && !info.rainbow) band.sprite = titleBackgrounds[info.TitleFrame];
             RainbowFrame = 0;
-            ShowRainbow(GameTimeline.FrameTime - rainbowStart);
 
             // *_dani labels only exist in the band family.
             bool hasDan = info.HasDan && hasBand;
-            danBackground.enabled = dan.enabled = hasDan;
-            if (hasDan) dan.sprite = (info.gold ? goldDanEmblems : danEmblems)[info.dan];
+            danBackground.enabled = danRing.enabled = dan.enabled = hasDan;
+            if (hasDan)
+            {
+                danRing.sprite = danRings[info.DanComboTier];
+                dan.sprite = (info.gold ? goldDanTexts : danTexts)[info.dan];
+            }
             badge.enabled = true;
             if (seat == 1 && secondBadge != null) badge.sprite = secondBadge;
 

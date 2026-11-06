@@ -1,6 +1,7 @@
 using System.Linq;
 using UnityEngine;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 
 namespace OurTaiko.Tests
@@ -14,7 +15,7 @@ namespace OurTaiko.Tests
         {
             WithPlay(play =>
             {
-                var lane = play.branchLane;
+                var lane = play.firstLane.branchLane;
                 lane.Initialize(true);
                 lane.Select(BranchRoute.Master, 30);
                 lane.ShowTime(30.05);
@@ -49,32 +50,27 @@ namespace OurTaiko.Tests
         }
 
         [Test]
-        public void CountersShareDigitsAndKeepBalloonAboveGaugeBelowPause()
+        public void CountersShareDigitsAndKeepTheirPlaces()
         {
             WithPlay(play =>
             {
-                var counter = play.drumrollCounter;
+                var counter = play.firstLane.drumrollCounter;
                 Assert.That(counter, Is.Not.Null);
                 Assert.That(counter.gameObject.activeSelf, Is.False);
-                Assert.That(counter.digitSprites, Is.EqualTo(play.balloonCounter.digitSprites));
+                Assert.That(counter.digitSprites, Is.EqualTo(play.firstLane.balloonCounter.digitSprites));
                 Assert.That(counter.digitSprites.Length, Is.EqualTo(10));
                 Assert.That(counter.digitSprites.All(d => d.rect.size == new Vector2(96, 112)), Is.True);
                 Assert.That(counter.digitSprites[0].texture.mipmapCount, Is.GreaterThan(1));
                 Assert.That(counter.digitSprites[0].texture.filterMode, Is.EqualTo(FilterMode.Trilinear));
-                Assert.That(play.balloonCounter.digitSize, Is.EqualTo(new Vector2(77, 90)));
-                var lane = (RectTransform)play.noteLayer.parent.parent;
-                var balloon = (RectTransform)play.balloonCounter.transform;
-                Assert.That(balloon.parent, Is.SameAs(lane.parent));
-                Transform gauge = play.soulGauge.transform;
-                while (gauge.parent != balloon.parent) gauge = gauge.parent;
-                Assert.That(balloon.GetSiblingIndex(), Is.GreaterThan(gauge.GetSiblingIndex()));
-                Assert.That(balloon.GetSiblingIndex(), Is.LessThan(play.pauseButton.transform.GetSiblingIndex()));
-                Assert.That(lane.parent.GetSiblingIndex(), Is.LessThan(play.pausePanel.transform.GetSiblingIndex()));
+                Assert.That(play.firstLane.balloonCounter.digitSize, Is.EqualTo(new Vector2(77, 90)));
+                var lane = (RectTransform)play.firstLane.noteLayer.parent.parent;
+                var balloon = (RectTransform)play.firstLane.balloonCounter.transform;
+                // Over the gauge and under the pause button: the game's canvases, see PlayDrawOrderTests.
                 Assert.That(balloon.anchorMin, Is.EqualTo(lane.anchorMin));
                 Assert.That(balloon.anchorMax, Is.EqualTo(lane.anchorMax));
                 Assert.That(balloon.sizeDelta, Is.EqualTo(lane.sizeDelta));
                 Assert.That(balloon.anchoredPosition, Is.EqualTo(lane.anchoredPosition));
-                Assert.That(play.balloonCounter.body.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(645, 81)));
+                Assert.That(play.firstLane.balloonCounter.body.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(645, 81)));
                 Assert.That(counter.bubble.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(296, 271)));
                 Assert.That(counter.number.anchoredPosition, Is.EqualTo(new Vector2(520, 215)));
             });
@@ -85,7 +81,7 @@ namespace OurTaiko.Tests
         {
             WithPlay(play =>
             {
-                var view = play.drumrollCounter;
+                var view = play.firstLane.drumrollCounter;
                 view.RecordHit(2, 14, 10);
                 Assert.That(view.Count, Is.EqualTo(14));
                 Assert.That(view.NoteIndex, Is.EqualTo(2));
@@ -107,39 +103,9 @@ namespace OurTaiko.Tests
             });
         }
 
-        // OpenTaiko: lane, soul gauge, GOGO fire, notes, then the drum and HUD; notes are clipped
-        // only at the lane's ends.
+        // The kusudama's bindings; its place in the draw order is the game's (PlayDrawOrderTests).
         [Test]
-        public void SoulGaugeDrawsUnderTheNotesAndTheLaneClipsOnlySideways()
-        {
-            WithPlay(play =>
-            {
-                var lane = play.noteLayer.parent.parent;
-                var gauge = play.soulGauge.transform;
-                Vector3 at = gauge.position;
-                var player = new PlayerLane(play, 0, play, new PlayOptions(), false, new Online.PlayRecord());
-                var put = typeof(PlayerLane).GetMethod("PutSoulGaugeUnderNotes", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                put.Invoke(player, null);
-                put.Invoke(player, null); // A second load keeps it in place.
-                Assert.That(gauge.parent, Is.SameAs(lane));
-                Assert.That(gauge.position, Is.EqualTo(at));
-                Assert.That(gauge.GetSiblingIndex(), Is.GreaterThan(lane.Find("JudgeCircle").GetSiblingIndex()));
-                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(lane.Find("GogoEffects").GetSiblingIndex()));
-                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.noteLayer.parent.GetSiblingIndex()));
-                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.combo.transform.GetSiblingIndex()));
-                foreach (var layer in new[] { play.noteLayer, play.barLayer, play.mojiLayer })
-                {
-                    var padding = layer.GetComponentInParent<UnityEngine.UI.RectMask2D>().padding;
-                    Assert.That(padding.x == 0 && padding.z == 0, Is.True);
-                    Assert.That(padding.y < -10000 && padding.w < -10000, Is.True);
-                }
-            });
-        }
-
-        // The kusudama is drawn over the HUD and under the pause button and practice controls, which
-        // in the single web canvas means its place in the hierarchy.
-        [Test]
-        public void KusudamaIsBoundAndDrawnOverTheHud()
+        public void KusudamaIsBound()
         {
             WithPlay(play =>
             {
@@ -150,13 +116,47 @@ namespace OurTaiko.Tests
                 Assert.That(view.digits.Select(d => d.name), Is.EqualTo(Enumerable.Range(0, 10).Select(i => "KusudamaDigit" + i)));
                 Assert.That(view.ball.raycastTarget || view.renda.raycastTarget, Is.False);
                 Assert.That(view.gameObject.activeSelf, Is.False);
-                var parent = view.transform.parent;
-                Assert.That(play.balloonCounter.transform.parent, Is.SameAs(parent));
-                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.balloonCounter.transform.GetSiblingIndex()));
-                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.comboAnnounce.transform.GetSiblingIndex()));
-                Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.pauseButton.transform.GetSiblingIndex()));
-                Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.practiceView.transform.GetSiblingIndex()));
             });
+        }
+
+        // The game's scene plays the movie through FFmpeg, which is not on WebGL;
+        // SyncPlayPresentation.ApplyBackgroundMovie swaps in WebMoviePlayer on Unity's VideoPlayer.
+        [Test]
+        public void BackgroundMoviePlaysThroughUnitysVideoPlayer()
+        {
+            WithPlay(play =>
+            {
+                Assert.That(play.movie, Is.Not.Null);
+                var player = play.movie.player as WebMoviePlayer;
+                Assert.That(player, Is.Not.Null);
+                Assert.That(player.gameObject, Is.SameAs(play.movie.gameObject));
+                Assert.That(player.video, Is.SameAs(player.GetComponent<UnityEngine.Video.VideoPlayer>()));
+                Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(player.gameObject), Is.Zero);
+                Assert.That(play.movie.screen, Is.Not.Null);
+                Assert.That(play.movie.stageArt, Is.Not.Empty);
+                Assert.That(play.movie.laneBackgrounds, Is.Not.Empty);
+            });
+        }
+
+        // NoteLane.prefab nests the game's Ending, which PracticeScene removes: the Web build keeps the
+        // prefab file but none of the art, clips and sounds only Ending uses.
+        [Test]
+        public void WebBuildLeavesOutWhatOnlyTheRemovedEndingUses()
+        {
+            var build = System.Type.GetType("OurTaiko.Editor.WebViewBuild, Assembly-CSharp-Editor");
+            Assert.That(build, Is.Not.Null);
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            System.Collections.Generic.HashSet<string> keep;
+            try { keep = (System.Collections.Generic.HashSet<string>)build.GetMethod("KeptAssets").Invoke(null, null); }
+            finally { if (setup.Length > 0) EditorSceneManager.RestoreSceneManagerSetup(setup); }
+            Assert.That(keep, Does.Contain("Assets/OurTaiko/Generated/NoteLane.prefab"));
+            Assert.That(keep, Does.Contain("Assets/OurTaiko/Generated/LaneHud.prefab"));
+            Assert.That(keep, Does.Contain("Assets/OurTaiko/Generated/Ending.prefab"));
+            Assert.That(keep, Does.Contain("Assets/OurTaiko/Art/game/notes/notes_atlas.png"));
+            Assert.That(keep, Does.Contain("Assets/OurTaiko/Audio/kusudama_pop.ogg"));
+            Assert.That(keep.Where(p => p.StartsWith("Assets/OurTaiko/Art/game/ending/")
+                || p.StartsWith("Assets/OurTaiko/Audio/game/")
+                || p.StartsWith("Assets/OurTaiko/Generated/Clips/Ending")), Is.Empty);
         }
 
         static void WithPlay(System.Action<PlayScene> check)
@@ -176,7 +176,7 @@ namespace OurTaiko.Tests
             try
             {
                 var play = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<PlayScene>(true)).Single();
-                var announce = play.comboAnnounce;
+                var announce = play.firstLane.comboAnnounce;
                 Assert.That(announce.voices.Length, Is.EqualTo(51));
                 Assert.That(announce.voices.All(v => v != null), Is.True);
                 Assert.That(announce.Announce(combo, 0).name, Is.EqualTo(combo + "_1p"));

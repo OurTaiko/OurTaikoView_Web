@@ -17,6 +17,8 @@ namespace OurTaiko
         public const int GaugeCells = 50;
 
         public string ChartKey = "", Title = "", Subtitle = "", Course = "Oni";
+        // The side played (ChartSide), decided before the play; online scores upload to its block.
+        public string Side = "single";
         public Difficulty Difficulty = Difficulty.Oni;
         public int Level, Score, Good, Ok, Bad, MaxCombo, Rolls, PreviousBest;
         // Ad-Libs hit 良 and 可 and mines hit, counted apart from Good/Ok/Bad (PlaySession).
@@ -25,6 +27,12 @@ namespace OurTaiko
         public ScoreRank Rank => ScoreRankUtil.FromScore(Score, KiwamiThreshold);
         public double GaugePoints;
         public bool IsClear, IsGaugeFull, AutoPlay;
+        // Played with the player's own judge windows (PlaySession.CustomWindows): never saved or uploaded.
+        public bool CustomJudge;
+        // Only a manual play at the standard windows is saved, uploaded or celebrated as a high score.
+        public bool IsRecordable => !AutoPlay && !CustomJudge;
+        public TimingStatistics Timing;
+        public TimingCalibration Calibration;
 
         public GaugeState GaugeState => IsGaugeFull ? GaugeState.Full : IsClear ? GaugeState.Cleared : GaugeState.Failed;
 
@@ -48,9 +56,10 @@ namespace OurTaiko
 
         public int ScoreDifference => Math.Max(0, Score - PreviousBest);
 
-        public static PlayResult From(PlaySession session, string chartKey, bool autoPlay)
+        public static PlayResult From(PlaySession session, string chartKey, bool autoPlay, int? audioOffsetMs = null)
         {
             var chart = session.Chart;
+            var timing = TimingStatistics.From(session);
             return new PlayResult
             {
                 ChartKey = chartKey, Title = chart.Title, Subtitle = chart.Subtitle, Course = chart.Course,
@@ -60,6 +69,10 @@ namespace OurTaiko
                 AdLibGood = session.AdLibGood, AdLibOk = session.AdLibOk, Mines = session.MinesHit,
                 MaxCombo = session.MaxCombo, Rolls = session.Rolls, GaugePoints = session.GaugePoints,
                 IsClear = session.IsClear, IsGaugeFull = session.IsGaugeFull, AutoPlay = autoPlay,
+                CustomJudge = session.CustomJudge,
+                Timing = timing,
+                Calibration = !autoPlay && audioOffsetMs.HasValue
+                    ? new TimingCalibration(timing, audioOffsetMs.Value, (int)Math.Round(session.JudgeOffset * 1000)) : null,
             };
         }
     }
