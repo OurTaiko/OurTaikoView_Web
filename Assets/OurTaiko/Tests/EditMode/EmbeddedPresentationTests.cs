@@ -14,7 +14,7 @@ namespace OurTaiko.Tests
         {
             WithPlay(play =>
             {
-                var lane = play.branchLane;
+                var lane = play.firstLane.branchLane;
                 lane.Initialize(true);
                 lane.Select(BranchRoute.Master, 30);
                 lane.ShowTime(30.05);
@@ -53,19 +53,19 @@ namespace OurTaiko.Tests
         {
             WithPlay(play =>
             {
-                var counter = play.drumrollCounter;
+                var counter = play.firstLane.drumrollCounter;
                 Assert.That(counter, Is.Not.Null);
                 Assert.That(counter.gameObject.activeSelf, Is.False);
-                Assert.That(counter.digitSprites, Is.EqualTo(play.balloonCounter.digitSprites));
+                Assert.That(counter.digitSprites, Is.EqualTo(play.firstLane.balloonCounter.digitSprites));
                 Assert.That(counter.digitSprites.Length, Is.EqualTo(10));
                 Assert.That(counter.digitSprites.All(d => d.rect.size == new Vector2(96, 112)), Is.True);
                 Assert.That(counter.digitSprites[0].texture.mipmapCount, Is.GreaterThan(1));
                 Assert.That(counter.digitSprites[0].texture.filterMode, Is.EqualTo(FilterMode.Trilinear));
-                Assert.That(play.balloonCounter.digitSize, Is.EqualTo(new Vector2(77, 90)));
-                var lane = (RectTransform)play.noteLayer.parent.parent;
-                var balloon = (RectTransform)play.balloonCounter.transform;
+                Assert.That(play.firstLane.balloonCounter.digitSize, Is.EqualTo(new Vector2(77, 90)));
+                var lane = (RectTransform)play.firstLane.noteLayer.parent.parent;
+                var balloon = (RectTransform)play.firstLane.balloonCounter.transform;
                 Assert.That(balloon.parent, Is.SameAs(lane.parent));
-                Transform gauge = play.soulGauge.transform;
+                Transform gauge = play.firstLane.soulGauge.transform;
                 while (gauge.parent != balloon.parent) gauge = gauge.parent;
                 Assert.That(balloon.GetSiblingIndex(), Is.GreaterThan(gauge.GetSiblingIndex()));
                 Assert.That(balloon.GetSiblingIndex(), Is.LessThan(play.pauseButton.transform.GetSiblingIndex()));
@@ -74,7 +74,7 @@ namespace OurTaiko.Tests
                 Assert.That(balloon.anchorMax, Is.EqualTo(lane.anchorMax));
                 Assert.That(balloon.sizeDelta, Is.EqualTo(lane.sizeDelta));
                 Assert.That(balloon.anchoredPosition, Is.EqualTo(lane.anchoredPosition));
-                Assert.That(play.balloonCounter.body.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(645, 81)));
+                Assert.That(play.firstLane.balloonCounter.body.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(645, 81)));
                 Assert.That(counter.bubble.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(296, 271)));
                 Assert.That(counter.number.anchoredPosition, Is.EqualTo(new Vector2(520, 215)));
             });
@@ -85,7 +85,7 @@ namespace OurTaiko.Tests
         {
             WithPlay(play =>
             {
-                var view = play.drumrollCounter;
+                var view = play.firstLane.drumrollCounter;
                 view.RecordHit(2, 14, 10);
                 Assert.That(view.Count, Is.EqualTo(14));
                 Assert.That(view.NoteIndex, Is.EqualTo(2));
@@ -114,10 +114,10 @@ namespace OurTaiko.Tests
         {
             WithPlay(play =>
             {
-                var lane = play.noteLayer.parent.parent;
-                var gauge = play.soulGauge.transform;
+                var lane = play.firstLane.noteLayer.parent.parent;
+                var gauge = play.firstLane.soulGauge.transform;
                 Vector3 at = gauge.position;
-                var player = new PlayerLane(play, 0, play, new PlayOptions(), false, new Online.PlayRecord());
+                var player = new PlayerLane(play, 0, play.firstLane, new PlayOptions(), false, new Online.PlayRecord());
                 var put = typeof(PlayerLane).GetMethod("PutSoulGaugeUnderNotes", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 put.Invoke(player, null);
                 put.Invoke(player, null); // A second load keeps it in place.
@@ -125,9 +125,9 @@ namespace OurTaiko.Tests
                 Assert.That(gauge.position, Is.EqualTo(at));
                 Assert.That(gauge.GetSiblingIndex(), Is.GreaterThan(lane.Find("JudgeCircle").GetSiblingIndex()));
                 Assert.That(gauge.GetSiblingIndex(), Is.LessThan(lane.Find("GogoEffects").GetSiblingIndex()));
-                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.noteLayer.parent.GetSiblingIndex()));
-                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.combo.transform.GetSiblingIndex()));
-                foreach (var layer in new[] { play.noteLayer, play.barLayer, play.mojiLayer })
+                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.firstLane.noteLayer.parent.GetSiblingIndex()));
+                Assert.That(gauge.GetSiblingIndex(), Is.LessThan(play.firstLane.combo.transform.GetSiblingIndex()));
+                foreach (var layer in new[] { play.firstLane.noteLayer, play.firstLane.barLayer, play.firstLane.mojiLayer })
                 {
                     var padding = layer.GetComponentInParent<UnityEngine.UI.RectMask2D>().padding;
                     Assert.That(padding.x == 0 && padding.z == 0, Is.True);
@@ -151,9 +151,9 @@ namespace OurTaiko.Tests
                 Assert.That(view.ball.raycastTarget || view.renda.raycastTarget, Is.False);
                 Assert.That(view.gameObject.activeSelf, Is.False);
                 var parent = view.transform.parent;
-                Assert.That(play.balloonCounter.transform.parent, Is.SameAs(parent));
-                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.balloonCounter.transform.GetSiblingIndex()));
-                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.comboAnnounce.transform.GetSiblingIndex()));
+                Assert.That(play.firstLane.balloonCounter.transform.parent, Is.SameAs(parent));
+                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.firstLane.balloonCounter.transform.GetSiblingIndex()));
+                Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(play.firstLane.comboAnnounce.transform.GetSiblingIndex()));
                 Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.pauseButton.transform.GetSiblingIndex()));
                 Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.practiceView.transform.GetSiblingIndex()));
             });
@@ -176,7 +176,7 @@ namespace OurTaiko.Tests
             try
             {
                 var play = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<PlayScene>(true)).Single();
-                var announce = play.comboAnnounce;
+                var announce = play.firstLane.comboAnnounce;
                 Assert.That(announce.voices.Length, Is.EqualTo(51));
                 Assert.That(announce.voices.All(v => v != null), Is.True);
                 Assert.That(announce.Announce(combo, 0).name, Is.EqualTo(combo + "_1p"));

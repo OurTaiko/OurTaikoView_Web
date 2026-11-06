@@ -18,12 +18,12 @@ namespace OurTaiko.Tests
             try
             {
                 var play = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<PlayScene>(true)).Single();
-                var view = play.gogo;
+                var view = play.firstLane.gogo;
                 var session = Session("#GOGOSTART\n0,\n#GOGOEND");
                 Assert.That(view, Is.Not.Null);
                 Assert.That(view.transform.parent.Find("GogoTint"), Is.Null);
                 Assert.That(view.transform.GetSiblingIndex(), Is.GreaterThan(view.transform.parent.Find("JudgeCircle").GetSiblingIndex()));
-                Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.noteLayer.parent.GetSiblingIndex()));
+                Assert.That(view.transform.GetSiblingIndex(), Is.LessThan(play.firstLane.noteLayer.parent.GetSiblingIndex()));
                 Assert.That(view.fire.sprite.rect.size, Is.EqualTo(new Vector2(440, 440)));
                 Assert.That(view.fire.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(626, -109)));
                 Assert.That(view.lane.rectTransform.sizeDelta, Is.EqualTo(new Vector2(1424, 195)));

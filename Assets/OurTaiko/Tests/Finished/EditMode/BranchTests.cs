@@ -172,6 +172,21 @@ namespace OurTaiko.Tests
             Assert.That(empty.CurrentBranch, Is.EqualTo(BranchRoute.Expert));
         }
 
+        // fumen keeps a threshold pair per route being played (TJA writes one pair into every row):
+        // the second branch sends a 達人 player to 普通 and a 玄人 player to 達人 with the same play.
+        [TestCase("p,-1,0", BranchRoute.Master, BranchRoute.Normal)]
+        [TestCase("p,-1,101", BranchRoute.Expert, BranchRoute.Master)]
+        public void TheThresholdsOfTheRouteBeingPlayedDecide(string first, BranchRoute firstRoute, BranchRoute secondRoute)
+        {
+            var chart = Parse("1111,\n0000,\n0000,\n#BRANCHSTART " + first + Routes + "0000,\n#BRANCHSTART p,-1,0" + Routes);
+            chart.Branches[1].SetThresholds(BranchRoute.Master, 101, 102);
+            var session = new PlaySession(chart);
+            var routes = new List<BranchRoute>();
+            session.BranchSelected += (branch, route) => routes.Add(route);
+            for (double t = 0; t <= chart.Duration + 1; t += 1 / 60.0) session.Advance(t, true);
+            Assert.That(routes, Is.EqualTo(new[] { firstRoute, secondRoute }));
+        }
+
         // BRAINIAC MANIAC (MZ72): `p,-1,101` forces 玄人 and `p,101,102` forces 普通, whatever the play.
         [TestCase(true)]
         [TestCase(false)]

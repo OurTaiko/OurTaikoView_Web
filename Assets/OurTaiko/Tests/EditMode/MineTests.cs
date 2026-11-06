@@ -4,8 +4,7 @@ namespace OurTaiko.Tests
 {
     // The mine (C): drawn, hit with either colour within 可 like an Ad-Lib, and then it explodes: the
     // combo breaks and the gauge loses SoulGauge.MineDamage, shown as 不可 but not counted as one.
-    // Left alone (autoplay always) it costs nothing. It is not in the note count. Ported from
-    // OurTaikoPlay; this player keeps no timing offsets or per-route note counts.
+    // Left alone (autoplay always) it costs nothing. It is not in the note count.
     public sealed class MineTests
     {
         static TaikoChart Chart(string body) => TjaParser.Parse("TITLE:Test\nBPM:120\nCOURSE:Oni\n#START\n" + body + "\n#END");
@@ -30,6 +29,7 @@ namespace OurTaiko.Tests
                 Assert.That(session.Bad, Is.Zero);
                 Assert.That(session.Score, Is.EqualTo(session.BaseScore));
                 Assert.That(session.GaugePoints, Is.EqualTo(gauge - SoulGauge.MineDamage * 100).Within(1e-6));
+                Assert.That(session.TimingOffsetMs(1), Is.Null);
             }
         }
 
@@ -65,6 +65,7 @@ namespace OurTaiko.Tests
             var plain = new ChartStatistics(Chart("1000,"));
             var stats = new ChartStatistics(Chart("1C00,"));
             Assert.That(stats.JudgeableNotes, Is.EqualTo(1));
+            Assert.That(stats.RouteNotes, Is.EqualTo(plain.RouteNotes));
             Assert.That(Session("1C00,").BaseScore, Is.EqualTo(new ShinuchiScore(plain).BaseScore));
         }
 

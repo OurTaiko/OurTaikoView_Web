@@ -20,6 +20,7 @@ namespace OurTaiko.Tests
             Assert.That(don.Good, Is.Zero);
             Assert.That(don.Combo, Is.EqualTo(1));
             Assert.That(don.Gauge, Is.GreaterThan(0));
+            Assert.That(don.TimingOffsetMs(0), Is.EqualTo(10).Within(1e-6));
 
             var ka = Session("F000,");
             Assert.That(ka.Hit(true, -0.05), Is.EqualTo(Judgment.Ok));

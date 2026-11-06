@@ -31,14 +31,14 @@ namespace OurTaiko.Tests
                 { Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline)); yield return null; }
                 play.EmbeddedPause();
                 Assert.That(play.IsPaused, Is.True);
-                var badge = play.scoreCounter.scoreRank;
+                var badge = play.firstLane.scoreCounter.scoreRank;
                 Assert.That(badge, Is.Not.Null);
                 Assert.That(badge.transform.localScale, Is.EqualTo(Vector3.one));
                 Assert.That(((RectTransform)badge.transform).anchoredPosition, Is.EqualTo(new Vector2(152, 118)));
                 Assert.That(badge.rank.image.rectTransform.sizeDelta, Is.EqualTo(Vector2.one * 208));
                 Assert.That(badge.GetComponent<Canvas>().overrideSorting, Is.True);
                 Assert.That(badge.GetComponent<Canvas>().sortingOrder,
-                    Is.GreaterThan(play.judgeCounter.GetComponentInParent<Canvas>().sortingOrder));
+                    Is.GreaterThan(play.firstLane.judgeCounter.GetComponentInParent<Canvas>().sortingOrder));
                 Assert.That(badge.rank.DisplayedRank, Is.EqualTo(ScoreRank.None));
                 Assert.That(play.Session.KiwamiThreshold, Is.EqualTo(1000020));
                 for (int i = 0; i < 21; i++)
@@ -50,9 +50,9 @@ namespace OurTaiko.Tests
                 }
                 Assert.That(badge.rank.image.sprite.name, Is.EqualTo("s86"));
                 Assert.That(badge.rank.image.raycastTarget || badge.rank.group.blocksRaycasts, Is.False);
-                play.scoreCounter.Show(1000000, play.Session.KiwamiThreshold);
+                play.firstLane.scoreCounter.Show(1000000, play.Session.KiwamiThreshold);
                 Assert.That(badge.rank.DisplayedRank, Is.EqualTo(ScoreRank.PurpleMiyabi));
-                play.scoreCounter.Show(1000020, play.Session.KiwamiThreshold);
+                play.firstLane.scoreCounter.Show(1000020, play.Session.KiwamiThreshold);
                 Assert.That(badge.rank.DisplayedRank, Is.EqualTo(ScoreRank.Kiwami));
                 yield return new WaitForSecondsRealtime(.3f);
                 Assert.That(badge.rank.group.alpha, Is.EqualTo(1).Within(.001));
