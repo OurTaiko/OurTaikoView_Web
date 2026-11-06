@@ -25,9 +25,9 @@ namespace OurTaiko.Tests
         {
             var chart = Parse("10\n#GOGOSTART\n10\n#GOGOEND\n10,");
             Assert.That(chart.Gogos.Count, Is.EqualTo(2));
-            // On whole milliseconds, cut toward zero as OpenTaiko keeps chart times.
-            Assert.That(chart.Gogos[0].Time, Is.EqualTo(1.333).Within(1e-9));
-            Assert.That(chart.Gogos[1].Time, Is.EqualTo(1.666).Within(1e-9));
+            // To a thousandth of a millisecond, as TJAParser keeps chart times (v0.13.0).
+            Assert.That(chart.Gogos[0].Time, Is.EqualTo(1.333333).Within(1e-9));
+            Assert.That(chart.Gogos[1].Time, Is.EqualTo(1.666667).Within(1e-9));
         }
 
         [Test]
