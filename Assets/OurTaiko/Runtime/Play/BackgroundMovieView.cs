@@ -24,6 +24,10 @@ namespace OurTaiko
 
         public const float Height = 1080;
         public bool HasMovie { get; private set; }
+        // The lane backgrounds' opacity under the movie (the setting, or 1 without a movie). The
+        // lanes multiply the chart's #LANE_ALPHA by it every frame (PlayerLane.ShowLaneAlpha), so
+        // a chart's fades keep working over a movie.
+        public float LaneAlpha { get; private set; } = 1;
         public bool IsShowing => screen != null && screen.enabled;
         string loaded;
 
@@ -96,9 +100,9 @@ namespace OurTaiko
         void Present(bool movie)
         {
             HasMovie = movie;
-            float lanes = movie ? SettingManager.EnsureInstance().Settings.display.MovieLaneAlpha : 1;
+            LaneAlpha = movie ? SettingManager.EnsureInstance().Settings.display.MovieLaneAlpha : 1;
             foreach (var art in stageArt) if (art != null) art.alpha = movie ? 0 : 1;
-            foreach (var lane in laneBackgrounds) if (lane != null) lane.alpha = lanes;
+            foreach (var lane in laneBackgrounds) if (lane != null) lane.alpha = LaneAlpha;
             if (blackout != null) blackout.enabled = movie;
             if (!movie && screen != null) { screen.enabled = false; screen.texture = null; }
         }

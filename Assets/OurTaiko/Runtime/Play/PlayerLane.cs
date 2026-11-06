@@ -154,7 +154,8 @@ namespace OurTaiko
         // #LANE_ALPHA (TJAParser Documentation~/TJA-Specification.md §13): the lane background and
         // the tints drawn on it (the branch route's, GOGO's) fade together; the notes, the judge
         // circle and the HUD do not. A CanvasGroup each, so the clips that animate those images'
-        // own colours keep working under it.
+        // own colours keep working under it. Over a background movie the lanes are see-through too
+        // (BackgroundMovieView, the same groups): the two opacities multiply.
         CanvasGroup[] laneBackground;
         public float LaneAlphaShown => laneBackground != null && laneBackground.Length > 0 ? laneBackground[0].alpha : 1;
 
@@ -169,7 +170,7 @@ namespace OurTaiko
                     .Select(c => c.TryGetComponent(out CanvasGroup group) ? group : c.gameObject.AddComponent<CanvasGroup>())
                     .ToArray();
             }
-            float alpha = (float)Session.LaneAlphaAt(time, preview);
+            float alpha = (float)Session.LaneAlphaAt(time, preview) * scene.MovieLaneAlpha;
             foreach (var group in laneBackground)
                 if (group.alpha != alpha) group.alpha = alpha;
         }

@@ -71,6 +71,7 @@ namespace OurTaiko
         internal override double ChartTimeNow => ChartTime;
         internal override double JudgeOffset => judgeOffset * songClock.Rate;
         internal override bool AcceptsHits => songClock.Started && !switcher.IsInputBlocked && !IsPaused && !IsFinished;
+        internal override float MovieLaneAlpha => movie != null ? movie.LaneAlpha : 1;
         SongInfo displayInfo;
         // The subtitle line shows the SUBTITLE and, when the chart names one, the MAKER in turn.
         const float SubtitleRotationSeconds = 4f;

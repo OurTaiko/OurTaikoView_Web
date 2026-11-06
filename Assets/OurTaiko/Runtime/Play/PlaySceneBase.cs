@@ -32,5 +32,8 @@ namespace OurTaiko
         internal abstract double ChartTimeNow { get; }
         internal abstract double JudgeOffset { get; }
         internal abstract bool AcceptsHits { get; }
+        // The lane backgrounds' opacity under the background movie (BackgroundMovieView.LaneAlpha;
+        // 1 without one). #LANE_ALPHA is multiplied by it.
+        internal virtual float MovieLaneAlpha => 1;
     }
 }
